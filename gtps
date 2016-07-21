@@ -4,7 +4,7 @@ detects uncommitted work/files in all git repos under a directory
 """
 import subprocess as S
 #
-from pygitutils.gitcommon import codepath
+from pygitutils.common import codepath
 
 def gitpushall(rdir):
     dlist = [x for x in rdir.iterdir() if x.is_dir()]
@@ -15,7 +15,7 @@ def gitpushall(rdir):
                   ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches (?)
                   ['git','ls-files','-o','-d','--exclude-standard']): # check for uncommitted files
             try:
-                ret = S.check_output(c, stderr=S.DEVNULL, timeout=10, cwd=str(d))
+                ret = S.check_output(c, cwd=str(d)) #stderr=S.DEVNULL,
                 if ret:
                     dir_topush.append(d)
             except S.CalledProcessError as e:
