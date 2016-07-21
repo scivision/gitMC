@@ -7,7 +7,7 @@ from time import sleep
 import subprocess as S
 from random import randrange
 #
-from pygitutils.gitcommon import codepath
+from pygitutils.common import codepath
 
 rdir = codepath()
 
@@ -17,8 +17,8 @@ failed=[]
 for d in dlist:
     print(' --> {}'.format(d))
     try:
-        S.check_call(['git','pull'],timeout=10, cwd=str(d))
-    except (S.CalledProcessError,S.TimeoutExpired):
+        S.check_call(['git','pull'], cwd=str(d))
+    except S.CalledProcessError:
         failed.append(d)
 
     sleep(randrange(10)*.1) # don't hammer the remote server, delay of 0-1 second
