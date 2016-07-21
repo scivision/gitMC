@@ -12,11 +12,10 @@ dlist = [x for x in rdir.iterdir() if x.is_dir()]
 branch=[]
 for d in dlist:
     try:
-        ret = S.check_output(cmd,  cwd=str(d)) #stderr=S.DEVNULL,
+        ret = S.check_output(cmd,  cwd=str(d)).decode('utf8').rstrip() #stderr=S.DEVNULL,
 
         if not 'master' in ret:
-            b = ret.decode('utf8').rstrip()
-            branch.append((d,b))
+            branch.append((d,ret))
     except S.CalledProcessError as e:
         pass
 
