@@ -1,7 +1,12 @@
 #!/usr/bin/env python
+"""
+report on git repos not on the expected branch e.g. 'master'
+"""
 import subprocess as S
 #
 from pygitutils.common import codepath
+
+OK='master' #branch you expect your git repos to be on
 
 rdir = codepath()
 
@@ -14,7 +19,7 @@ for d in dlist:
     try:
         ret = S.check_output(cmd,  cwd=str(d)).decode('utf8').rstrip() #stderr=S.DEVNULL,
 
-        if not 'master' in ret:
+        if not OK in ret:
             branch.append((d,ret))
     except S.CalledProcessError as e:
         pass
