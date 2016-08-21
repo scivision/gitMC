@@ -4,28 +4,37 @@ detects uncommitted work/files in all git repos under a directory
 """
 import subprocess as S
 #
-from pygitutils.common import codepath
+from pygitutils import codepath
 
 def gitpushall(rdir):
     dlist = [x for x in rdir.iterdir() if x.is_dir()]
 
     dir_topush = []
     for d in dlist:
-        for c in (['git','--no-pager','diff','HEAD'], # check for uncommitted work
-                  ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches (?)
-                  ['git','ls-files','-o','-d','--exclude-standard']): # check for uncommitted files
-            try:
-                ret = S.check_output(c, cwd=str(d)) #stderr=S.DEVNULL,
-                if ret:
-                    dir_topush.append(d)
-            except S.CalledProcessError as e:
-                print('Error in  {}'.format(d,e.output))
-                break
+        dpath = detectchange(d)
+        if dpath:
+            dir_topush.append(dpath)
 
     return dir_topush
+
+def detectchange(d):
+    dpath = None # in case error on first attempt
+    for c in (['git','--no-pager','diff','HEAD'], # check for uncommitted work
+              ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches (?)
+              ['git','ls-files','-o','-d','--exclude-standard']): # check for uncommitted files
+        try:
+            ret = S.check_output(c, cwd=str(d)) #stderr=S.DEVNULL,
+            if ret:
+                dpath = d
+                break
+        except S.CalledProcessError as e:
+            print('Error in  {}'.format(d,e.output))
+            break
+
+    return dpath
 
 if __name__ == '__main__':
     rdir = codepath()
     dir_topush = gitpushall(rdir)
     if dir_topush:
-        print('\n'.join((str(d) for d in dir_topush)))
+        print('\n'.join((str(d.name) for d in dir_topush)))
