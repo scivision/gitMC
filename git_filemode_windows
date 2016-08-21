@@ -5,11 +5,13 @@ mostly for Windows, particularly Cygwin
 """
 from subprocess import call
 #
-from pygitutils.common import codepath
+from pygitutils import codepath
 
 rdir = codepath()
 
-print('setting fileMode=false for all directories under {}'.format(rdir))
 dlist = [x for x in rdir.iterdir() if x.is_dir()]
+
+print('setting fileMode=false for {} directories under {}'.format(len(dlist),rdir))
+
 for d in dlist:
     call(['git','config','core.filemode','false'], cwd=str(d))

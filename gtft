@@ -5,4 +5,4 @@ and pulls to the current branch
 """
 from pygitutils import fetchpull
 
-fetchpull('pull')
+fetchpull('fetch')

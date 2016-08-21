@@ -4,25 +4,35 @@ report on git repos not on the expected branch e.g. 'master'
 """
 import subprocess as S
 #
-from pygitutils.common import codepath
+from pygitutils import codepath
 
-OK='master' #branch you expect your git repos to be on
+def findbranch(ok='master'):
 
-rdir = codepath()
+    rdir = codepath()
 
-cmd=['git','rev-parse','--abbrev-ref','HEAD']
+    cmd=['git','rev-parse','--abbrev-ref','HEAD']
 
-dlist = [x for x in rdir.iterdir() if x.is_dir()]
+    dlist = [x for x in rdir.iterdir() if x.is_dir()]
 
-branch=[]
-for d in dlist:
-    try:
-        ret = S.check_output(cmd,  cwd=str(d)).decode('utf8').rstrip() #stderr=S.DEVNULL,
+    branch=[]
+    for d in dlist:
+        if not (d/'.git').is_dir():
+            print('skipped non-git  {}'.format(d))
+            continue
 
-        if not OK in ret:
-            branch.append((d,ret))
-    except S.CalledProcessError as e:
-        pass
+        try:
+            ret = S.check_output(cmd,  cwd=str(d)).decode('utf8').rstrip() #stderr=S.DEVNULL,
 
-if branch:
-    print(branch)
+            if not ok in ret:
+                branch.append((d,ret))
+        except S.CalledProcessError as e:
+            print('{}  {}'.format(d,e))
+
+    return branch
+
+if __name__ == '__main__':
+
+    branch = findbranch()
+
+    for b in branch:
+        print('{} => {}'.format(b[0],b[1]))
