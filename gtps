@@ -3,29 +3,33 @@
 detects uncommitted work/files in all git repos under a directory
 """
 import subprocess as S
+from colorama import init,Fore,Back
 #
 from pygitutils import codepath
 
-def gitpushall(rdir):
+def gitpushall(rdir,verbose=False):
     dlist = [x for x in rdir.iterdir() if x.is_dir()]
 
     dir_topush = []
     for d in dlist:
-        dpath = detectchange(d)
+        dpath = detectchange(d,verbose)
         if dpath:
             dir_topush.append(dpath)
 
     return dir_topush
 
-def detectchange(d):
+def detectchange(d,verbose=False):
     dpath = None # in case error on first attempt
-    for c in (['git','--no-pager','diff','HEAD'], # check for uncommitted work
-              ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches (?)
-              ['git','ls-files','-o','-d','--exclude-standard']): # check for uncommitted files
+    for c in (['git','status','--porcelain'], # uncommitted or changed files
+              ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches
+              ):
         try:
             ret = S.check_output(c, cwd=str(d)) #stderr=S.DEVNULL,
             if ret:
                 dpath = d
+                if verbose:
+                    print(Back.MAGENTA + str(d))
+                    print(Back.BLACK + ret.decode('utf8'))
                 break
         except S.CalledProcessError as e:
             print('Error in  {}'.format(d,e.output))
@@ -33,8 +37,11 @@ def detectchange(d):
 
     return dpath
 
+# replaced by git status --porcelain
+#['git','ls-files','-o','-d','--exclude-standard']): # check for uncommitted files
+#['git','--no-pager','diff','HEAD'], # check for uncommitted work
+
+
 if __name__ == '__main__':
     rdir = codepath()
-    dir_topush = gitpushall(rdir)
-    if dir_topush:
-        print('\n'.join((str(d.name) for d in dir_topush)))
+    dir_topush = gitpushall(rdir,True)
