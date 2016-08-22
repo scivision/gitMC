@@ -19,28 +19,24 @@ def gitpushall(rdir,verbose=False):
     return dir_topush
 
 def detectchange(d,verbose=False):
-    dpath = None # in case error on first attempt
-    for c in (['git','status','--porcelain'], # uncommitted or changed files
-              ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches
-              ):
-        try:
-            ret = S.check_output(c, cwd=str(d)) #stderr=S.DEVNULL,
-            if ret:
-                dpath = d
-                if verbose:
-                    print(Back.MAGENTA + str(d))
-                    print(Back.BLACK + ret.decode('utf8'))
-                break
-        except S.CalledProcessError as e:
-            print('Error in  {}'.format(d,e.output))
-            break
+    dpath = None # in case error
+    c= ['git','status','--porcelain'] # uncommitted or changed files
+    try:
+        ret = S.check_output(c, cwd=str(d)) #stderr=S.DEVNULL,
+        if ret:
+            dpath = d
+            if verbose:
+                print(Back.MAGENTA + str(d))
+                print(Back.BLACK + ret.decode('utf8'))
+    except S.CalledProcessError as e:
+        print('Error in  {}'.format(d,e.output))
 
     return dpath
 
 # replaced by git status --porcelain
 #['git','ls-files','-o','-d','--exclude-standard']): # check for uncommitted files
 #['git','--no-pager','diff','HEAD'], # check for uncommitted work
-
+# DOES NOT WORK ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches
 
 if __name__ == '__main__':
     rdir = codepath()
