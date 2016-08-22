@@ -16,10 +16,6 @@ def findbranch(ok='master'):
 
     branch=[]
     for d in dlist:
-        if not (d/'.git').is_dir():
-            print('skipped non-git  {}'.format(d))
-            continue
-
         try:
             ret = S.check_output(cmd,  cwd=str(d)).decode('utf8').rstrip() #stderr=S.DEVNULL,
 
