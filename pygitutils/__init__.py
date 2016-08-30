@@ -1,4 +1,5 @@
 from __future__ import print_function
+import logging
 from platform import system
 import os
 import subprocess as S
@@ -45,15 +46,13 @@ def fetchpull(mode='fetch'):
             if ret:
                 print(' --> {}'.format(d.name))
                 print(ret.decode('utf8'))
-            else:
-                print(d.name)
         except S.CalledProcessError:
             failed.append(d)
 
         sleep(randrange(10)*.1) # don't hammer the remote server, delay of 0-1 second
 
     if failed:
-        print('git {} ERROR: \n{}'.format(mode,
+        logging.error('git {} ERROR: \n{}'.format(mode,
                           '\n'.join([str(f) for f in failed])))
 
     return failed
