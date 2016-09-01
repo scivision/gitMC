@@ -19,6 +19,8 @@ Program                 Function
 ====================    ========
 gtpl                    Pulls all git repos under directory  [~/code]
 gtps                    Pushes  "     "     "     "     "          "
+gtft                    Fetches "     " 
 gitbranch               Tells of any non-master branches under directory [~/code]
 git_filemode_windows    Sets all git repos to don't care permissions under directory  [~/code]
+gitemail                list all contributor email addresses
 ====================    ========
