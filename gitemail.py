@@ -4,6 +4,11 @@ report author emails for all repos under root.
 Important for being sure your contributions are plotted in Github (non-registered emails do not plot).
 
 To keep email privacy, use githubusername@users.noreply.github.com
+
+%ae author email doesn't matter to github graph
+
+iterates command
+git log --pretty="%ce"  | sort | uniq
 """
 import subprocess as S
 from colorama import init,Fore,Back
@@ -14,7 +19,7 @@ def gitemail():
 
     rdir = codepath()
 
-    cmd=['git','log','--pretty="%ae %ce"']
+    cmd=['git','log','--pretty="%ce"']
 
     dlist = [x for x in rdir.iterdir() if x.is_dir()]
 
