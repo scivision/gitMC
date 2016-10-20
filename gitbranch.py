@@ -6,7 +6,7 @@ import subprocess as S
 #
 from pygitutils import codepath
 
-def findbranch(ok='master'):
+def findbranch(ok):
 
     rdir = codepath()
 
@@ -27,8 +27,12 @@ def findbranch(ok='master'):
     return branch
 
 if __name__ == '__main__':
+    from argparse import ArgumentParser
+    p = ArgumentParser()
+    p.add_argument('mainbranch',nargs='?',default='master',help='name of your main branch')
+    p = p.parse_args()
 
-    branch = findbranch()
+    branch = findbranch(p.mainbranch)
 
     for b in branch:
         print('{} => {}'.format(b[0],b[1]))
