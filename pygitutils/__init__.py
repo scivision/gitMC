@@ -49,7 +49,7 @@ def fetchpull(mode='fetch'):
         except S.CalledProcessError:
             failed.append(d)
 
-        sleep(randrange(10)*.1) # don't hammer the remote server, delay of 0-1 second
+        sleep(randrange(10)*.1 +1 )  # don't hammer the remote server, delay of 1-2 seconds
 
     if failed:
         logging.error('git {} ERROR: \n{}'.format(mode,
