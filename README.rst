@@ -2,7 +2,7 @@
 pygitutils
 ==========
 
-Platform-independent (Linux/Mac/Windows) (Python 2.7 / Python 3.5) Git utilities, 
+Platform-independent (Linux/Mac/Windows) Git utilities, 
 useful for managing large (100+) numbers of Git repos.
 I use command-line git because PyGit requires command-line Git to be installed, 
 and I don't need the advanced functionality.
