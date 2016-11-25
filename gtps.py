@@ -2,6 +2,8 @@
 """
 detects uncommitted work/files in all git repos under a directory
 """
+from __future__ import print_function
+from sys import stderr
 import subprocess as S
 from colorama import init,Fore,Back
 #
@@ -29,7 +31,7 @@ def detectchange(d,verbose=False):
                 print(Back.MAGENTA + str(d))
                 print(Back.BLACK + ret.decode('utf8'))
     except S.CalledProcessError as e:
-        print('Error in  {}'.format(d,e.output))
+        print('Error in  {}'.format(d,e.output), file=stderr)
 
     return dpath
 
