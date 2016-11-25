@@ -1,5 +1,5 @@
 from __future__ import print_function
-import logging
+from sys import stderr
 from platform import system
 import os
 import subprocess as S
@@ -52,7 +52,7 @@ def fetchpull(mode='fetch'):
         sleep(randrange(10)*.1 +1 )  # don't hammer the remote server, delay of 1-2 seconds
 
     if failed:
-        logging.error('git {} ERROR: \n{}'.format(mode,
-                          '\n'.join([str(f) for f in failed])))
+        print('git {} ERROR: \n{}'.format(mode,
+                          '\n'.join([str(f) for f in failed])),file=stderr)
 
     return failed
