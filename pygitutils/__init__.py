@@ -41,6 +41,9 @@ def fetchpull(mode='fetch'):
     print('git {} {} paths under {}'.format(mode,len(dlist),rdir))
     failed=[]
     for d in dlist:
+        if (d/'.nogit').is_file(): #user requesting this directory not to be synced
+            continue
+
         try:
             ret = S.check_output(['git',mode], cwd=str(d))
             if ret:

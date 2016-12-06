@@ -14,6 +14,9 @@ def gitpushall(rdir,verbose=False):
 
     dir_topush = []
     for d in dlist:
+        if (d/'.nogit').is_file(): #user requesting this directory not to be synced
+            continue
+
         dpath = detectchange(d,verbose)
         if dpath:
             dir_topush.append(dpath)
