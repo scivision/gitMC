@@ -1,16 +1,10 @@
-from __future__ import print_function
+from pathlib import Path
 from sys import stderr
 from platform import system
 import os
 import subprocess as S
 from random import randrange
 from time import sleep
-#%%
-try:
-    from pathlib import Path
-    Path().expanduser()
-except (ImportError,AttributeError):
-    from pathlib2 import Path
 #%%
 def codepath():
     from argparse import ArgumentParser

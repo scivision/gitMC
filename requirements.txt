@@ -1,4 +1,3 @@
 setuptools
 nose
 colorama
-pathlib2
