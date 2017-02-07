@@ -32,7 +32,7 @@ def fetchpull(mode='fetch'):
 
     dlist = [x for x in rdir.iterdir() if x.is_dir()]
 
-    print('git {} {} paths under {}'.format(mode,len(dlist),rdir))
+    print(f'git {mode} {len(dlist)} paths under {rdir}')
     failed=[]
     for d in dlist:
         if (d/'.nogit').is_file(): #user requesting this directory not to be synced
@@ -41,7 +41,7 @@ def fetchpull(mode='fetch'):
         try:
             ret = S.check_output(['git',mode], cwd=str(d))
             if ret:
-                print(' --> {}'.format(d.name))
+                print(f' --> {d.name}')
                 print(ret.decode('utf8'))
         except S.CalledProcessError:
             failed.append(d)
@@ -49,7 +49,8 @@ def fetchpull(mode='fetch'):
         sleep(randrange(10)*.1 +1 )  # don't hammer the remote server, delay of 1-2 seconds
 
     if failed:
-        print('git {} ERROR: \n{}'.format(mode,
-                          '\n'.join([str(f) for f in failed])),file=stderr)
+        print(f'git {mode} ERROR:')
+        # no backslash allowed in f-stringss
+        print("{}".format('\n'.join([str(f) for f in failed])), file=stderr)
 
     return failed

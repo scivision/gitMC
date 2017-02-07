@@ -1,10 +1,18 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
+import pip
+pip.main(['install','-r','requirements.txt'])
+
 
 setup(name='pygitutils',
-	  install_requires=required,
+      description ='cross-platform git utilities for managing a large number of git repositories quickly',
+      author = 'Michael HIrsch, Ph.D.',
+      url = 'https://github.com/scienceopen/pygitutils',
+      classifiers=[
+      'Development Status :: 5 - Production/Stable',
+      'License :: OSI Approved :: MIT License',
+      'Programming Language :: Python :: 3.6',
+      ],
         packages=['pygitutils'],
 	  )
