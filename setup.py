@@ -7,7 +7,8 @@ pip.main(['install','-r','requirements.txt'])
 
 setup(name='pygitutils',
       description ='cross-platform git utilities for managing a large number of git repositories quickly',
-      author = 'Michael HIrsch, Ph.D.',
+      author = 'Michael Hirsch, Ph.D.',
+      version = '1.0',
       url = 'https://github.com/scienceopen/pygitutils',
       classifiers=[
       'Development Status :: 5 - Production/Stable',
