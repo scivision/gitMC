@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-import pip
-pip.main(['install','-r','requirements.txt'])
-
+req=['nose','colorama']
 
 setup(name='pygitutils',
+      packages=['pygitutils'],
       description ='cross-platform git utilities for managing a large number of git repositories quickly',
       author = 'Michael Hirsch, Ph.D.',
       version = '1.0',
@@ -15,5 +14,5 @@ setup(name='pygitutils',
       'License :: OSI Approved :: MIT License',
       'Programming Language :: Python :: 3.6',
       ],
-        packages=['pygitutils'],
+      install_requires=req,
 	  )
