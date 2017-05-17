@@ -1,7 +1,11 @@
 #!/usr/bin/env python
+req=['nose','colorama']
+import pip
+pip.main(['install'] +req)
+# %%
 from setuptools import setup
 
-req=['nose','colorama']
+
 
 setup(name='pygitutils',
       packages=['pygitutils'],
@@ -14,5 +18,4 @@ setup(name='pygitutils',
       'License :: OSI Approved :: MIT License',
       'Programming Language :: Python :: 3.6',
       ],
-      install_requires=req,
 	  )
