@@ -4,5 +4,5 @@ import subprocess
 
 rdir = Path(__file__).parents[1]
 
-
-subprocess.check_call('./gtps.py ..'.split(),cwd=rdir)
+print(type(rdir))
+subprocess.check_call('./gtps.py ..'.split(), cwd=str(rdir))
