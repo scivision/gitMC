@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 req=['nose','colorama']
 import pip
-pip.main(['install'] +req)
+try:
+    import conda.cli
+    conda.cli.main('install',*req)
+except Exception as e:
+    pip.main(['install'] + req)
 # %%
 from setuptools import setup
-
 
 
 setup(name='pygitutils',

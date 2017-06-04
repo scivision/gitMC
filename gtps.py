@@ -34,7 +34,7 @@ def detectchange(d,verbose=False):
                 print(Back.MAGENTA + str(d))
                 print(Back.BLACK + ret.decode('utf8'))
     except S.CalledProcessError as e:
-        print('Error in  {}'.format(d,e.output), file=stderr)
+        print('Error in',d,e.output, file=stderr)
 
     return dpath
 
