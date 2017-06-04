@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-req=['nose','colorama']
+req=['nose','colorama','pathlib2']
 import pip
 try:
     import conda.cli
@@ -21,4 +21,5 @@ setup(name='pygitutils',
       'License :: OSI Approved :: MIT License',
       'Programming Language :: Python :: 3.6',
       ],
+      install_requires=req,
 	  )
