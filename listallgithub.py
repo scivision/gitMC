@@ -1,33 +1,38 @@
 #!/usr/bin/env python
 """
-lists all repos for a user without needing PyGithub package or login.
-Note current limit for unauthenticated Github API is 60 requests/hour.
+lists all repos for a Github user. 
+Requires Oauth login because otherwise API is very limited for unauthenticated users.
 
-Specify -f if you already downloaded the file,
-or -u user to download tuser.json via unauthenticated Github API (no private repos)
+The Oauth file should be in a secure place, NOT in a Git repo! 
+Maybe encrypted and with permissions 600.
+The Oauth key should have no checkboxes, so that it's read only for public repos.
+I'll leave it to you if you trust PyGithub with private repos.
 """
-from urllib.request import urlretrieve
-from pandas import read_json # more robust than built-in JSON
+from tabulate import tabulate
+from pandas import DataFrame
+from pathlib import Path
+from github import Github
 
-def listall(user:str,fn):
-    if user:
-        url = f'https://api.github.com/users/{user}/repos?per_page=1000'
-        fn = f'{user}.json'
-        print(f'downloading {url} to {fn}')
-        urlretrieve(url,fn)
-        
-    return read_json(fn)
 
+def listall(user:str, oauth:Path):
+    oauth = Path(oauth).expanduser()
+    g = Github(oauth.read_text().strip())  # no trailing \n allowed
+    
+    repos = g.get_user().get_repos()
+    dat = DataFrame(columns=['repos','Nforks'])
+    for repo in repos:
+        dat=dat.append({'repos':repo.name,'Nforks':repo.forks_count},ignore_index=True)
+
+    return dat
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser(description='list all Github repos for a particular user')
-    p.add_argument('-u','--user',help='Github username')
-    p.add_argument('-f','--fn',help='Github JSON file to read')
+    p.add_argument('user',help='Github username')
+    p.add_argument('oauth',help='Oauth filename')
     
     p = p.parse_args()
 
-    dat = listall(p.user,p.fn)
-
-    names = dat['full_name'].tolist()
-    urls = dat['html_url'].tolist()
+    dat = listall(p.user, p.oauth)
+    
+    print(tabulate(dat,headers='keys'))
