@@ -50,13 +50,13 @@ def fetchpull(mode='fetch'):
                 print(' -->',d.name)
                 print(ret.decode('utf8'))
         except S.CalledProcessError:
-            failed.append(d)
+            failed.append(str(d)) # do str() here to avoid awkward print expansion
 
         sleep(randrange(10)*.1 +1 )  # don't hammer the remote server, delay of 1-2 seconds
 
     if failed:
-        print('git',mode,'ERROR:')
+        print('git',mode,'ERROR:',  file=stderr)
         # no backslash allowed in f-stringss
-        print("{}".format('\n'.join([str(f) for f in failed])), file=stderr)
+        print('\n'.join(failed), file=stderr)
 
     return failed
