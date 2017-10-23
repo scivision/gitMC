@@ -2,14 +2,14 @@
 """
 detects uncommitted work/files in all git repos under a directory
 """
-from __future__ import print_function
+from pathlib import Path
 from sys import stderr
-import subprocess as S
+import subprocess
 from colorama import init,Fore,Back
 #
 from pygitutils import codepath
 
-def gitpushall(rdir,verbose=False):
+def gitpushall(rdir:Path, verbose:bool=False):
     dlist = [x for x in rdir.iterdir() if x.is_dir()]
 
     dir_topush = []
@@ -27,7 +27,7 @@ def detectchange(d,verbose=False):
     dpath = None # in case error
     c= ['git','status','--porcelain'] # uncommitted or changed files
     try:
-        ret = S.check_output(c, cwd=str(d)) #stderr=S.DEVNULL,
+        ret = S.check_output(c, cwd=d) #stderr=S.DEVNULL,
         if ret:
             dpath = d
             if verbose:

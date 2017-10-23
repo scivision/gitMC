@@ -2,7 +2,7 @@
 """
 report on git repos not on the expected branch e.g. 'master'
 """
-import subprocess as S
+import subprocess
 #
 from pygitutils import codepath
 
@@ -17,16 +17,19 @@ def findbranch(ok):
     branch=[]
     for d in dlist:
         try:
-            ret = S.check_output(cmd,  cwd=d).decode('utf8').rstrip() #stderr=S.DEVNULL,
+            ret = subprocess.check_output(cmd, cwd=d).decode('utf8').rstrip()
 
             if not ok in ret:
                 branch.append((d,ret))
-        except S.CalledProcessError as e:
+        except subprocess.CalledProcessError as e:
             print(d,e)
 
     return branch
 
 if __name__ == '__main__':
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('mainbranch',nargs='?',

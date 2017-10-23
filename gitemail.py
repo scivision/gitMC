@@ -10,7 +10,7 @@ To keep email privacy, use githubusername@users.noreply.github.com
 iterates command
 git log --pretty="%ce"  | sort | uniq
 """
-import subprocess as S
+import subprocess
 from colorama import init,Fore,Back
 #
 from pygitutils import codepath
@@ -25,16 +25,18 @@ def gitemail():
 
     for d in dlist:
         try:
-            ret = S.check_output(cmd,  cwd=d).decode('utf8')
+            ret = subprocess.check_output(cmd,  cwd=d).decode('utf8')
             ret = ret.replace('"','')
             uniq_emails = set(ret.split('\n'))
 
             print(Back.MAGENTA + str(d))
             print(Back.BLACK + '\n'.join(list(uniq_emails)))
-        except S.CalledProcessError as e:
+        except subprocess.CalledProcessError as e:
             print(d,e)
 
 if __name__ == '__main__':
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     gitemail()
 

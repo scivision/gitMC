@@ -1,18 +1,15 @@
-from __future__ import print_function
-try:
-    from pathlib import Path
-    Path().expanduser()
-except (ImportError,AttributeError):
-    from pathlib2 import Path
-#
+from pathlib import Path
 from sys import stderr
 from platform import system
 import os
-import subprocess as S
+import subprocess
 from random import randrange
 from time import sleep
 #%%
 def codepath():
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('codepath',help='path to code root',nargs='?')
@@ -45,17 +42,17 @@ def fetchpull(mode='fetch'):
             continue
 
         try:
-            ret = S.check_output(['git',mode], cwd=str(d))
+            ret = subprocess.check_output(['git',mode], cwd=d)
             if ret:
                 print(' -->',d.name)
                 print(ret.decode('utf8'))
-        except S.CalledProcessError:
+        except subprocess.CalledProcessError:
             failed.append(str(d)) # do str() here to avoid awkward print expansion
 
         sleep(randrange(10)*.1 +1 )  # don't hammer the remote server, delay of 1-2 seconds
 
     if failed:
-        print('git',mode,'ERROR:',  file=stderr)
+        print('git',mode,'ERROR:', file=stderr)
         # no backslash allowed in f-stringss
         print('\n'.join(failed), file=stderr)
 

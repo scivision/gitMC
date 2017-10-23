@@ -26,6 +26,9 @@ def find_dir_missing_file(fn:str,path:Path, copyfile:Path=None) -> list:
 
 
 if __name__ == '__main__':
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('fn',help='filename to look for')

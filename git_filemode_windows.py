@@ -11,7 +11,7 @@ rdir = codepath()
 
 dlist = [x for x in rdir.iterdir() if x.is_dir()]
 
-print('setting fileMode=false for {} directories under {}'.format(len(dlist),rdir))
+print(f'setting fileMode=false for {len(dlist)} directories under {rdir}')
 
 for d in dlist:
-    call(['git','config','core.filemode','false'], cwd=str(d))
+    call(['git','config','core.filemode','false'], cwd=d)

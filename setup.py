@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-req=['nose','colorama','pathlib2']
+req=['nose','colorama']
 import pip
 try:
     import conda.cli
