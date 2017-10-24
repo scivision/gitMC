@@ -13,12 +13,14 @@ def gitemail(path:Path, user:str):
 
     ret = subprocess.check_output(cmd, cwd=path).decode('utf8')
     ret = ret.replace('"','')
-    emails = set(ret.split('\n'))
+    ret = filter(None,ret.split('\n')) # remove blanks
+    emails = list(set(ret))
 # %%
-    if str(path) != '.':
-        print(colorama.Back.MAGENTA + str(path))
+    if not (len(emails)==1 and not user!=emails[0].split('@')[0]):
+        if str(path) != '.':
+            print(colorama.Back.MAGENTA + str(path))
 
-    print(colorama.Back.BLACK + '\n'.join(list(emails)))
+        print(colorama.Back.BLACK + '\n'.join(list(emails)))
 
     return emails
 
