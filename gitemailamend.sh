@@ -1,12 +1,17 @@
 #!/bin/bash
-# Don't run this script till you understand consequences of rebase -- everyone will have to reclone
+# Don't run this script till you understand consequences of rebase.
+# Everyone will have to reclone
 #
+# Note that "noreply@github.com" comes from making commits from the website.
+# it doesn't seem to impact commit count?
+#
+# https://help.github.com/articles/changing-author-info/
 # https://www.git-tower.com/learn/git/faq/change-author-name-email
 
 git filter-branch -f --env-filter '
-WRONG_EMAIL="nobody@github.com"
-NEW_NAME="scienceopen"
-NEW_EMAIL="scienceopen@users.noreply.github.com"
+WRONG_EMAIL='"$1"'
+NEW_NAME='"$2"'
+NEW_EMAIL="'"$2"'@users.noreply.github.com"
 
 if [ "$GIT_COMMITTER_EMAIL" = "$WRONG_EMAIL" ]
 then
