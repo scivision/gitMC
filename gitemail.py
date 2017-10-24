@@ -9,36 +9,37 @@ To keep email privacy, use githubusername@users.noreply.github.com
 
 iterates command
 git log --pretty="%ce"  | sort | uniq
+
+EXAMPLE:
+gitemail.py -d ~/code -r
+
 """
-import subprocess
-from colorama import init,Fore,Back
+import sys
+from pathlib import Path
+from pygitutils import gitemail
 #
-from pygitutils import codepath
+sys.tracebacklimit=1
+#
+github = '@users.noreply.github.com'
 
-def gitemail():
-
-    rdir = codepath()
-
-    cmd=['git','log','--pretty="%ce"']
-
-    dlist = [x for x in rdir.iterdir() if x.is_dir()]
-
-    for d in dlist:
-        try:
-            ret = subprocess.check_output(cmd,  cwd=d).decode('utf8')
-            ret = ret.replace('"','')
-            uniq_emails = set(ret.split('\n'))
-
-            print(Back.MAGENTA + str(d))
-            print(Back.BLACK + '\n'.join(list(uniq_emails)))
-        except subprocess.CalledProcessError as e:
-            print(d,e)
 
 if __name__ == '__main__':
     import signal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    gitemail()
+    from argparse import ArgumentParser
+    p = ArgumentParser()
+    p.add_argument('user',help='desired Github username',nargs='?')
+    p.add_argument('-d','--dir',help='path to Git repo', nargs='?',default='.')
+    p.add_argument('-r',help='recurse',action='store_true')
+    p = p.parse_args()
+
+    path = Path(p.dir).expanduser()
+
+    dlist = [d for d in path.iterdir() if d.is_dir()] if p.r else [path]
+
+    for d in dlist:
+        emails = gitemail(d, p.user)
 
 
 

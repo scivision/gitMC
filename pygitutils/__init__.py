@@ -1,31 +1,39 @@
 from pathlib import Path
 from sys import stderr
-from platform import system
-import os
+import colorama
 import subprocess
 from random import randrange
 from time import sleep
 #%%
+def gitemail(path:Path, user:str):
+    if (path/'.nogit').is_file():
+        return
+
+    cmd=['git','log','--pretty="%ce"']
+
+    ret = subprocess.check_output(cmd, cwd=path).decode('utf8')
+    ret = ret.replace('"','')
+    emails = set(ret.split('\n'))
+# %%
+    if str(path) != '.':
+        print(colorama.Back.MAGENTA + str(path))
+
+    print(colorama.Back.BLACK + '\n'.join(list(emails)))
+
+    return emails
+
+
 def codepath():
     import signal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     from argparse import ArgumentParser
     p = ArgumentParser()
-    p.add_argument('codepath',help='path to code root',nargs='?')
+    p.add_argument('codepath',help='path to code root',
+                   nargs='?', default='~/code')
     p = p.parse_args()
 
-    if p.codepath:
-        rdir = Path(p.codepath)
-    else:
-        # autodetect root directory  c:\code or ~/code  arbitrary choice
-        plat = system().lower()
-        if plat.startswith('cygwin'): # assume /cygdrive/c, you're welcome to change
-            rdir = Path(os.environ['SYSTEMDRIVE'])
-        else:
-            rdir = Path.home() # windows, not Cygwin and all other OS
-
-        rdir = rdir / 'code'
+    rdir = Path(p.codepath).expanduser()
 
     return rdir
 
