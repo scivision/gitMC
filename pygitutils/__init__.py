@@ -5,7 +5,7 @@ import subprocess
 from random import randrange
 from time import sleep
 #%%
-def gitemail(path:Path, user:str):
+def gitemail(path:Path, user:str, exclude:list=None):
     if (path/'.nogit').is_file():
         return
 
@@ -14,8 +14,11 @@ def gitemail(path:Path, user:str):
     ret = subprocess.check_output(cmd, cwd=path).decode('utf8')
     ret = ret.replace('"','')
     ret = filter(None,ret.split('\n')) # remove blanks
-    emails = list(set(ret))
+    emails = set(ret)
+    if exclude:
+        emails = emails.difference(set(exclude))
 # %%
+    emails = list(emails)
     if not (len(emails)==1 and not user!=emails[0].split('@')[0]):
         if str(path) != '.':
             print(colorama.Back.MAGENTA + str(path))
