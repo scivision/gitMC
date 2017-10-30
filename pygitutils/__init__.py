@@ -54,16 +54,16 @@ def fetchpull(mode='fetch'):
         if (d/'.nogit').is_file(): #user requesting this directory not to be synced
             continue
 
-        print(' -->',d.name)
+        print(' -->',d.name,end="",flush=True)
         try:
-            ret = subprocess.check_output(['git',mode], cwd=d)
-            if ret:
-                print(ret.decode('utf8'))
+            subprocess.check_output(['git',mode], cwd=d)
+            print('\r',end="")
         except subprocess.CalledProcessError:
             failed.append(d.name)
 
         sleep(randrange(10)*.1 +1 )  # don't hammer the remote server, delay of 1-2 seconds
 
+    print()
     if failed:
         print('git',mode,'ERROR under',rdir, file=stderr)
         # no backslash allowed in f-stringss
