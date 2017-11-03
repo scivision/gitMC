@@ -1,5 +1,12 @@
 .. image:: https://travis-ci.org/scivision/pygitutils.svg?branch=master
     :target: https://travis-ci.org/scivision/pygitutils
+    
+.. image:: https://coveralls.io/repos/github/scivision/pygitutils/badge.svg?branch=master
+    :target: https://coveralls.io/github/scivision/pygitutils?branch=master
+ 
+.. image:: https://api.codeclimate.com/v1/badges/f75c5317665dc32298a4/maintainability
+   :target: https://codeclimate.com/github/scivision/pygitutils/maintainability
+   :alt: Maintainability
 
 ==========
 pygitutils
