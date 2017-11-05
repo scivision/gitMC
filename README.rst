@@ -14,14 +14,42 @@ pygitutils
 
 Platform-independent (Linux/Mac/Windows) Git utilities, 
 useful for managing large (100+) numbers of Git repos.
-I use command-line git because PyGit requires command-line Git to be installed, 
-and I don't need the advanced functionality.
+I use command-line `git` because PyGit also requires command-line Git installed, and I don't need the advanced functionality.
+
+For embbeded systems using system Python such as the Raspberry Pi, you can `set the default Python to Python 3 using update-alternatives <https://www.scivison.co/set-python-version-update-alternatives>`_.
 
 Prereq
 ======
+Install Git in a way accessible from the command line line
+
+Mac
+---
 ::
 
-   git
+    brew install git
+    
+Linux
+-----
+::
+    
+    apt install git
+    
+Windows
+-------
+`Windows command line Git <https://git-scm.com/download/win>`_.
+
+
+Install
+=======
+::
+
+    python setup.py develop 
+    
+    
+If using system Python::
+
+    python setup.py develop --user
+
 
 Sync large number of git repos in subdirectories
 ================================================
@@ -40,10 +68,10 @@ Program listing
 ====================    ========
 Program                 Function
 ====================    ========
-gtpl                    Pulls all git repos under directory  [~/code]
-gtps                    Pushes  "     "     "     "     "          "
-gtft                    Fetches "     " 
+gtpl.py                    Pulls all git repos under directory  [~/code]
+gtps.py                    Pushes  "     "     "     "     "          "
+gtft.py                    Fetches "     " 
 gitbranch               Tells of any non-master branches under directory [~/code]
 git_filemode_windows    Sets all git repos to don't care permissions under directory  [~/code]
-gitemail                list all contributor email addresses
+gitemail.py        list all contributor email addresses. Optionally, amend email addresses for prior Git commits
 ====================    ========
