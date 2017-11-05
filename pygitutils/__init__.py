@@ -1,3 +1,6 @@
+"""
+NOTE: cwd=str() is for Python 3.5 compatibility e.g. Raspberry Pi. Perhaps remove in 2018 when Raspbian is updated to Python 3.6 default.
+"""
 from pathlib import Path
 from sys import stderr
 import colorama
@@ -11,7 +14,7 @@ def gitemail(path:Path, user:str, exclude:list=None):
 
     cmd=['git','log','--pretty="%ce"']
 
-    ret = subprocess.check_output(cmd, cwd=path).decode('utf8')
+    ret = subprocess.check_output(cmd, cwd=str(path)).decode('utf8')
     ret = ret.replace('"','')
     ret = filter(None,ret.split('\n')) # remove blanks
     emails = set(ret)
@@ -56,7 +59,7 @@ def fetchpull(mode='fetch'):
 
         print(' -->',d.name,end="",flush=True)
         try:
-            subprocess.check_output(['git',mode], cwd=d)
+            subprocess.check_output(['git',mode], cwd=str(d))
             print('\r',end="")
         except subprocess.CalledProcessError:
             failed.append(d.name)

@@ -5,8 +5,8 @@ os:
   - linux
   - osx
   
-#env: 
-#  - TRAVIS_PYTHON_VERSION=3.6
+env: 
+  - TRAVIS_PYTHON_VERSION=3.5
 
 
 notifications:
