@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 req=['nose','colorama']
-import pip
-try:
-    import conda.cli
-    conda.cli.main('install', *req)
-except Exception as e:
-    pip.main(['install'] + req)
 # %%
 from setuptools import setup
 
@@ -22,4 +16,5 @@ setup(name='pygitutils',
       'Programming Language :: Python :: 3',
       ],
       install_requires=req,
+      python_requires='>=3.6',
 	  )

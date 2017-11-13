@@ -43,13 +43,7 @@ Install
 =======
 ::
 
-    python setup.py develop 
-    
-    
-If using system Python::
-
-    python setup.py develop --user
-
+    pip install -e . 
 
 Sync large number of git repos in subdirectories
 ================================================
