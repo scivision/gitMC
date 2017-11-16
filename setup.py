@@ -3,7 +3,6 @@ req=['nose','colorama']
 # %%
 from setuptools import setup
 
-
 setup(name='pygitutils',
       packages=['pygitutils'],
       description ='cross-platform git utilities for managing a large number of git repositories quickly',
