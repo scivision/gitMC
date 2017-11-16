@@ -1,11 +1,11 @@
-language: generic
+language: python
 fast_finish: true
 
 python:
   - 3.6
   - 3.7-dev
   
-os: 
+os:
   - linux
 
 notifications:
@@ -17,9 +17,10 @@ git:
 
 before_install:
   - pip -q install coveralls
-    
+
 install: pip install -e .
 
 script: coverage run tests/test.py -v
 
 after_success: coveralls
+
