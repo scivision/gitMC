@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 req=['nose','colorama']
 # %%
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='pygitutils',
-      packages=['pygitutils'],
+      packages=find_packages(),
       description ='cross-platform git utilities for managing a large number of git repositories quickly',
       author = 'Michael Hirsch, Ph.D.',
       version = '1.0',
