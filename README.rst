@@ -47,7 +47,7 @@ Install
 
 Sync large number of git repos in subdirectories
 ================================================
-These assume numerous subdirectories under `~/code` or `c:\code`. They work very quickly for large numbers (100+) repos::
+These assume numerous subdirectories under ``~/code`` or ``c:\code``. They work very quickly for large numbers (100+) repos::
 
 =======             ===========
 program             description
@@ -57,23 +57,23 @@ gtpl.py             `git pull` all repos
 gtft.py             `git fetch` all repos
 =======             ===========
 
-You can place an empty file `.nogit` in a subdirectory if you don't want it to be checked for `pull` or `push`.
-For `gtps.py`, the changed files are noted--you have to `cd` to that directory and commit/push as usual.
+You can place an empty file ``.nogit`` in a subdirectory if you don't want it to be checked for ``pull`` or ``push``.
+For ``gtps.py``, the changed files are noted--you have to `cd` to that directory and commit/push as usual.
 
 Program listing
 ===============
 
-====================    ========
-Program                 Function
-====================    ========
-gtpl.py                    Pulls all git repos under directory  [~/code]
-gtps.py                    Pushes  "     "     "     "     "          "
-gtft.py                    Fetches "     " 
-gitbranch               Tells of any non-master branches under directory [~/code]
-git_filemode_windows    Sets all git repos to don't care permissions under directory  [~/code]
-gitemail.py             list all contributor email addresses. Optionally, amend email addresses for prior Git commits
-ActOnChanged.py         print list of changed files OR run a program to edit/view them
-====================    ========
+======================    ========
+Program                   Function
+======================    ========
+gtpl.py                   Pulls all git repos under directory  [~/code]
+gtps.py                   Pushes  "     "     "     "     "          "
+gtft.py                   Fetches "     " 
+gitbranch                 Tells of any non-master branches under directory [~/code]
+git_filemode_windows      Sets all git repos to don't care permissions under directory  [~/code]
+gitemail.py               list all contributor email addresses. Optionally, amend email addresses for prior Git commits
+ActOnChanged.py           print list of changed files OR run a program to edit/view them
+======================    ========
 
 Preview all changed Jekyll files
 --------------------------------
