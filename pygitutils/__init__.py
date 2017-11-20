@@ -59,7 +59,7 @@ def fetchpull(mode='fetch'):
 
         print(' -->',d.name,end="",flush=True)
         try:
-            subprocess.check_output(['git',mode], cwd=str(d))
+            subprocess.check_output(['git',mode], cwd=str(d), timeout=30)
             print('\r',end="")
         except subprocess.CalledProcessError:
             failed.append(d.name)
