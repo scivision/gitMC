@@ -24,18 +24,35 @@ def gitpushall(rdir:Path, verbose:bool=False):
     return dir_topush
 
 def detectchange(d,verbose=False):
-    dpath = None # in case error
-    c= ['git','status','--porcelain'] # uncommitted or changed files
+    c1 = ['git','status','--porcelain'] # uncommitted or changed files
+    
     try:
-        ret = subprocess.check_output(c, cwd=d) 
-        if ret:
-            dpath = d
-            if verbose:
-                print(Back.MAGENTA + str(d))
-                print(Back.BLACK + ret.decode('utf8'))
+# %% detect uncommitted changes
+        ret = subprocess.check_output(c1, cwd=d) 
+        dpath = _print_change(ret,d,verbose)
+        if dpath is not None: 
+            return dpath
+
+# %% detect committed, but not pushed
+        c0 = ['git','rev-parse','--abbrev-ref','HEAD'] # get branch name
+        branch = subprocess.check_output(c0, cwd=d).decode('utf8')[:-1]
+        
+        c2 = ['git','diff','--stat',f'origin/{branch}..'] 
+        ret = subprocess.check_output(c2, cwd=d)
+        dpath = _print_change(ret,d,verbose)
     except subprocess.CalledProcessError as e:
         print('Error in',d,e.output, file=stderr)
 
+    return dpath
+    
+def _print_change(ret,d,verbose=False):
+    dpath = None # in case error
+    if ret:
+        dpath = d
+        if verbose:
+            print(Back.MAGENTA + str(d))
+            print(Back.BLACK + ret.decode('utf8'))
+            
     return dpath
 
 # replaced by git status --porcelain
