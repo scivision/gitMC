@@ -19,5 +19,4 @@ setup(name='pygitutils',
       python_requires='>=3.6',
       tests_require=tests_require,
       extras_require={'tests':tests_require},
-      test_suite='nose.collector'
 	  )

@@ -19,4 +19,3 @@ install: pip install -e .[tests]
 script: coverage run tests/test.py -v
 
 after_success: coveralls
-
