@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 install_requires=['colorama']
-tests_require=['nose']
+tests_require=['nose','coveralls']
 # %%
 from setuptools import setup, find_packages
 
