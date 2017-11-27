@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 install_requires=['colorama']
+tests_require=['nose']
 # %%
 from setuptools import setup, find_packages
 
@@ -16,5 +17,7 @@ setup(name='pygitutils',
       ],
       install_requires=install_requires,
       python_requires='>=3.6',
-      tests_require=['nose'],
+      tests_require=tests_require,
+      extras_require={'tests':tests_require},
+      test_suite='nose.collector'
 	  )
