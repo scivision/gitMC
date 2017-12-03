@@ -8,6 +8,7 @@
    :target: https://codeclimate.com/github/scivision/pygitutils/maintainability
    :alt: Maintainability
 
+
 ==========
 pygitutils
 ==========

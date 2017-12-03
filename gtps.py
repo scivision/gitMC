@@ -25,7 +25,7 @@ def gitpushall(rdir:Path, verbose:bool=False):
 
 def detectchange(d,verbose=False):
     c1 = ['git','status','--porcelain'] # uncommitted or changed files
-    
+    dpath=None
     try:
 # %% detect uncommitted changes
         ret = subprocess.check_output(c1, cwd=d) 
