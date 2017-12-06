@@ -44,7 +44,7 @@ Install
 =======
 ::
 
-    pip install -e . 
+    python -m pip install -e . 
 
 Sync large number of git repos in subdirectories
 ================================================
