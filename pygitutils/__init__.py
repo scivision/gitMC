@@ -1,5 +1,6 @@
 """
-NOTE: cwd=str() is for Python 3.5 compatibility e.g. Raspberry Pi. Perhaps remove in 2018 when Raspbian is updated to Python 3.6 default.
+NOTE: cwd=str() is for Python 3.5 compatibility e.g. Raspberry Pi.
+Perhaps remove in 2018 when Raspbian is updated to Python 3.6 default.
 """
 from pathlib import Path
 from sys import stderr
@@ -62,7 +63,7 @@ def fetchpull(mode='fetch'):
             # don't use timeout as it doesn't work right when waiting for user input (password)
             subprocess.check_output(['git',mode], cwd=str(d))
             print('\r',end="")
-        except subprocess.CalledProcessError:
+        except (subprocess.CalledProcessError, FileNotFoundError):
             failed.append(d.name)
 
         sleep(randrange(10)*.1 +1 )  # don't hammer the remote server, delay of 1-2 seconds
