@@ -59,7 +59,8 @@ def fetchpull(mode='fetch'):
 
         print(' -->',d.name,end="",flush=True)
         try:
-            subprocess.check_output(['git',mode], cwd=str(d), timeout=30)
+            # don't use timeout as it doesn't work right when waiting for user input (password)
+            subprocess.check_output(['git',mode], cwd=str(d))
             print('\r',end="")
         except subprocess.CalledProcessError:
             failed.append(d.name)
