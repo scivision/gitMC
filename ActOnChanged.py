@@ -25,7 +25,7 @@ if __name__ == '__main__':
     p.add_argument('--jekyll',help='enact Firefox preview of local Jekyll preview',action='store_true')
     p = p.parse_args()
     
-    path = Path(p.path).expanduser()
+    path = Path(p.path).expanduser().resolve()
     program = p.program
     
     flist = listchanged(path)
@@ -36,7 +36,11 @@ if __name__ == '__main__':
     if program:
         if p.jekyll:
             prefix='http://localhost:4000/'
-            flist = [prefix + f[11:].split('.')[0] for f in flist]
+            if path.name == '_posts':
+                cut = 11
+            else:
+                cut = 0
+            flist = [prefix + f[cut:].split('.')[0] for f in flist]
         else:
             flist = [path / f for f in flist]
             
