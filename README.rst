@@ -17,27 +17,16 @@ Platform-independent (Linux/Mac/Windows) Git utilities,
 useful for managing large (100+) numbers of Git repos.
 I use command-line `git` because PyGit also requires command-line Git installed, and I don't need the advanced functionality.
 
-For embbeded systems using system Python such as the Raspberry Pi, you can `set the default Python to Python 3 using update-alternatives <https://www.scivison.co/set-python-version-update-alternatives>`_.
+For embbeded systems using system Python such as the Raspberry Pi, you can set the default Python to Python 3 using `update-alternatives <https://www.scivison.co/set-python-version-update-alternatives>`_.
 
 Prereq
 ======
 Install Git in a way accessible from the command line line
 
-Mac
----
-::
-
-    brew install git
-    
-Linux
------
-::
-    
-    apt install git
-    
-Windows
--------
-`Windows command line Git <https://git-scm.com/download/win>`_.
+* Mac: ``brew install git`` 
+* Linux: ``apt install git``
+* Windows: command line `Git <https://git-scm.com/download/win>`_.
+* BSD: ``pkg install git``
 
 
 Install
