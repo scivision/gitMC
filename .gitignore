@@ -1,4 +1,5 @@
 *.svg
+dist/
 testdep/
 *.json
 *.egg-info/

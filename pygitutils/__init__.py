@@ -8,6 +8,53 @@ import colorama
 import subprocess
 from random import randrange
 from time import sleep
+
+def listchanged(path:Path) -> list:
+    """very quick check"""
+    ret = subprocess.check_output(['git','ls-files','--modified'],
+                                  universal_newlines=True,
+                                  cwd=path)
+
+    ret = ret.split('\n')
+
+    return ret
+
+
+def detectchange(d, verbose:bool=False):
+    """in depth check"""
+    c1 = ['git','status','--porcelain'] # uncommitted or changed files
+    dpath=None
+    try:
+# %% detect uncommitted changes
+        ret = subprocess.check_output(c1, cwd=d, universal_newlines=True)
+        dpath = _print_change(ret,d,verbose)
+        if dpath is not None:
+            return dpath
+
+# %% detect committed, but not pushed
+        c0 = ['git','rev-parse','--abbrev-ref','HEAD'] # get branch name
+        branch = subprocess.check_output(c0, cwd=d, universal_newlines=True)[:-1]
+
+        c2 = ['git','diff','--stat',f'origin/{branch}..']
+        ret = subprocess.check_output(c2, cwd=d)
+        dpath = _print_change(ret,d,verbose)
+    except subprocess.CalledProcessError as e:
+        print('Error in',d,e.output, file=stderr)
+
+    return dpath
+
+
+def _print_change(ret,d,verbose:bool=False):
+    dpath = None # in case error
+    if ret:
+        dpath = d
+        if verbose:
+            print(colorama.Back.MAGENTA + str(d))
+            print(colorama.Back.BLACK + ret)
+
+    return dpath
+
+
 #%%
 def gitemail(path:Path, user:str, exclude:list=None):
     if (path/'.nogit').is_file():
@@ -15,7 +62,7 @@ def gitemail(path:Path, user:str, exclude:list=None):
 
     cmd=['git','log','--pretty="%ce"']
 
-    ret = subprocess.check_output(cmd, cwd=str(path)).decode('utf8')
+    ret = subprocess.check_output(cmd, cwd=str(path), universal_newlines=True)
     ret = ret.replace('"','')
     ret = filter(None,ret.split('\n')) # remove blanks
     emails = set(ret)

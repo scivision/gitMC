@@ -7,6 +7,7 @@ import subprocess
 from pygitutils import codepath
 
 def findbranch(ok):
+    """find all branches in tree not matching ok"""
 
     rdir = codepath()
 
@@ -17,7 +18,8 @@ def findbranch(ok):
     branch=[]
     for d in dlist:
         try:
-            ret = subprocess.check_output(cmd, cwd=d).decode('utf8').rstrip()
+            ret = subprocess.check_output(cmd, cwd=d,
+                                          universal_newlines=True).rstrip()
 
             if not ok in ret:
                 branch.append((d,ret))
