@@ -36,7 +36,7 @@ def detectchange(d, verbose:bool=False):
         branch = subprocess.check_output(c0, cwd=d, universal_newlines=True)[:-1]
 
         c2 = ['git','diff','--stat',f'origin/{branch}..']
-        ret = subprocess.check_output(c2, cwd=d)
+        ret = subprocess.check_output(c2, cwd=d, universal_newlines=True)
         dpath = _print_change(ret,d,verbose)
     except subprocess.CalledProcessError as e:
         print('Error in',d,e.output, file=stderr)
@@ -108,7 +108,7 @@ def fetchpull(mode='fetch'):
         print(' -->',d.name,end="",flush=True)
         try:
             # don't use timeout as it doesn't work right when waiting for user input (password)
-            subprocess.check_output(['git',mode], cwd=str(d))
+            subprocess.check_output(['git',mode], cwd=str(d), universal_newlines=True)
             print('\r',end="")
         except (subprocess.CalledProcessError, FileNotFoundError):
             failed.append(d.name)
