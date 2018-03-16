@@ -4,6 +4,9 @@
 .. image:: https://coveralls.io/repos/github/scivision/pygitutils/badge.svg?branch=master
     :target: https://coveralls.io/github/scivision/pygitutils?branch=master
  
+.. image:: https://ci.appveyor.com/api/projects/status/peeed6kh6p59w4kb?svg=true
+    :target: https://ci.appveyor.com/project/scivision/pygitutils
+ 
 .. image:: https://api.codeclimate.com/v1/badges/f75c5317665dc32298a4/maintainability
    :target: https://codeclimate.com/github/scivision/pygitutils/maintainability
    :alt: Maintainability
