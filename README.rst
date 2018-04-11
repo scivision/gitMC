@@ -20,7 +20,7 @@ Platform-independent (Linux/Mac/Windows) Git utilities,
 useful for managing large (100+) numbers of Git repos.
 I use command-line `git` because PyGit also requires command-line Git installed, and I don't need the advanced functionality.
 
-For embbeded systems using system Python such as the Raspberry Pi, you can set the default Python to Python 3 using `update-alternatives <https://www.scivison.co/set-python-version-update-alternatives>`_.
+For embedded systems using system Python such as the Raspberry Pi, you can set the default Python to Python 3 using `update-alternatives <https://www.scivison.co/set-python-version-update-alternatives>`_.
 
 Prereq
 ======
@@ -51,7 +51,7 @@ gtft.py             ``git fetch`` all repos
 =======             ===========
 
 You can place an empty file ``.nogit`` in a subdirectory if you don't want it to be checked for ``pull`` or ``push``.
-For ``gtps.py``, the changed files are noted--you have to `cd` to that directory and commit/push as usual.
+For ``gtps.py``, the changed files are noted--you have to ``cd`` to that directory and commit/push as usual.
 
 Program listing
 ===============
@@ -70,6 +70,6 @@ ActOnChanged.py           print list of changed files OR run a program to edit/v
 
 Preview all changed Jekyll files
 --------------------------------
-::
+This is for a website made using `Jekyll <https://www.scivision.co/create-jekyll-github-pages-website>`_::
 
     ActOnChanged.py --jekyll
