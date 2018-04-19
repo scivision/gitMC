@@ -1,15 +1,12 @@
-"""
-NOTE: cwd=str() is for Python 3.5 compatibility e.g. Raspberry Pi.
-Perhaps remove in 2018 when Raspbian is updated to Python 3.6 default.
-"""
 from pathlib import Path
 from sys import stderr
 import colorama
 import subprocess
 from random import randrange
 from time import sleep
+from typing import List
 
-def listchanged(path:Path) -> list:
+def listchanged(path:Path) -> List[str]:
     """very quick check"""
     ret = subprocess.check_output(['git','ls-files','--modified'],
                                   universal_newlines=True,
@@ -20,7 +17,7 @@ def listchanged(path:Path) -> list:
     return ret
 
 
-def detectchange(d, verbose:bool=False):
+def detectchange(d:Path, verbose:bool=False) -> Path:
     """in depth check"""
     c1 = ['git','status','--porcelain'] # uncommitted or changed files
     dpath=None
@@ -44,7 +41,7 @@ def detectchange(d, verbose:bool=False):
     return dpath
 
 
-def _print_change(ret,d,verbose:bool=False):
+def _print_change(ret:str, d:Path, verbose:bool=False) -> Path:
     dpath = None # in case error
     if ret:
         dpath = d
@@ -56,7 +53,7 @@ def _print_change(ret,d,verbose:bool=False):
 
 
 #%%
-def gitemail(path:Path, user:str, exclude:list=None):
+def gitemail(path:Path, user:str, exclude:list=None) -> List[str]:
     if (path/'.nogit').is_file():
         return
 
@@ -79,7 +76,7 @@ def gitemail(path:Path, user:str, exclude:list=None):
     return emails
 
 
-def codepath():
+def codepath() -> Path:
     import signal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -93,7 +90,8 @@ def codepath():
 
     return rdir
 
-def fetchpull(mode='fetch'):
+
+def fetchpull(mode:str='fetch') -> List[str]:
 
     rdir = codepath()
 
