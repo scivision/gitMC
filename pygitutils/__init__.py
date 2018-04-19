@@ -4,7 +4,8 @@ import colorama
 import subprocess
 from random import randrange
 from time import sleep
-from typing import List
+from typing import List, Tuple
+import shutil
 
 def listchanged(path:Path) -> List[str]:
     """very quick check"""
@@ -76,24 +77,9 @@ def gitemail(path:Path, user:str, exclude:list=None) -> List[str]:
     return emails
 
 
-def codepath() -> Path:
-    import signal
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
+def fetchpull(mode:str, rdir:Path) -> List[str]:
 
-    from argparse import ArgumentParser
-    p = ArgumentParser()
-    p.add_argument('codepath',help='path to code root',
-                   nargs='?', default='~/code')
-    p = p.parse_args()
-
-    rdir = Path(p.codepath).expanduser()
-
-    return rdir
-
-
-def fetchpull(mode:str='fetch') -> List[str]:
-
-    rdir = codepath()
+    rdir = Path(rdir).expanduser()
 
     dlist = [x for x in rdir.iterdir() if x.is_dir()]
 
@@ -120,3 +106,64 @@ def fetchpull(mode:str='fetch') -> List[str]:
         print('\n'.join(failed), file=stderr)
 
     return failed
+
+
+def gitpushall(rdir:Path, verbose:bool=False) -> List[Path]:
+    rdir = Path(rdir).expanduser()
+    dlist = [x for x in rdir.iterdir() if x.is_dir()]
+
+    dir_topush = []
+    for d in dlist:
+        if (d/'.nogit').is_file(): #user requesting this directory not to be synced
+            continue
+
+        dpath = detectchange(d,verbose)
+        if dpath:
+            dir_topush.append(dpath)
+
+    return dir_topush
+
+# replaced by git status --porcelain
+#['git','ls-files','-o','-d','--exclude-standard']): # check for uncommitted files
+#['git','--no-pager','diff','HEAD'], # check for uncommitted work
+# DOES NOT WORK ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches
+
+
+def find_dir_missing_file(fn:str,path:Path, copyfile:Path=None) -> List[str]:
+    path = Path(path).expanduser()
+    
+    dlist = [x for x in path.iterdir() if x.is_dir()]
+    
+    missing = []
+    for d in dlist:
+        if not (d/fn).is_file():
+            if copyfile:
+                shutil.copy(copyfile, d)
+                print('copied',copyfile,'to',d)
+            else:
+                missing.append(d)
+            
+    return missing
+
+
+def findbranch(ok:str, rdir:Path) -> List[Tuple[Path,str]]:
+    """find all branches in tree not matching ok"""
+
+    rdir = Path(rdir).expanduser()
+
+    cmd=['git','rev-parse','--abbrev-ref','HEAD']
+
+    dlist = [x for x in rdir.iterdir() if x.is_dir()]
+
+    branch=[]
+    for d in dlist:
+        try:
+            ret = subprocess.check_output(cmd, cwd=d,
+                                          universal_newlines=True).rstrip()
+
+            if not ok in ret:
+                branch.append((d,ret))
+        except subprocess.CalledProcessError as e:
+            print(d,e)
+
+    return branch

@@ -9,7 +9,7 @@ setup(name='pygitutils',
       description ='cross-platform git utilities for managing a large number of git repositories quickly',
       long_description=open('README.rst').read(),
       author = 'Michael Hirsch, Ph.D.',
-      version = '1.0.4',
+      version = '1.1.0',
       url = 'https://github.com/scivision/pygitutils',
       classifiers=[
       'Development Status :: 5 - Production/Stable',
