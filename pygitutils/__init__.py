@@ -109,7 +109,7 @@ def fetchpull(mode='fetch'):
         try:
             # don't use timeout as it doesn't work right when waiting for user input (password)
             subprocess.check_output(['git',mode], cwd=str(d), universal_newlines=True)
-            print('\r',end="")
+            print(end="\r")
         except (subprocess.CalledProcessError, FileNotFoundError):
             failed.append(d.name)
 
