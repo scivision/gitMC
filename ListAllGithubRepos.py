@@ -31,9 +31,6 @@ def listall(user:str, oauth:Path):
 
 
 if __name__ == '__main__':
-    import signal
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-
     from argparse import ArgumentParser
     p = ArgumentParser(description='list all Github repos for a particular user')
     p.add_argument('user',help='Github username')

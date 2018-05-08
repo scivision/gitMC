@@ -1,15 +1,13 @@
-"""
-NOTE: cwd=str() is for Python 3.5 compatibility e.g. Raspberry Pi.
-Perhaps remove in 2018 when Raspbian is updated to Python 3.6 default.
-"""
 from pathlib import Path
 from sys import stderr
 import colorama
 import subprocess
 from random import randrange
 from time import sleep
+from typing import List, Tuple
+import shutil
 
-def listchanged(path:Path) -> list:
+def listchanged(path:Path) -> List[str]:
     """very quick check"""
     ret = subprocess.check_output(['git','ls-files','--modified'],
                                   universal_newlines=True,
@@ -20,7 +18,7 @@ def listchanged(path:Path) -> list:
     return ret
 
 
-def detectchange(d, verbose:bool=False):
+def detectchange(d:Path, verbose:bool=False) -> Path:
     """in depth check"""
     c1 = ['git','status','--porcelain'] # uncommitted or changed files
     dpath=None
@@ -44,7 +42,7 @@ def detectchange(d, verbose:bool=False):
     return dpath
 
 
-def _print_change(ret,d,verbose:bool=False):
+def _print_change(ret:str, d:Path, verbose:bool=False) -> Path:
     dpath = None # in case error
     if ret:
         dpath = d
@@ -56,7 +54,7 @@ def _print_change(ret,d,verbose:bool=False):
 
 
 #%%
-def gitemail(path:Path, user:str, exclude:list=None):
+def gitemail(path:Path, user:str, exclude:list=None) -> List[str]:
     if (path/'.nogit').is_file():
         return
 
@@ -79,23 +77,9 @@ def gitemail(path:Path, user:str, exclude:list=None):
     return emails
 
 
-def codepath():
-    import signal
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
+def fetchpull(mode:str, rdir:Path) -> List[str]:
 
-    from argparse import ArgumentParser
-    p = ArgumentParser()
-    p.add_argument('codepath',help='path to code root',
-                   nargs='?', default='~/code')
-    p = p.parse_args()
-
-    rdir = Path(p.codepath).expanduser()
-
-    return rdir
-
-def fetchpull(mode='fetch'):
-
-    rdir = codepath()
+    rdir = Path(rdir).expanduser()
 
     dlist = [x for x in rdir.iterdir() if x.is_dir()]
 
@@ -109,7 +93,7 @@ def fetchpull(mode='fetch'):
         try:
             # don't use timeout as it doesn't work right when waiting for user input (password)
             subprocess.check_output(['git',mode], cwd=str(d), universal_newlines=True)
-            print('\r',end="")
+            print(end="\r")
         except (subprocess.CalledProcessError, FileNotFoundError):
             failed.append(d.name)
 
@@ -122,3 +106,64 @@ def fetchpull(mode='fetch'):
         print('\n'.join(failed), file=stderr)
 
     return failed
+
+
+def gitpushall(rdir:Path, verbose:bool=False) -> List[Path]:
+    rdir = Path(rdir).expanduser()
+    dlist = [x for x in rdir.iterdir() if x.is_dir()]
+
+    dir_topush = []
+    for d in dlist:
+        if (d/'.nogit').is_file(): #user requesting this directory not to be synced
+            continue
+
+        dpath = detectchange(d,verbose)
+        if dpath:
+            dir_topush.append(dpath)
+
+    return dir_topush
+
+# replaced by git status --porcelain
+#['git','ls-files','-o','-d','--exclude-standard']): # check for uncommitted files
+#['git','--no-pager','diff','HEAD'], # check for uncommitted work
+# DOES NOT WORK ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches
+
+
+def find_dir_missing_file(fn:str,path:Path, copyfile:Path=None) -> List[str]:
+    path = Path(path).expanduser()
+    
+    dlist = [x for x in path.iterdir() if x.is_dir()]
+    
+    missing = []
+    for d in dlist:
+        if not (d/fn).is_file():
+            if copyfile:
+                shutil.copy(copyfile, d)
+                print('copied',copyfile,'to',d)
+            else:
+                missing.append(d)
+            
+    return missing
+
+
+def findbranch(ok:str, rdir:Path) -> List[Tuple[Path,str]]:
+    """find all branches in tree not matching ok"""
+
+    rdir = Path(rdir).expanduser()
+
+    cmd=['git','rev-parse','--abbrev-ref','HEAD']
+
+    dlist = [x for x in rdir.iterdir() if x.is_dir()]
+
+    branch=[]
+    for d in dlist:
+        try:
+            ret = subprocess.check_output(cmd, cwd=d,
+                                          universal_newlines=True).rstrip()
+
+            if not ok in ret:
+                branch.append((d,ret))
+        except subprocess.CalledProcessError as e:
+            print(d,e)
+
+    return branch

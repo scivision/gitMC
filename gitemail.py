@@ -14,11 +14,9 @@ EXAMPLE:
 gitemail.py -d ~/code -r
 
 """
-import sys
 from pathlib import Path
 import subprocess
 from pygitutils import gitemail
-sys.tracebacklimit=1
 #
 cwd = Path(__file__).parent
 github = '@users.noreply.github.com'
@@ -33,9 +31,6 @@ def amend(path:Path, emails:list, user:str):
 
 
 if __name__ == '__main__':
-    import signal
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('user',help='desired Github username',nargs='?')

@@ -4,5 +4,10 @@ for a root directory $rdir, assumes all subdirectories are Git repos
 and pulls to the current branch
 """
 from pygitutils import fetchpull
+from argparse import ArgumentParser
 
-fetchpull('fetch')
+p = ArgumentParser()
+p.add_argument('codepath',help='path to code root', nargs='?', default='~/code')
+p = p.parse_args()
+
+fetchpull('fetch',p.codepath)

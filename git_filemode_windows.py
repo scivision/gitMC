@@ -3,15 +3,19 @@
 sets core.fileMode=false for git repos
 mostly for Windows, particularly Cygwin
 """
+from pathlib import Path
 from subprocess import call
-#
-from pygitutils import codepath
+from argparse import ArgumentParser
 
-rdir = codepath()
+p = ArgumentParser()
+p.add_argument('codepath',help='path to code root', nargs='?', default='~/code')
+p = p.parse_args()
+
+rdir = Path(p.codepath).expanduser()
 
 dlist = [x for x in rdir.iterdir() if x.is_dir()]
 
-print(f'setting fileMode=false for {len(dlist)} directories under {rdir}')
+print('setting fileMode=false for',len(dlist),'directories under',rdir)
 
 for d in dlist:
     call(['git','config','core.filemode','false'], cwd=d)
