@@ -7,9 +7,10 @@ all changed files in a static rendered web preview (Jekyll, Hugo)
 import webbrowser
 from pathlib import Path
 from pygitutils import listchanged
+from argparse import ArgumentParser
 
-if __name__ == '__main__':
-    from argparse import ArgumentParser
+
+def main():
     p = ArgumentParser()
     p.add_argument('path', help='git directory to operate on')
     p.add_argument('-j', '--jekyll', help='web browser preview of localhost', action='store_true')
@@ -32,3 +33,7 @@ if __name__ == '__main__':
     else:
         flist = [str(path / f) for f in flist]
         print('\n'.join(flist))
+
+
+if __name__ == '__main__':
+    main()

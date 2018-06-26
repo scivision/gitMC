@@ -2,10 +2,11 @@
 """
 report on git repos not on the expected branch e.g. 'master'
 """
+from argparse import ArgumentParser
 from pygitutils import findbranch
 
-if __name__ == '__main__':
-    from argparse import ArgumentParser
+
+def main():
     p = ArgumentParser()
     p.add_argument('codepath', help='path to code root', nargs='?', default='~/code')
     p.add_argument('mainbranch', nargs='?',
@@ -16,3 +17,7 @@ if __name__ == '__main__':
 
     for b in branch:
         print(b[0], ' => ', b[1])
+
+
+if __name__ == '__main__':
+    main()

@@ -1,30 +1,31 @@
 #!/usr/bin/env python
 from pathlib import Path
 import subprocess
-import os
 import pytest
 from pygitutils import fetchpull
 
-rdir = Path(__file__).parents[1]
-
-cmd = 'python ' if os.name == 'nt' else ''
+rdir = Path(__file__).parent
 
 
-def test_gitpushpullfetch():
+def atest_gitpushpullfetch():
     fetchpull('pull', rdir.parent)
     fetchpull('fetch', rdir.parent)
 
 
+def test_git_push():
+    subprocess.check_call(['gtps', '..'], cwd=rdir)
+
+
 def test_gitbranch():
-    subprocess.check_call((cmd + 'gitbranch.py ..').split(), cwd=rdir)
+    subprocess.check_call(['gitbranch', '..'], cwd=rdir)
 
 
 def test_actonchanged():
-    subprocess.check_call((cmd + 'ActOnChanged.py .').split(), cwd=rdir)
+    subprocess.check_call(['ActOnChanged', '.'], cwd=rdir)
 
 
 def test_email():
-    subprocess.check_call((cmd + 'gitemail.py').split(), cwd=rdir)
+    subprocess.check_call(['gitemail'], cwd=rdir)
 
 
 if __name__ == '__main__':

@@ -2,13 +2,19 @@
 """
 detects uncommitted work/files in all git repos under a directory
 """
+from pathlib import Path
+from typing import List
+from argparse import ArgumentParser
 from pygitutils import gitpushall
 
-if __name__ == '__main__':
-    from argparse import ArgumentParser
 
+def main() -> List[Path]:
     p = ArgumentParser()
     p.add_argument('codepath', help='path to code root', nargs='?', default='~/code')
     P = p.parse_args()
 
-    dir_topush = gitpushall(P.codepath, True)
+    return gitpushall(P.codepath, True)
+
+
+if __name__ == '__main__':
+    main()

@@ -43,7 +43,9 @@ def cmdparse() -> Namespace:
     return p.parse_args()
 
 
-def main(p: Namespace):
+def main():
+    p = cmdparse()
+
     path = Path(p.path).expanduser()
 
     dlist = [d for d in path.iterdir() if (d / '.git').is_dir()] if p.recurse else [path]
@@ -55,4 +57,4 @@ def main(p: Namespace):
 
 
 if __name__ == '__main__':
-    main(cmdparse())
+    main()
