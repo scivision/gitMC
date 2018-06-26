@@ -27,4 +27,4 @@ def main(p: Namespace):
 
 
 if __name__ == '__main__':
-    main()
+    main(cmdparse())
