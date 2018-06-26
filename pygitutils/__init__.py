@@ -61,7 +61,7 @@ def gitemail(path: Path, user: str, exclude: list=None) -> Union[None, List[str]
 
     cmd = ['git', 'log', '--pretty="%ce"']
 
-    ret = subprocess.check_output(cmd, cwd=str(path), universal_newlines=True)
+    ret = subprocess.check_output(cmd, cwd=path, universal_newlines=True)
     ret = ret.replace('"', '')
     ret = filter(None, ret.split('\n'))  # remove blanks
 
@@ -92,7 +92,7 @@ def fetchpull(mode: str, rdir: Path) -> List[str]:
         print(' -->', d.name, end="", flush=True)
         try:
             # don't use timeout as it doesn't work right when waiting for user input (password)
-            subprocess.check_output(['git', mode], cwd=str(d), universal_newlines=True)
+            subprocess.check_output(['git', mode], cwd=d, universal_newlines=True)
             print(end="\r")
         except (subprocess.CalledProcessError, FileNotFoundError):
             failed.append(d.name)

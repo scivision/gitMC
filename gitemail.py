@@ -11,7 +11,7 @@ iterates command
 git log --pretty="%ce"  | sort | uniq
 
 EXAMPLE:
-gitemail.py -d ~/code -r
+gitemail.py scivision ~/code -r
 
 """
 from pathlib import Path
@@ -36,17 +36,17 @@ def amend(path: Path, emails: List[str], user: str):
 def cmdparse() -> Namespace:
     p = ArgumentParser()
     p.add_argument('user', help='desired Github username', nargs='?')
-    p.add_argument('-d', '--dir', help='path to Git repo', nargs='?', default='.')
-    p.add_argument('-r', help='recurse', action='store_true')
+    p.add_argument('path', help='path to Git repo', nargs='?', default='.')
+    p.add_argument('-r', '--recurse', help='recurse', action='store_true')
     p.add_argument('-e', '--exclude', help='users to ignore (keep)', nargs='+')
     p.add_argument('-a', '--amend', help='change all non-exclused commits to username', action='store_true')
     return p.parse_args()
 
 
 def main(p: Namespace):
-    path = Path(p.dir).expanduser()
+    path = Path(p.path).expanduser()
 
-    dlist = [d for d in path.iterdir() if d.is_dir()] if p.r else [path]
+    dlist = [d for d in path.iterdir() if (d / '.git').is_dir()] if p.recurse else [path]
 
     for d in dlist:
         emails = gitemail(d, p.user, p.exclude)
