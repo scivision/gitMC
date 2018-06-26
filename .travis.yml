@@ -3,7 +3,7 @@ fast_finish: true
 
 python:
   - 3.6
-  - "3.7-dev"
+  - 3.7-dev
 
 os:
   - linux
@@ -16,10 +16,13 @@ git:
 
 install: pip -q install -e .[tests]
 
-script: pytest -v
+script: 
+  - pytest -sv
+  - flake8
+  - mypy . --ignore-missing-imports
 
 after_success: 
   - if [[ $TRAVIS_PYTHON_VERSION == 3.6* ]]; then
-    coverage run tests/test_all.py;
+    pytest --cov;
     coveralls;
     fi
