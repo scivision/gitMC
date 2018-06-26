@@ -2,14 +2,16 @@
 from pathlib import Path
 import subprocess
 import pytest
-from pygitutils import fetchpull
 
 rdir = Path(__file__).parent
 
 
-def atest_gitpushpullfetch():
-    fetchpull('pull', rdir.parent)
-    fetchpull('fetch', rdir.parent)
+def atest_gitpull():
+    subprocess.check_call(['gtpl', '..'], cwd=rdir)
+
+
+def atest_gitfetch():
+    subprocess.check_call(['gtft', '..'], cwd=rdir)
 
 
 def test_git_push():
