@@ -8,12 +8,15 @@ from argparse import ArgumentParser
 from pygitutils import gitpushall
 
 
-def main() -> List[Path]:
+def main():
     p = ArgumentParser()
     p.add_argument('codepath', help='path to code root', nargs='?', default='~/code')
     P = p.parse_args()
 
-    return gitpushall(P.codepath, True)
+    dlist: List[Path] = gitpushall(P.codepath, True)
+
+    if not dlist:
+        print(f'No changed Git repos found under {P.codepath}')
 
 
 if __name__ == '__main__':

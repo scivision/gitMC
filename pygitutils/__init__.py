@@ -116,6 +116,8 @@ def gitpushall(rdir: Path, verbose: bool=False) -> List[Path]:
     for d in dlist:
         if (d / '.nogit').is_file():  # user requesting this directory not to be synced
             continue
+        elif not (d / '.git').is_dir():
+            continue
 
         dpath = detectchange(d, verbose)
         if dpath:
@@ -137,7 +139,7 @@ def find_dir_missing_file(fn: str, path: Path, copyfile: Path=None) -> List[Path
     missing = []
     for d in dlist:
         if not (d / fn).is_file():
-            if copyfile:
+            if isinstance(copyfile, Path):
                 shutil.copy(copyfile, d)
                 print('copied', copyfile, 'to', d)
             else:

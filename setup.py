@@ -7,5 +7,6 @@ setup(python_requires='>=3.6',
                      'gtps = gtps:main',
                      'gtpl = gtpl:main',
                      'gtft = gtft:main',
+                     'find_missing_file = find_missing_file:main',
                      'ActOnChanged = ActOnChanged:main',
                      'gitemail = gitemail:main']},)

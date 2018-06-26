@@ -2,15 +2,22 @@
 from pathlib import Path
 import subprocess
 import pytest
+import pygitutils as pgu
 
-rdir = Path(__file__).parent
+rdir = Path(__file__).resolve().parents[1]
 
 
-def atest_gitpull():
+def test_findfile():
+    missdir = pgu.find_dir_missing_file('blahblah', '..')
+    assert len(missdir) > 0
+    subprocess.check_call(['find_missing_file', 'blahblah', '..'], cwd=rdir)
+
+
+def test_gitpull():
     subprocess.check_call(['gtpl', '..'], cwd=rdir)
 
 
-def atest_gitfetch():
+def test_gitfetch():
     subprocess.check_call(['gtft', '..'], cwd=rdir)
 
 
