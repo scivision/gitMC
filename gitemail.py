@@ -17,12 +17,14 @@ gitemail.py -d ~/code -r
 from pathlib import Path
 import subprocess
 from pygitutils import gitemail
+from typing import List
+from argparse import ArgumentParser, Namespace
 #
 cwd = Path(__file__).parent
 github = '@users.noreply.github.com'
 
 
-def amend(path: Path, emails: list, user: str):
+def amend(path: Path, emails: List[str], user: str):
     assert isinstance(user, str)
 
     for email in emails:
@@ -31,21 +33,26 @@ def amend(path: Path, emails: list, user: str):
             subprocess.check_call(cmd, cwd=path)
 
 
-if __name__ == '__main__':
-    from argparse import ArgumentParser
+def cmdparse() -> Namespace:
     p = ArgumentParser()
     p.add_argument('user', help='desired Github username', nargs='?')
     p.add_argument('-d', '--dir', help='path to Git repo', nargs='?', default='.')
     p.add_argument('-r', help='recurse', action='store_true')
     p.add_argument('-e', '--exclude', help='users to ignore (keep)', nargs='+')
     p.add_argument('-a', '--amend', help='change all non-exclused commits to username', action='store_true')
-    p = p.parse_args()
+    return p.parse_args()
 
+
+def main(p: Namespace):
     path = Path(p.dir).expanduser()
 
     dlist = [d for d in path.iterdir() if d.is_dir()] if p.r else [path]
 
     for d in dlist:
         emails = gitemail(d, p.user, p.exclude)
-        if p.user and p.amend:
+        if p.user and p.amend and emails is not None:
             amend(d, emails, p.user)
+
+
+if __name__ == '__main__':
+    main(cmdparse())

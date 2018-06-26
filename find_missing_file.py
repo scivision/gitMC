@@ -12,9 +12,9 @@ if __name__ == '__main__':
     p.add_argument('fn', help='filename to look for')
     p.add_argument('path', help='root path to search under', nargs='?', default='.')
     p.add_argument('-c', '--copy', help='filepath to copy in if missing')
-    p = p.parse_args()
+    P = p.parse_args()
 
-    missing = find_dir_missing_file(p.fn, p.path, p.copy)
+    missing = find_dir_missing_file(P.fn, P.path, P.copy)
 
     if missing:
         print(f'{[str(m) for m in missing]}', file=stderr)

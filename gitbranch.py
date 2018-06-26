@@ -10,9 +10,9 @@ if __name__ == '__main__':
     p.add_argument('codepath', help='path to code root', nargs='?', default='~/code')
     p.add_argument('mainbranch', nargs='?',
                    default='master', help='name of your main branch')
-    p = p.parse_args()
+    P = p.parse_args()
 
-    branch = findbranch(p.mainbranch, p.codepath)
+    branch = findbranch(P.mainbranch, P.codepath)
 
     for b in branch:
         print(b[0], ' => ', b[1])

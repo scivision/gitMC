@@ -13,12 +13,12 @@ if __name__ == '__main__':
     p = ArgumentParser()
     p.add_argument('path', help='git directory to operate on')
     p.add_argument('-j', '--jekyll', help='web browser preview of localhost', action='store_true')
-    p = p.parse_args()
+    P = p.parse_args()
 
-    path = Path(p.path).expanduser().resolve()
+    path = Path(P.path).expanduser().resolve()
     flist = listchanged(path)
 # %%
-    if p.jekyll:
+    if P.jekyll:
         prefix = 'http://localhost:4000/'
 
         if path.name == '_posts':
@@ -30,5 +30,5 @@ if __name__ == '__main__':
         for f in flist:
             webbrowser.open_new_tab(f)
     else:
-        flist = (str(path / f) for f in flist)
+        flist = [str(path / f) for f in flist]
         print('\n'.join(flist))

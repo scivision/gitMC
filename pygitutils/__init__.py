@@ -4,7 +4,7 @@ import colorama
 import subprocess
 from random import randrange
 from time import sleep
-from typing import List, Tuple
+from typing import List, Tuple, Union
 import shutil
 
 
@@ -19,7 +19,7 @@ def listchanged(path: Path) -> List[str]:
     return ret
 
 
-def detectchange(d: Path, verbose: bool=False) -> Path:
+def detectchange(d: Path, verbose: bool=False) -> Union[None, Path]:
     """in depth check"""
     c1 = ['git', 'status', '--porcelain']  # uncommitted or changed files
     dpath = None
@@ -43,7 +43,7 @@ def detectchange(d: Path, verbose: bool=False) -> Path:
     return dpath
 
 
-def _print_change(ret: str, d: Path, verbose: bool=False) -> Path:
+def _print_change(ret: str, d: Path, verbose: bool=False) -> Union[None, Path]:
     dpath = None  # in case error
     if ret:
         dpath = d
@@ -55,20 +55,19 @@ def _print_change(ret: str, d: Path, verbose: bool=False) -> Path:
 
 
 # %%
-def gitemail(path: Path, user: str, exclude: list=None) -> List[str]:
+def gitemail(path: Path, user: str, exclude: list=None) -> Union[None, List[str]]:
     if (path / '.nogit').is_file():
-        return
+        return None
 
     cmd = ['git', 'log', '--pretty="%ce"']
 
     ret = subprocess.check_output(cmd, cwd=str(path), universal_newlines=True)
     ret = ret.replace('"', '')
     ret = filter(None, ret.split('\n'))  # remove blanks
-    emails = set(ret)
-    if exclude:
-        emails = emails.difference(set(exclude))
+
+    rset = set(ret)
+    emails = list(rset.difference(set(exclude))) if exclude else list(rset)
 # %%
-    emails = list(emails)
     if not (len(emails) == 1 and not user != emails[0].split('@')[0]):
         if str(path) != '.':
             print(colorama.Back.MAGENTA + str(path))
@@ -130,7 +129,7 @@ def gitpushall(rdir: Path, verbose: bool=False) -> List[Path]:
 # DOES NOT WORK ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches
 
 
-def find_dir_missing_file(fn: str, path: Path, copyfile: Path=None) -> List[str]:
+def find_dir_missing_file(fn: str, path: Path, copyfile: Path=None) -> List[Path]:
     path = Path(path).expanduser()
 
     dlist = [x for x in path.iterdir() if x.is_dir()]
