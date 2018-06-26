@@ -11,15 +11,15 @@ from pygitutils import listchanged
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser()
-    p.add_argument('path',help='git directory to operate on')
-    p.add_argument('-j','--jekyll',help='web browser preview of localhost',action='store_true')
+    p.add_argument('path', help='git directory to operate on')
+    p.add_argument('-j', '--jekyll', help='web browser preview of localhost', action='store_true')
     p = p.parse_args()
 
     path = Path(p.path).expanduser().resolve()
     flist = listchanged(path)
 # %%
     if p.jekyll:
-        prefix='http://localhost:4000/'
+        prefix = 'http://localhost:4000/'
 
         if path.name == '_posts':
             cut = 11
