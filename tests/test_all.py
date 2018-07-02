@@ -13,14 +13,6 @@ def test_findfile():
     subprocess.check_call(['find_missing_file', 'blahblah', '..'], cwd=rdir)
 
 
-def test_gitpull():
-    subprocess.check_call(['gtpl', '..'], cwd=rdir)
-
-
-def test_gitfetch():
-    subprocess.check_call(['gtft', '..'], cwd=rdir)
-
-
 def test_git_push():
     subprocess.check_call(['gtps', '..'], cwd=rdir)
 

@@ -1,3 +1,6 @@
+htmlcov/
+.coverage
+.mypy_cache/
 .pytest_cache/
 .cache/
 *.svg
@@ -7,7 +10,6 @@ testdep/
 *.egg-info/
 __pycache__/
 *.pyc
-__pycache__/*
 *.pyd
 *.egg-info
 build/
