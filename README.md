@@ -37,30 +37,31 @@ work very quickly for large numbers (100+) repos
 
 program  | description
 ---------|-----------------------------------------
-gtps.py  | check if any repos have pending changes
-gtpl.py  | `git pull` all repos
-gtft.py  | `git fetch` all repos
+gtps  | check if any repos have pending changes
+gtpl  | `git pull` all repos
+gtft  | `git fetch` all repos
 
 You can place an empty file `.nogit` in a subdirectory if you don't want
-it to be checked for `pull` or `push`. For `gtps.py`, the changed files
+it to be checked for `pull` or `push`. For `gtps`, the changed files
 are noted--you have to `cd` to that directory and commit/push as usual.
 
 ## Program listing
 
   Program                | Function
 -------------------------|------------------------------------------------------------------
-  gtpl.py                |  Pulls all git repos under directory ~/code
-  gtps.py                |  Pushes " " " " " "
-  gtft.py                |  Fetches " "
+  gtpl                |  Pulls all git repos under directory ~/code
+  gtps                |  Pushes " " " " " "
+  gtft                |  Fetches " "
   gitbranch              | Tells of any non-master branches under directory ~/code
   git_filemode_windows   | Sets all git repos to don't care permissions under directory ~/code
-  gitemail.py            |  list all contributor email addresses. Optionally, amend email addresses for prior Git commits
-  ActOnChanged.py        |  print list of changed files OR run a program to edit/view them
+  gitemail            |  list all contributor email addresses. Optionally, amend email addresses for prior Git commits
+  ActOnChanged        |  print list of changed files OR run a program to edit/view them
+  ListAllGithubRepos  |  Stats on GitHub repos for a particular user (requires extra prereqs `pip install -e .[github]`
 
 ### Preview all changed Jekyll files
 
 This is for a website made using
 [Jekyll](https://www.scivision.co/create-jekyll-github-pages-website):
 ```sh
-ActOnChanged.py --jekyll
+ActOnChanged --jekyll
 ```

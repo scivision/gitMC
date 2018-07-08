@@ -13,7 +13,7 @@ import pandas
 import numpy as np
 from pathlib import Path
 from github import Github
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 
 
 def listall(user: str, oauth: Path) -> pandas.DataFrame:
@@ -31,16 +31,13 @@ def listall(user: str, oauth: Path) -> pandas.DataFrame:
     return dat
 
 
-def cmdparse() -> Namespace:
+def main():
     p = ArgumentParser(description='list all Github repos for a particular user')
     p.add_argument('user', help='Github username')
     p.add_argument('oauth', help='Oauth filename')
 
-    return p.parse_args()
-
-
-def main(p: Namespace):
-    dat = listall(p.user, p.oauth)
+    P = p.parse_args()
+    dat = listall(P.user, P.oauth)
 
     datnz = dat[~(dat == 0).all(axis=1)]
 
@@ -48,4 +45,4 @@ def main(p: Namespace):
 
 
 if __name__ == '__main__':
-    main(cmdparse())
+    main()

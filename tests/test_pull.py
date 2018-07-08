@@ -2,7 +2,6 @@
 from pathlib import Path
 import subprocess
 import pytest
-import pygitutils as pgu
 
 rdir = Path(__file__).resolve().parents[1]
 
