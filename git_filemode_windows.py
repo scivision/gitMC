@@ -5,17 +5,14 @@ mostly for Windows, particularly Cygwin
 """
 from pathlib import Path
 from subprocess import call
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 
 
-def cmdparse() -> Namespace:
-
+def main():
     p = ArgumentParser()
     p.add_argument('codepath', help='path to code root', nargs='?', default='~/code')
-    return p.parse_args()
+    p = p.parse_args()
 
-
-def main(p: Namespace):
     rdir = Path(p.codepath).expanduser()
 
     dlist = [x for x in rdir.iterdir() if x.is_dir()]
@@ -27,4 +24,4 @@ def main(p: Namespace):
 
 
 if __name__ == '__main__':
-    main(cmdparse())
+    main()

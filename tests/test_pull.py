@@ -3,16 +3,16 @@ from pathlib import Path
 import subprocess
 import pytest
 
-rdir = Path(__file__).resolve().parents[1]
+R = Path(__file__).resolve().parents[1]
 
 
 def test_gitpull():
-    subprocess.check_call(['gtpl', '..'], cwd=rdir)
+    subprocess.check_call(['gtpl', '..'], cwd=R)
 
 
 def test_gitfetch():
-    subprocess.check_call(['gtft', '..'], cwd=rdir)
+    subprocess.check_call(['gtft', '..'], cwd=R)
 
 
 if __name__ == '__main__':
-    pytest.main()
+    pytest.main(['-x', __file__])

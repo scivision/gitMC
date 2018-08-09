@@ -1,10 +1,11 @@
+import logging
 from pathlib import Path
 from sys import stderr
 import colorama
 import subprocess
 from random import randrange
 from time import sleep
-from typing import List, Tuple, Union
+from typing import Sequence, List, Tuple, Optional
 import shutil
 
 
@@ -19,7 +20,7 @@ def listchanged(path: Path) -> List[str]:
     return ret
 
 
-def detectchange(d: Path, verbose: bool=False) -> Union[None, Path]:
+def detectchange(d: Path, verbose: bool=False) -> Optional[Path]:
     """in depth check"""
     c1 = ['git', 'status', '--porcelain']  # uncommitted or changed files
     dpath = None
@@ -38,13 +39,14 @@ def detectchange(d: Path, verbose: bool=False) -> Union[None, Path]:
         ret = subprocess.check_output(c2, cwd=d, universal_newlines=True)
         dpath = _print_change(ret, d, verbose)
     except subprocess.CalledProcessError as e:
-        print('Error in', d, e.output, file=stderr)
+        logging.error(f'{d} {e.output}')
 
     return dpath
 
 
-def _print_change(ret: str, d: Path, verbose: bool=False) -> Union[None, Path]:
+def _print_change(ret: str, d: Path, verbose: bool=False) -> Optional[Path]:
     dpath = None  # in case error
+
     if ret:
         dpath = d
         if verbose:
@@ -55,7 +57,7 @@ def _print_change(ret: str, d: Path, verbose: bool=False) -> Union[None, Path]:
 
 
 # %%
-def gitemail(path: Path, user: str, exclude: list=None) -> Union[None, List[str]]:
+def gitemail(path: Path, user: str, exclude: Sequence[str]=None) -> Optional[List[str]]:
     if (path / '.nogit').is_file():
         return None
 
@@ -101,7 +103,7 @@ def fetchpull(mode: str, rdir: Path) -> List[str]:
 
     print()
     if failed:
-        print('git', mode, 'ERROR under', rdir, file=stderr)
+        logging.error(f'git {mode} {rdir}')
         # no backslash allowed in f-stringss
         print('\n'.join(failed), file=stderr)
 

@@ -17,14 +17,14 @@ gitemail.py scivision ~/code -r
 from pathlib import Path
 import subprocess
 from pygitutils import gitemail
-from typing import List
-from argparse import ArgumentParser, Namespace
+from typing import Sequence
+from argparse import ArgumentParser
 #
 cwd = Path(__file__).parent
 github = '@users.noreply.github.com'
 
 
-def amend(path: Path, emails: List[str], user: str):
+def amend(path: Path, emails: Sequence[str], user: str):
     assert isinstance(user, str)
 
     for email in emails:
@@ -33,18 +33,15 @@ def amend(path: Path, emails: List[str], user: str):
             subprocess.check_call(cmd, cwd=path)
 
 
-def cmdparse() -> Namespace:
+def main():
     p = ArgumentParser()
     p.add_argument('user', help='desired Github username', nargs='?')
     p.add_argument('path', help='path to Git repo', nargs='?', default='.')
     p.add_argument('-r', '--recurse', help='recurse', action='store_true')
     p.add_argument('-e', '--exclude', help='users to ignore (keep)', nargs='+')
-    p.add_argument('-a', '--amend', help='change all non-exclused commits to username', action='store_true')
-    return p.parse_args()
-
-
-def main():
-    p = cmdparse()
+    p.add_argument('-a', '--amend', help='change all non-exclused commits to username',
+                   action='store_true')
+    p = p.parse_args()
 
     path = Path(p.path).expanduser()
 
