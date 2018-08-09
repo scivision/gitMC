@@ -16,7 +16,7 @@ gitemail.py scivision ~/code -r
 """
 from pathlib import Path
 import subprocess
-from pygitutils import gitemail
+from gitutils import gitemail
 from typing import Sequence
 from argparse import ArgumentParser
 #

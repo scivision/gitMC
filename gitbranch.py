@@ -3,7 +3,7 @@
 report on git repos not on the expected branch e.g. 'master'
 """
 from argparse import ArgumentParser
-from pygitutils import findbranch
+from gitutils import findbranch
 
 
 def main():

@@ -3,7 +3,7 @@
 for a root directory $rdir, assumes all subdirectories are Git repos
 and pulls to the current branch
 """
-from pygitutils import fetchpull
+from gitutils import fetchpull
 from argparse import ArgumentParser
 
 

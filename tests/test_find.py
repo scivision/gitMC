@@ -2,7 +2,7 @@
 from pathlib import Path
 import subprocess
 import pytest
-import pygitutils as pgu
+import gitutils as pgu
 
 R = Path(__file__).resolve().parents[1]
 

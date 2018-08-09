@@ -5,7 +5,7 @@ can also be used to find directories missing other specific files.
 """
 from pathlib import Path
 from sys import stderr
-from pygitutils import find_dir_missing_file
+from gitutils import find_dir_missing_file
 from argparse import ArgumentParser
 
 

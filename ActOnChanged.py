@@ -6,7 +6,7 @@ all changed files in a static rendered web preview (Jekyll, Hugo)
 """
 import webbrowser
 from pathlib import Path
-from pygitutils import listchanged
+from gitutils import listchanged
 from argparse import ArgumentParser
 
 

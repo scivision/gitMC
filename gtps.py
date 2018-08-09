@@ -3,7 +3,7 @@
 detects uncommitted work/files in all git repos under a directory
 """
 from argparse import ArgumentParser
-from pygitutils import gitpushall
+from gitutils import gitpushall
 
 
 def main():
