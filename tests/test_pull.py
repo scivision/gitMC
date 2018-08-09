@@ -3,15 +3,15 @@ from pathlib import Path
 import subprocess
 import pytest
 
-R = Path(__file__).resolve().parents[1]
+R = Path(__file__).parent
 
 
 def test_gitpull():
-    subprocess.check_call(['gtpl', '..'], cwd=R)
+    subprocess.check_call(['gtpl', '.'], cwd=R)
 
 
 def test_gitfetch():
-    subprocess.check_call(['gtft', '..'], cwd=R)
+    subprocess.check_call(['gtft', '.'], cwd=R)
 
 
 if __name__ == '__main__':
