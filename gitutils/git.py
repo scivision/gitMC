@@ -78,6 +78,8 @@ def fetchpull(mode: str, rdir: Path) -> List[str]:
     for d in dlist:
         if (d / '.nogit').is_file():  # user requesting this directory not to be synced
             continue
+        elif not (d / '.git').is_dir():
+            continue
 
         print(' -->', d.name, end="", flush=True)
         try:
