@@ -5,6 +5,7 @@ import subprocess
 from random import randrange
 from time import sleep
 from typing import Sequence, List, Tuple, Optional
+from operator import attrgetter
 try:
     import colorama
     MAGENTA = colorama.Back.MAGENTA
@@ -46,7 +47,10 @@ def findbranch(ok: str, rdir: Path) -> List[Tuple[Path, str]]:
 
 
 def gitemail(path: Path, user: str, exclude: Sequence[str]=None) -> Optional[List[str]]:
-    if (path / '.nogit').is_file():
+    """
+    returns email addresses of everyone who ever made a Git commit in this repo.
+    """
+    if (path / '.nogit').is_file() or not (path / '.git').is_dir():
         return None
 
     cmd = ['git', 'log', '--pretty="%ce"']
@@ -68,20 +72,27 @@ def gitemail(path: Path, user: str, exclude: Sequence[str]=None) -> Optional[Lis
 
 
 def fetchpull(mode: str, rdir: Path) -> List[str]:
+    """
+    handles recursive "git pull" and "git fetch"
+
+    Reference:
+    ----------
+    format mini-language:
+    https://docs.python.org/3/library/string.html#format-specification-mini-language
+    """
 
     rdir = Path(rdir).expanduser()
 
     dlist = [x for x in rdir.iterdir() if x.is_dir()]
 
+    Lmax = len(max(map(attrgetter('name'), dlist), key=len))
     print('git', mode, len(dlist), 'paths under', rdir)
     failed = []
     for d in dlist:
-        if (d / '.nogit').is_file():  # user requesting this directory not to be synced
-            continue
-        elif not (d / '.git').is_dir():
+        if (d / '.nogit').is_file() or not (d / '.git').is_dir():
             continue
 
-        print(' -->', d.name, end="", flush=True)
+        print(f' --> {d.name:<{Lmax}}', end="", flush=True)
         try:
             # don't use timeout as it doesn't work right when waiting for user input (password)
             subprocess.check_output(['git', mode], cwd=d, universal_newlines=True)
@@ -106,9 +117,7 @@ def gitpushall(rdir: Path, verbose: bool=False) -> List[Path]:
 
     dir_topush = []
     for d in dlist:
-        if (d / '.nogit').is_file():  # user requesting this directory not to be synced
-            continue
-        elif not (d / '.git').is_dir():
+        if (d / '.nogit').is_file() or not (d / '.git').is_dir():
             continue
 
         dpath = detectchange(d, verbose)
