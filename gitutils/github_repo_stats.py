@@ -1,11 +1,11 @@
 from typing import Tuple, List
 from time import sleep
-from datetime import datetime
 import numpy as np
 from pathlib import Path
 import github
 import logging
 import pandas as pd
+from .github_base import check_api_limit, github_session
 
 
 def repo_prober(user: str, oauth: Path=None, branch: str=None, verbose: bool=False) -> Tuple[pd.DataFrame, List[Tuple[str, int]]]:
@@ -88,40 +88,3 @@ def _get_repos(g: github.Github, user: str) -> list:
         repos = list(g.get_user(repo[0]).get_repos())
 
     return repos
-
-
-def check_api_limit(g: github.Github=None) -> bool:
-    """
-    https://developer.github.com/v3/#rate-limiting
-    don't hammer the API, avoiding 502 errors
-
-    No penalty for checking rate limits
-    """
-    if g is None:
-        g = github_session()
-
-    ok = True
-
-    api_limits = g.rate_limiting   # remaining, limit
-    api_remaining, api_max = api_limits
-    treset = datetime.utcfromtimestamp(g.rate_limiting_resettime)  # local time
-
-    if api_remaining == 0:
-        logging.critical(f'GitHub rate limit exceeded: {api_remaining} / {api_max}. Try again after {treset} UTC.')
-        ok = False
-    elif api_remaining < 10:
-        logging.warning(f'approaching GitHub API limit, {api_remaining} / {api_max} remaining until {treset} UTC.')
-    else:
-        logging.debug(f'GitHub API limit: {api_remaining} / {api_max} remaining until {treset} UTC.')
-
-    return ok
-
-
-def github_session(oauth: Path=None) -> github.Github:
-    if oauth:
-        oauth = Path(oauth).expanduser()
-        g = github.Github(oauth.read_text().strip())  # no trailing \n allowed
-    else:  # unauthenticated
-        g = github.Github()
-
-    return g
