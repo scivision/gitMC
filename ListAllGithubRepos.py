@@ -10,7 +10,7 @@ The Oauth key should have no checkboxes, so that it's read only for public repos
 """
 import pandas as pd
 from argparse import ArgumentParser
-import gitutils.github as gu
+import gitutils.github_repo_stats as gu
 
 
 def main():

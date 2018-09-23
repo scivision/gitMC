@@ -6,7 +6,7 @@ R = Path(__file__).resolve().parents[1]
 
 
 def test_compare_forks():
-    pgu = pytest.importorskip('gitutils.github')
+    pgu = pytest.importorskip('gitutils.github_repo_stats')
 
     if not pgu.check_api_limit():
         pytest.skip('GitHub API limit exceeded')
