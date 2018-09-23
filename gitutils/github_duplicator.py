@@ -2,6 +2,7 @@ from time import sleep
 from pathlib import Path
 import pandas
 import subprocess
+import logging
 import tempfile
 from datetime import datetime
 import webbrowser
@@ -64,6 +65,12 @@ def gitdupe(oldurl: str, oldtime: Optional[datetime],
     if iswiki:
         oldurl += '.wiki.git'
         mirrorname += '.wiki.git'
+        try:
+            subprocess.check_call(['git', 'ls-remote', '--exit-code', oldurl],
+                                  stdout=subprocess.DEVNULL)
+        except subprocess.CalledProcessError:
+            logging.error(f'{oldurl} has no Wiki')
+            return
 
     newname = f'{username}/{mirrorname}'
     newurl = f'ssh://github.com/{newname}'
@@ -75,13 +82,16 @@ def gitdupe(oldurl: str, oldtime: Optional[datetime],
             if newrepo.pushed_at >= oldtime:
                 return
 
-        print('\n', oldurl, '\n')
     else:
         try:
-            subprocess.check_call(['git', 'ls-remote', '--exit-code', newurl])
+            subprocess.check_call(['git', 'ls-remote', '--exit-code', newurl],
+                                  stdout=subprocess.DEVNULL,
+                                  stderr=subprocess.DEVNULL)
             return
         except subprocess.CalledProcessError:
             exists = True
+
+    print('\n', oldurl, '\n')
 
     with tempfile.TemporaryDirectory() as d:
         tmprepo = Path(d)
@@ -98,15 +108,16 @@ def gitdupe(oldurl: str, oldtime: Optional[datetime],
         if iswiki:
             pwd = (tmprepo / (oldurl.split('/')[-1]).split('.git')[0])
 
-            subprocess.check_call(['rm', '-rf', '.git'], cwd=pwd)
-            subprocess.check_call(['git', 'init'], cwd=pwd)
-            subprocess.check_call(['git', 'remote', 'add', 'origin', newurl], cwd=pwd)
-            subprocess.check_call(['git', 'add', '.'], cwd=pwd)
-            subprocess.check_call(['git', 'commit', '-am', 'duplicate'], cwd=pwd)
+            subprocess.check_call(['rm', '-rf', '.git'], cwd=pwd, stdout=subprocess.DEVNULL)
+            subprocess.check_call(['git', 'init'], cwd=pwd, stdout=subprocess.DEVNULL)
+            subprocess.check_call(['git', 'remote', 'add', 'origin', newurl], cwd=pwd, stdout=subprocess.DEVNULL)
+            subprocess.check_call(['git', 'add', '.'], cwd=pwd, stdout=subprocess.DEVNULL)
+            subprocess.check_call(['git', 'commit', '-am', 'duplicate'], cwd=pwd, stdout=subprocess.DEVNULL)
 
             browseurl = newurl
             browseurl = browseurl.replace('ssh', 'https').replace('.wiki.git', '/wiki')
             webbrowser.open_new_tab(browseurl)
+            sleep(10.)  # TODO: use suprocess.run() instead of webbrowser
 
             subprocess.check_call(['git', 'push', '-f', '-u', 'origin', 'master'], cwd=pwd)
         else:
