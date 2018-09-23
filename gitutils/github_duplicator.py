@@ -3,6 +3,8 @@ from pathlib import Path
 import pandas
 import subprocess
 import tempfile
+import logging
+import github
 from .github_base import github_session, check_api_limit, repo_exists
 
 
@@ -40,11 +42,21 @@ def repo_dupe(fn: Path, oauth: Path, orgname: str = '', stem: str = ''):
     repos.dropna(how='any', inplace=True)
 # %% prepare to loop over repos
     for email, row in repos.iterrows():
+        if not check_api_limit(sess):
+            raise RuntimeError('GitHub API limit exceeded')
 
         oldurl = row.item()
         olduser, oldname = oldurl.split('/')[-2:]
         oldname = oldname.split('.')[0]
-        oldrepo = sess.get_user(olduser).get_repo(oldname)
+        try:
+            oldrepo = sess.get_user(olduser).get_repo(oldname)
+        except github.GithubException as e:
+            logging.error(f'{oldurl} not found \n')
+
+        try:
+            oldrepo.get_contents('/')
+        except github.GithubException as e:
+            logging.error(f'{oldurl} is empty. \n')
 
         mirrorname = stem + email
         newname = f'{username}/{mirrorname}'
@@ -60,7 +72,8 @@ def repo_dupe(fn: Path, oauth: Path, orgname: str = '', stem: str = ''):
         with tempfile.TemporaryDirectory() as d:
             tmprepo = Path(d)
             # 1. bare clone
-            subprocess.check_call(['git', 'clone', '--bare', oldurl], cwd=tmprepo)
+            subprocess.check_call(['git', 'clone', '--bare', oldurl],
+                                  stdout=subprocess.DEVNULL, cwd=tmprepo)
 
             # 2. create new repo
             if not exists:
@@ -71,4 +84,4 @@ def repo_dupe(fn: Path, oauth: Path, orgname: str = '', stem: str = ''):
             cmd = ['git', 'push', '--mirror', newurl]
             subprocess.check_call(cmd, cwd=pwd)
 
-        sleep(1.)
+        sleep(0.1)
