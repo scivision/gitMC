@@ -39,11 +39,14 @@ def repo_dupe(fn: Path, oauth: Path, orgname: str = '', stem: str = ''):
     repos = pandas.read_excel(fn, index_col=0, usecols="A, D")
     repos.dropna(how='any', inplace=True)
 # %% prepare to loop over repos
-    for user, row in repos.iterrows():
-        oldurl = row.item()
-        oldrepo = op.get_repo(oldurl.split('/')[-1])
+    for email, row in repos.iterrows():
 
-        mirrorname = stem + user
+        oldurl = row.item()
+        olduser, oldname = oldurl.split('/')[-2:]
+        oldname = oldname.split('.')[0]
+        oldrepo = sess.get_user(olduser).get_repo(oldname)
+
+        mirrorname = stem + email
         newname = f'{username}/{mirrorname}'
         newurl = f'ssh://github.com/{newname}'
 
@@ -53,7 +56,7 @@ def repo_dupe(fn: Path, oauth: Path, orgname: str = '', stem: str = ''):
             if newrepo.pushed_at >= oldrepo.pushed_at:
                 continue
 
-        print(f'{oldurl:80s}', end='\r')
+        print('\n', email, oldurl, '\n')
         with tempfile.TemporaryDirectory() as d:
             tmprepo = Path(d)
             # 1. bare clone
