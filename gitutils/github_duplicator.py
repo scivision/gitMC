@@ -11,7 +11,7 @@ from .github_base import github_session, check_api_limit, repo_exists, last_comm
 
 
 def repo_dupe(repos: pandas.Series, oauth: Path,
-              orgname: str = '', stem: str = ''):
+              orgname: str = None, stem: str = ''):
     """
     fn: .xlsx file with repos to duplicate
     oauth: Path to your GitHub Oauth token  https://github.com/settings/tokens
