@@ -45,18 +45,20 @@ def repo_dupe(fn: Path, oauth: Path, orgname: str = '', stem: str = ''):
         if not check_api_limit(sess):
             raise RuntimeError('GitHub API limit exceeded')
 
-        oldurl = row.item()
+        oldurl = row.item().replace('https', 'ssh')
         olduser, oldname = oldurl.split('/')[-2:]
         oldname = oldname.split('.')[0]
         try:
             oldrepo = sess.get_user(olduser).get_repo(oldname)
         except github.GithubException as e:
             logging.error(f'{oldurl} not found \n')
+            continue
 
         try:
             oldrepo.get_contents('/')
         except github.GithubException as e:
             logging.error(f'{oldurl} is empty. \n')
+            continue
 
         mirrorname = stem + email
         newname = f'{username}/{mirrorname}'
