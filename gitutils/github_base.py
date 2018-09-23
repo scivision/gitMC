@@ -2,6 +2,8 @@ import github
 from pathlib import Path
 from datetime import datetime
 import logging
+from typing import Union, Optional
+import pandas
 
 
 def check_api_limit(g: github.Github=None) -> bool:
@@ -41,7 +43,9 @@ def github_session(oauth: Path=None) -> github.Github:
     return g
 
 
-def repo_exists(user, reponame: str) -> bool:
+def repo_exists(user: Union[github.AuthenticatedUser.AuthenticatedUser,
+                            github.Organization.Organization],
+                reponame: str) -> bool:
     """
     user: GitHub user session
     reponame: reponame under user e.g. pymap3d
@@ -55,3 +59,43 @@ def repo_exists(user, reponame: str) -> bool:
         pass
 
     return exists
+
+
+def last_commit_date(sess: github.Github, name: str) -> Optional[datetime]:
+    """
+    git show -s --format=%cI HEAD
+    """
+    time = None
+
+    try:
+        repo = sess.get_repo(name)
+        if not repo_isempty(repo):
+            time = repo.pushed_at
+    except github.GithubException as e:
+        logging.error(f'{name} not found \n')
+
+    return time
+
+
+def repo_isempty(repo: github.Repository) -> bool:
+    try:
+        repo.get_contents('/')
+        empty = False
+    except github.GithubException as e:
+        logging.error(f'{repo.name} is empty. \n')
+        empty = True
+
+    return empty
+
+
+def read_repos(fn: Path) -> pandas.Series:
+    """
+    make pandas.Series of email/id, Git url from spreadsheet
+    """
+
+    # %% get list of repos to duplicate
+    fn = Path(fn).expanduser()
+    repos = pandas.read_excel(fn, index_col=0, usecols="A, D")
+    repos.dropna(how='any', inplace=True)
+
+    return repos

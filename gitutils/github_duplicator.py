@@ -3,12 +3,10 @@ from pathlib import Path
 import pandas
 import subprocess
 import tempfile
-import logging
-import github
-from .github_base import github_session, check_api_limit, repo_exists
+from .github_base import github_session, check_api_limit, repo_exists, last_commit_date
 
 
-def repo_dupe(fn: Path, oauth: Path, orgname: str = '', stem: str = ''):
+def repo_dupe(repos: pandas.Series, oauth: Path, orgname: str = '', stem: str = ''):
     """
     fn: .xlsx file with repos to duplicate
     oauth: Path to your GitHub Oauth token  https://github.com/settings/tokens
@@ -36,28 +34,16 @@ def repo_dupe(fn: Path, oauth: Path, orgname: str = '', stem: str = ''):
 
     if not check_api_limit(sess):
         raise RuntimeError('GitHub API limit exceeded')
-# %% get list of repos to duplicate
-    fn = Path(fn).expanduser()
-    repos = pandas.read_excel(fn, index_col=0, usecols="A, D")
-    repos.dropna(how='any', inplace=True)
 # %% prepare to loop over repos
     for email, row in repos.iterrows():
         if not check_api_limit(sess):
             raise RuntimeError('GitHub API limit exceeded')
 
         oldurl = row.item().replace('https', 'ssh')
-        olduser, oldname = oldurl.split('/')[-2:]
-        oldname = oldname.split('.')[0]
-        try:
-            oldrepo = sess.get_user(olduser).get_repo(oldname)
-        except github.GithubException as e:
-            logging.error(f'{oldurl} not found \n')
-            continue
+        oldname = '/'.join(oldurl.split('/')[-2:]).split('.')[0]
 
-        try:
-            oldrepo.get_contents('/')
-        except github.GithubException as e:
-            logging.error(f'{oldurl} is empty. \n')
+        oldtime = last_commit_date(sess, oldname)
+        if oldtime is None:
             continue
 
         mirrorname = stem + email
@@ -67,7 +53,7 @@ def repo_dupe(fn: Path, oauth: Path, orgname: str = '', stem: str = ''):
         exists = repo_exists(op, mirrorname)
         if exists:
             newrepo = op.get_repo(mirrorname)
-            if newrepo.pushed_at >= oldrepo.pushed_at:
+            if newrepo.pushed_at >= oldtime:
                 continue
 
         print('\n', email, oldurl, '\n')
