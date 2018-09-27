@@ -43,6 +43,26 @@ def github_session(oauth: Path=None) -> github.Github:
     return g
 
 
+def connect_github(oauth: Path, orgname: str = None):
+    sess = github_session(oauth)
+    guser = sess.get_user()
+
+    org = None
+    if orgname:
+        orgs = list(guser.get_orgs())
+        for o in orgs:
+            if o.login == orgname:
+                org = o
+                break
+
+        assert org is not None
+        op = org
+    else:
+        op = guser
+
+    return op, sess
+
+
 def repo_exists(user: Union[github.AuthenticatedUser.AuthenticatedUser,
                             github.Organization.Organization],
                 reponame: str) -> bool:
