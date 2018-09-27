@@ -38,8 +38,7 @@ def main():
         repo = op.get_repo(reponame)
         username = row['Github']
 
-        collabs = [p.login for p in repo.get_collaborators()]
-        if username not in collabs:
+        if not repo.has_in_collaborators(username):
             try:
                 repo.add_to_collaborators(username)
                 print(f'{username} invited to {reponame}')

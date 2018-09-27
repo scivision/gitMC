@@ -3,7 +3,7 @@
 mass create repos for teams
 """
 import pandas
-from gitutils.github_base import github_session, repo_exists, check_api_limit
+from gitutils.github_base import connect_github, repo_exists, check_api_limit
 from pathlib import Path
 from argparse import ArgumentParser
 
@@ -20,21 +20,7 @@ def main():
 
     teams = pandas.read_excel(fn, index_col=0, usecols="C, D").squeeze().drop_duplicates().dropna().astype(int).to_dict()
 # %%
-    sess = github_session(p.oauth)
-    guser = sess.get_user()
-
-    org = None
-    if p.orgname:
-        orgs = list(guser.get_orgs())
-        for o in orgs:
-            if o.login == p.orgname:
-                org = o
-                break
-
-        assert org is not None
-        op = org
-    else:
-        op = guser
+    op, sess = connect_github(p.oauth, p.orgname)
 
     for teamname, teamnum in teams.items():
         if not check_api_limit(sess):
@@ -42,8 +28,7 @@ def main():
 
         reponame = f'{p.stem}{teamnum:02d}-{teamname}'
 
-        exists = repo_exists(op, reponame)
-        if exists:
+        if repo_exists(op, reponame):
             continue
 
         print('creating', reponame)
