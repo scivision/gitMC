@@ -1,16 +1,15 @@
 from time import sleep
 from pathlib import Path
-import pandas
 import subprocess
 import logging
 import tempfile
 from datetime import datetime
 import webbrowser
-from typing import Optional
+from typing import Optional, Dict
 from .github_base import github_session, check_api_limit, repo_exists, last_commit_date
 
 
-def repo_dupe(repos: pandas.Series, oauth: Path,
+def repo_dupe(repos: Dict[str, str], oauth: Path,
               orgname: str = None, stem: str = ''):
     """
     fn: .xlsx file with repos to duplicate
@@ -40,11 +39,11 @@ def repo_dupe(repos: pandas.Series, oauth: Path,
     if not check_api_limit(sess):
         raise RuntimeError('GitHub API limit exceeded')
 # %% prepare to loop over repos
-    for email, row in repos.iterrows():
+    for email, oldurl in repos.items():
         if not check_api_limit(sess):
             raise RuntimeError('GitHub API limit exceeded')
 
-        oldurl = row.item().replace('https', 'ssh')
+        oldurl = oldurl.replace('https', 'ssh')
         oldname = '/'.join(oldurl.split('/')[-2:]).split('.')[0]
 
         oldtime = last_commit_date(sess, oldname)
@@ -106,23 +105,26 @@ def gitdupe(oldurl: str, oldtime: Optional[datetime],
         # 3. mirror to new repo
 
         if iswiki:
-            pwd = (tmprepo / (oldurl.split('/')[-1]).split('.git')[0])
-
-            subprocess.check_call(['rm', '-rf', '.git'], cwd=pwd, stdout=subprocess.DEVNULL)
-            subprocess.check_call(['git', 'init'], cwd=pwd, stdout=subprocess.DEVNULL)
-            subprocess.check_call(['git', 'remote', 'add', 'origin', newurl], cwd=pwd, stdout=subprocess.DEVNULL)
-            subprocess.check_call(['git', 'add', '.'], cwd=pwd, stdout=subprocess.DEVNULL)
-            subprocess.check_call(['git', 'commit', '-am', 'duplicate'], cwd=pwd, stdout=subprocess.DEVNULL)
-
-            browseurl = newurl
-            browseurl = browseurl.replace('ssh', 'https').replace('.wiki.git', '/wiki')
-            webbrowser.open_new_tab(browseurl)
-            sleep(10.)  # TODO: use suprocess.run() instead of webbrowser
-
-            subprocess.check_call(['git', 'push', '-f', '-u', 'origin', 'master'], cwd=pwd)
+            dupewiki(tmprepo, oldurl, newurl)
         else:
             pwd = (tmprepo / (oldurl.split('/')[-1]))
             pwd = pwd.with_suffix('.git')
 
             cmd = ['git', 'push', '--mirror', newurl]
             subprocess.check_call(cmd, cwd=pwd)
+
+
+def dupewiki(prepo: Path, oldurl: str, newurl: str):
+    """
+    Note: GitLab API has Wiki included, but at this time, GitHub API does not cover Wiki
+    """
+    pwd = (prepo / (oldurl.split('/')[-1]).split('.git')[0])
+
+    subprocess.check_call(['git', 'remote', 'set-url', 'origin', newurl], cwd=pwd, stdout=subprocess.DEVNULL)
+
+    browseurl = newurl
+    browseurl = browseurl.replace('ssh', 'https').replace('.wiki.git', '/wiki')
+    webbrowser.open_new_tab(browseurl)
+    sleep(10.)  # TODO: use suprocess.run() instead of webbrowser
+
+    subprocess.check_call(['git', 'push', '-f'], cwd=pwd)

@@ -2,7 +2,7 @@ import github
 from pathlib import Path
 from datetime import datetime
 import logging
-from typing import Union, Optional
+from typing import Union, Optional, Dict
 import pandas
 
 
@@ -88,14 +88,14 @@ def repo_isempty(repo: github.Repository) -> bool:
     return empty
 
 
-def read_repos(fn: Path, sheet: str) -> pandas.Series:
+def read_repos(fn: Path, sheet: str) -> Dict[str, str]:
     """
     make pandas.Series of email/id, Git url from spreadsheet
     """
 
     # %% get list of repos to duplicate
     fn = Path(fn).expanduser()
-    repos = pandas.read_excel(fn, sheet_name=sheet, index_col=0, usecols="A, D")
+    repos = pandas.read_excel(fn, sheet_name=sheet, index_col=0, usecols="A, D").squeeze()
     repos.dropna(how='any', inplace=True)
 
-    return repos
+    return repos.to_dict()
