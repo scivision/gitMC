@@ -1,8 +1,5 @@
 #!/usr/bin/env python
-from pathlib import Path
 import pytest
-
-R = Path(__file__).resolve().parents[1]
 
 
 def test_compare_forks():

@@ -17,6 +17,8 @@ is showing which forks of your repos have had changes "ahead of" your code.
 This shows your code is being improved, even if the forked repo didn't make a pull request.
 I don't know of any other easy way out there to find this.
 
+Git [utilities](https://github.com/scivision/gitedu) for managing large (100+) numbers of users / teams, particularly for education and institutions.
+
 ## Install
 
 Install Git in a way accessible from the command line line
@@ -70,9 +72,4 @@ It requires extra prereqs via:
 ```sh
 pip install -e .[github]
 ```
-
-### Mass duplicate GitHub repos
-
-`DuplicateGithubRepos`
-based on spreadsheet input, mass duplicate GitHub repos.
 
