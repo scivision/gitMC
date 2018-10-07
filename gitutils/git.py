@@ -6,6 +6,7 @@ from random import randrange
 from time import sleep
 from typing import Sequence, List, Tuple, Optional
 from operator import attrgetter
+import collections
 try:
     import colorama
     MAGENTA = colorama.Back.MAGENTA
@@ -30,7 +31,7 @@ def findbranch(ok: str, rdir: Path) -> List[Tuple[Path, str]]:
 
     cmd = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
 
-    dlist = [x for x in rdir.iterdir() if x.is_dir()]
+    dlist = [x for x in rdir.iterdir() if not baddir(x)]
 
     branch = []
     for d in dlist:
@@ -46,11 +47,14 @@ def findbranch(ok: str, rdir: Path) -> List[Tuple[Path, str]]:
     return branch
 
 
-def gitemail(path: Path, user: str, exclude: Sequence[str]=None) -> Optional[List[str]]:
+def gitemail(path: Path, user: str,
+             exclude: Sequence[str]=None) -> Optional[List[Tuple[str, int]]]:
     """
     returns email addresses of everyone who ever made a Git commit in this repo.
     """
-    if (path / '.nogit').is_file() or not (path / '.git').is_dir():
+    path = Path(path).expanduser().resolve()
+
+    if baddir(path):
         return None
 
     cmd = ['git', 'log', '--pretty="%ce"']
@@ -59,16 +63,23 @@ def gitemail(path: Path, user: str, exclude: Sequence[str]=None) -> Optional[Lis
     ret = ret.replace('"', '')
     ret = filter(None, ret.split('\n'))  # remove blanks
 
-    rset = set(ret)
-    emails = list(rset.difference(set(exclude))) if exclude else list(rset)
-# %%
-    if not (len(emails) == 1 and not user != emails[0].split('@')[0]):
-        if str(path) != '.':
-            print(MAGENTA + str(path))
+    # rset = set(ret)
+    # emails = list(rset.difference(set(exclude))) if exclude else list(rset)
 
-        print(BLACK + '\n'.join(list(emails)))
+    emails = collections.Counter(ret).most_common()
+# %% output
+    print(MAGENTA + path.stem + BLACK)
+
+    for email in emails:
+        print(email[0], email[1])
 
     return emails
+
+
+def baddir(path: Path) -> bool:
+    path = path.expanduser()
+
+    return (path / '.nogit').is_file() or not (path / '.git').is_dir()
 
 
 def fetchpull(mode: str, rdir: Path) -> List[str]:
@@ -80,24 +91,30 @@ def fetchpull(mode: str, rdir: Path) -> List[str]:
     format mini-language:
     https://docs.python.org/3/library/string.html#format-specification-mini-language
     """
+    # leave .resolve() for useful error messages
+    rdir = Path(rdir).expanduser().resolve()
 
-    rdir = Path(rdir).expanduser()
+    dlist = [x for x in rdir.iterdir() if not baddir(x)]
 
-    dlist = [x for x in rdir.iterdir() if x.is_dir()]
+    if not dlist:
+        if not baddir(rdir):
+            dlist = [rdir]
+        else:
+            raise FileNotFoundError(f'no Git repos found under {rdir}')
 
     Lmax = len(max(map(attrgetter('name'), dlist), key=len))
     print('git', mode, len(dlist), 'paths under', rdir)
+
     failed = []
     for d in dlist:
-        if (d / '.nogit').is_file() or not (d / '.git').is_dir():
-            continue
 
         print(f' --> {d.name:<{Lmax}}', end="", flush=True)
         try:
             # don't use timeout as it doesn't work right when waiting for user input (password)
-            subprocess.check_output(['git', mode], cwd=d, universal_newlines=True)
+            subprocess.check_output(['git'] + mode.split(), cwd=d,
+                                    universal_newlines=True)
             print(end="\r")
-        except (subprocess.CalledProcessError, FileNotFoundError):
+        except subprocess.CalledProcessError:
             failed.append(d.name)
 
         sleep(randrange(10) * .1 + 1)  # don't hammer the remote server, delay of 1-2 seconds
@@ -105,7 +122,7 @@ def fetchpull(mode: str, rdir: Path) -> List[str]:
     print()
     if failed:
         logging.error(f'git {mode} {rdir}')
-        # no backslash allowed in f-stringss
+        # no backslash allowed in f-strings
         print('\n'.join(failed), file=stderr)
 
     return failed
@@ -113,16 +130,12 @@ def fetchpull(mode: str, rdir: Path) -> List[str]:
 
 def gitpushall(rdir: Path, verbose: bool=False) -> List[Path]:
     rdir = Path(rdir).expanduser()
-    dlist = [x for x in rdir.iterdir() if x.is_dir()]
+    dlist = [x for x in rdir.iterdir() if not baddir(x)]
 
     dir_topush = []
     for d in dlist:
-        if (d / '.nogit').is_file() or not (d / '.git').is_dir():
-            continue
-
-        dpath = detectchange(d, verbose)
-        if dpath:
-            dir_topush.append(dpath)
+        if detectchange(d, verbose):
+            dir_topush.append(d)
 
     return dir_topush
 
@@ -138,16 +151,16 @@ def listchanged(path: Path) -> List[str]:
     return ret
 
 
-def detectchange(d: Path, verbose: bool=False) -> Optional[Path]:
+def detectchange(d: Path, verbose: bool=False) -> bool:
     """in depth check"""
     c1 = ['git', 'status', '--porcelain']  # uncommitted or changed files
-    dpath = None
+
     try:
         # %% detect uncommitted changes
         ret = subprocess.check_output(c1, cwd=d, universal_newlines=True)
-        dpath = _print_change(ret, d, verbose)
-        if dpath is not None:
-            return dpath
+        changed = _print_change(ret, d, verbose)
+        if changed:
+            return changed
 
 # %% detect committed, but not pushed
         c0 = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']  # get branch name
@@ -155,20 +168,20 @@ def detectchange(d: Path, verbose: bool=False) -> Optional[Path]:
 
         c2 = ['git', 'diff', '--stat', f'origin/{branch}..']
         ret = subprocess.check_output(c2, cwd=d, universal_newlines=True)
-        dpath = _print_change(ret, d, verbose)
+        changed = _print_change(ret, d, verbose)
     except subprocess.CalledProcessError as e:
         logging.error(f'{d} {e.output}')
 
-    return dpath
+    return changed
 
 
-def _print_change(ret: str, d: Path, verbose: bool=False) -> Optional[Path]:
-    dpath = None  # in case error
+def _print_change(ret: str, d: Path, verbose: bool=False) -> bool:
+    changed = False
 
     if ret:
-        dpath = d
+        changed = True
         if verbose:
             print(MAGENTA + str(d))
             print(BLACK + ret)
 
-    return dpath
+    return changed

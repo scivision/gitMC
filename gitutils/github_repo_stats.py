@@ -12,8 +12,7 @@ def repo_prober(user: str, oauth: Path=None, branch: str=None, verbose: bool=Fal
     # %% authenication
     sess = github_session(oauth)
 
-    if not check_api_limit(sess):
-        raise RuntimeError('GitHub API limit exceeded')
+    check_api_limit(sess)
 # %% prepare to loop over repos
     repos = _get_repos(sess, user)
 
@@ -24,20 +23,23 @@ def repo_prober(user: str, oauth: Path=None, branch: str=None, verbose: bool=Fal
     ahead: List[Tuple[str, int]] = []
 
     for repo in repos:
-        ahead = fork_prober(repo, ahead, branch)
+        ahead = fork_prober(repo, sess, ahead, branch)
 
         dat.loc[repo.name, :] = (repo.forks_count, repo.stargazers_count)
 
-        if not check_api_limit(sess):
-            raise RuntimeError('GitHub API limit exceeded')
+        check_api_limit(sess)
 
         sleep(1.)
 
     return dat, ahead
 
 
-def fork_prober(repo, ahead: List[Tuple[str, int]], branch: str=None,
+def fork_prober(repo, sess,
+                ahead: List[Tuple[str, int]],
+                branch: str=None,
                 verbose: bool=False) -> List[Tuple[str, int]]:
+
+    check_api_limit(sess)
 
     b = repo.default_branch if not branch else branch
 
@@ -50,6 +52,8 @@ def fork_prober(repo, ahead: List[Tuple[str, int]], branch: str=None,
     forks = repo.get_forks()
     for fork in forks:
         sleep(0.2)  # don't hammer the API, avoiding 502 errors
+
+        check_api_limit(sess)
 
         try:
             fmaster = fork.get_branch(b)

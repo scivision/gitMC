@@ -4,7 +4,7 @@ import subprocess
 import pytest
 import gitutils as pgu
 
-R = Path(__file__).resolve().parents[1]
+R = Path(__file__).parent
 
 
 def test_findfile():

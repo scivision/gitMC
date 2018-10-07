@@ -9,7 +9,7 @@
 Platform-independent (Linux/Mac/Windows) Git utilities, useful for managing large (100+) numbers of Git repos.
 I use command-line `git` because PyGit also requires command-line Git installed, and I don't need the advanced functionality.
 
-A very important feature in
+An important feature in
 ```sh
 ListAllGithubRepos
 ```
@@ -17,7 +17,7 @@ is showing which forks of your repos have had changes "ahead of" your code.
 This shows your code is being improved, even if the forked repo didn't make a pull request.
 I don't know of any other easy way out there to find this.
 
-Git [utilities](https://github.com/scivision/gitedu) for managing large (100+) numbers of users / teams, particularly for education and institutions.
+Also see Git [utilities](https://github.com/scivision/gitedu) for managing large (100+) numbers of users / teams, particularly for education and institutions.
 
 ## Install
 
@@ -26,7 +26,6 @@ Install Git in a way accessible from the command line line
 -   Mac: `brew install git`
 -   Linux: `apt install git`
 -   Windows: command line [Git](https://git-scm.com/download/win).
--   BSD: `pkg install git`
 
 ```sh
 python -m pip install -e .
@@ -43,14 +42,27 @@ I didn't know of any other easy ways to do these Git tasks:
 
 ### Sync large number of git repos
 
-These assume numerous subdirectories under `~/code` or `c:\code`. They
-work very quickly for large numbers (100+) repos
+These assume numerous subdirectories under `~/code` or `c:\code`. 
+They work very quickly for large numbers (100+) repos.
 
-* `gtps` check if any repos have pending changes
-* `gtpl` Git pulls all repos
-* `gtft` Git fetches all repos
 
-You can place an empty file `.nogit` in a subdirectory to skip `pull` or `push`.
+* `gitmodified` check if any local repos have pending changes
+* `gitcheck` check if any remote repos are ahead of local
+* `gitpull` Git pulls all repos
+* `gitfetch` Git fetches all repos
+
+You can place an empty file `.nogit` in a subdirectory to skip it.
+
+
+#### [optional] speedup with https pull
+For public repos, to make the Git remote checking go at least twice as fast, and significantly reduce the computational burden when SSH is used for `git push` (as is recommended), consider the "pushInsteadOf" global Git config.
+To do this, when cloning a public repo (including ones you're a collaborator on), use `git clone https://`. 
+This global SSH push config one-time does SSH push for HTTPS-cloned repos:
+```sh
+git config --global url."ssh://github.com/".pushInsteadOf https://github.com/
+```
+The pattern matching can be made for all sites by omitting `github.com` from the command above, or you can refine it for each site, or even for specific usernames by editing the command above.
+For private repos, simply clone with SSH as usual
 
 
 ### Preview all changed Jekyll files
