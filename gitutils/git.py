@@ -2,7 +2,6 @@ import logging
 from pathlib import Path
 from sys import stderr
 import subprocess
-from random import randrange
 from time import sleep
 from typing import Sequence, List, Tuple, Optional
 from operator import attrgetter
@@ -33,6 +32,12 @@ def findbranch(ok: str, rdir: Path) -> List[Tuple[Path, str]]:
 
     dlist = [x for x in rdir.iterdir() if not baddir(x)]
 
+    if not dlist:
+        if not baddir(rdir):
+            dlist = [rdir]
+        else:
+            raise FileNotFoundError(f'no Git repos found under {rdir}')
+
     branch = []
     for d in dlist:
         try:
@@ -55,7 +60,7 @@ def gitemail(path: Path, user: str,
     path = Path(path).expanduser().resolve()
 
     if baddir(path):
-        return None
+        raise FileNotFoundError(f'no Git repos found under {path}')
 
     cmd = ['git', 'log', '--pretty="%ce"']
 
@@ -117,7 +122,7 @@ def fetchpull(mode: str, rdir: Path) -> List[str]:
         except subprocess.CalledProcessError:
             failed.append(d.name)
 
-        sleep(randrange(10) * .1 + 1)  # don't hammer the remote server, delay of 1-2 seconds
+        sleep(.1)  # don't hammer the remote server
 
     print()
     if failed:
@@ -131,6 +136,12 @@ def fetchpull(mode: str, rdir: Path) -> List[str]:
 def gitpushall(rdir: Path, verbose: bool=False) -> List[Path]:
     rdir = Path(rdir).expanduser()
     dlist = [x for x in rdir.iterdir() if not baddir(x)]
+
+    if not dlist:
+        if not baddir(rdir):
+            dlist = [rdir]
+        else:
+            raise FileNotFoundError(f'no Git repos found under {rdir}')
 
     dir_topush = []
     for d in dlist:

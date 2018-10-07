@@ -35,8 +35,8 @@ def amend(path: Path, emails: Sequence[str], user: str):
 
 def main():
     p = ArgumentParser()
-    p.add_argument('user', help='desired Github username', nargs='?')
     p.add_argument('path', help='path to Git repo', nargs='?', default='.')
+    p.add_argument('user', help='desired Github username', nargs='?')
     p.add_argument('-r', '--recurse', help='recurse', action='store_true')
     p.add_argument('-e', '--exclude', help='users to ignore (keep)', nargs='+')
     p.add_argument('-a', '--amend', help='change all non-exclused commits to username',
