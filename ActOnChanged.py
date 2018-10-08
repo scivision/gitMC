@@ -26,7 +26,7 @@ def main():
             cut = 11
         else:
             cut = 0
-        flist = [prefix + f[cut:].split('.')[0] for f in flist]
+        flist = [prefix + fn.split('/')[-1][cut:].split('.')[0] for fn in flist]
 
         for f in flist:
             webbrowser.open_new_tab(f)
