@@ -18,16 +18,21 @@ def main():
     p.add_argument('user', help='Github username')
     p.add_argument('oauth', help='Oauth filename', nargs='?')
 
-    P = p.parse_args()
-    dat, ahead = gu.repo_prober(P.user, P.oauth)
+    p = p.parse_args()
+    dat, ahead = gu.repo_prober(p.user, p.oauth)
 
     datnz = dat[~(dat == 0).all(axis=1)]
-# %%
+# %%  Stars and Forks
     pd.set_option('display.max_rows', 500)
 
-    print(datnz.sort_values(['stars', 'forks'], ascending=False))
+    print(f'\n{p.user} total stars received {dat["stars"].sum()}')
+    print(f'{p.user} total other users forked {dat["forks"].sum()}\n')
 
-    print(ahead)
+    print(datnz.sort_values(['stars', 'forks'], ascending=False))
+# %% Forks ahead
+    print(f'\n{p.user} Forks that are ahead by N commits')
+    for a in ahead:
+        print(a)
 
 
 if __name__ == '__main__':
