@@ -76,9 +76,14 @@ ActOnChanged -j
 ## Github
 Python GitHub [API](https://pypi.org/project/PyGithub/)
 
+Most users will need a GitHub API token, as the unauthenticated API access is severly limited.
+
+1. [Generate](https://github.com/settings/tokens) GitHub API token with ONLY the `user:email` permission.
+2. Copy that text string to a secure location on your computer.
+
 ### GitHub user stats
 
-`ListAllGithubRepos`
+`ListAllGithubRepos username OauthKey`
 Gives stats on GitHub repos for a particular user.
 It requires extra prereqs via:
 ```sh
