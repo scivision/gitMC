@@ -60,8 +60,6 @@ def fetchpull(mode: str, rdir: Path, verbose: bool = False) -&gt; Iterator[Path]
     &#34;&#34;&#34;
     # Lmax = len(max(map(attrgetter(&#39;name&#39;), dlist), key=len))
 
-    assert isinstance(GITEXE, str)
-
     for d in gitdirs(rdir):
         # assumes console is at least 80 characters wide
         if verbose:
@@ -143,8 +141,6 @@ def fetchpull(mode: str, rdir: Path, verbose: bool = False) -&gt; Iterator[Path]
     https://docs.python.org/3/library/string.html#format-specification-mini-language
     &#34;&#34;&#34;
     # Lmax = len(max(map(attrgetter(&#39;name&#39;), dlist), key=len))
-
-    assert isinstance(GITEXE, str)
 
     for d in gitdirs(rdir):
         # assumes console is at least 80 characters wide
