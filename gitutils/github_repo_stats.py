@@ -11,7 +11,29 @@ from .github_base import check_api_limit, github_session
 
 def repo_prober(user: str, oauth: Path = None, branch: str = None,
                 verbose: bool = False) -> Tuple[pd.DataFrame, List[Tuple[str, int]]]:
-    # %% authenication
+    """
+    probe all GitHub repos for a user to see how much forks of each repo are ahead.
+    Discover if there is an actively developed fork of your GitHub repos
+
+    Parameters
+    ----------
+    user : str
+        GitHub username
+    oauth : pathlib.Path
+        file containing GitHub Oauth hash
+    branch : str
+        Git branch to examine
+    verbose : bool
+        verbosity
+
+    Results
+    -------
+    dat : pandas.DataFrame
+        forks and stars for each repo
+    ahead : list of tuple of str, int
+        forked with repos with number of commits they're ahead of your repo
+    """
+    # %% authentication
     sess = github_session(oauth)
 
     check_api_limit(sess)
@@ -40,7 +62,27 @@ def fork_prober(repo, sess,
                 ahead: List[Tuple[str, int]],
                 branch: str = None,
                 verbose: bool = False) -> List[Tuple[str, int]]:
+    """
+    check a GitHub repo for forks
 
+    Parameters
+    ----------
+    repo :
+        handle to GitHub repo
+    sess :
+        handle to GitHub session
+    ahead : list of tuple of str, int
+        forked with repos with number of commits they're ahead of your repo
+    branch : str
+        Git branch to examine
+    verbose : bool
+        verbosity
+
+    Results
+    -------
+    ahead : list of tuple of str, int
+        forked with repos with number of commits they're ahead of your repo
+    """
     check_api_limit(sess)
 
     b = repo.default_branch if not branch else branch

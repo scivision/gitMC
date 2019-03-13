@@ -1,12 +1,38 @@
+"""
+These Git utilities use nothing beyond pure Python.
+Some routines are implemented concurrently for fastest operation on large
+numbers of repos, using Python standard library `asyncio`.
+
+"""
 from pathlib import Path
 from typing import List
 import shutil
 
-from .git import gitemail, fetchpull, gitpushall, listchanged, detectchange  # noqa: F401
+from .git import listchanged  # noqa: F401
 from .branch import findbranch  # noqa: F401
+from .email import gitemail  # noqa: F401
+from .pull import fetchpull  # noqa: F401
+from .push import gitpushall, detectchange  # noqa: F401
 
 
 def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -> List[Path]:
+    """
+    if directory is missing a file, copy the file to that directory
+
+    Parameters
+    ----------
+    fn : pathlib.Path
+        filename to look for
+    path : pathlib.Path
+        top-level directory to check directories under
+    copyfile : pathlib.Path, optional
+        if present, copy this file into the directory that doesn't have it
+
+    Results
+    -------
+    missing : list of pathlib.Path
+        directories that were missing the file and it wasn't copied there.
+    """
     path = Path(path).expanduser()
 
     dlist = [x for x in path.iterdir() if x.is_dir()]

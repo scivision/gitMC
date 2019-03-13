@@ -12,6 +12,16 @@ def check_api_limit(g: github.Github = None) -> bool:
     don't hammer the API, avoiding 502 errors
 
     No penalty for checking rate limits
+
+    Parameters
+    ----------
+    g : optional
+        GitHub session
+
+    Results
+    -------
+    ok : bool
+        haven't yet exceeded GitHub API limits
     """
     if g is None:
         g = github_session()
@@ -34,6 +44,20 @@ def check_api_limit(g: github.Github = None) -> bool:
 
 
 def github_session(oauth: Path = None) -> github.Github:
+    """
+    setup GitHub session
+
+    Parameters
+    ----------
+
+    oauth : pathlib.Path, optional
+        file containing GitHub Oauth hash
+
+    Results
+    -------
+    g : github.Github
+        GitHub session handle
+    """
     if oauth:
         oauth = Path(oauth).expanduser()
         g = github.Github(oauth.read_text().strip())  # no trailing \n allowed
@@ -43,7 +67,24 @@ def github_session(oauth: Path = None) -> github.Github:
     return g
 
 
-def connect_github(oauth: Path, orgname: str = None):
+def connect_github(oauth: Path, orgname: str = None) -> tuple:
+    """
+    retrieve organizations or users from GitHub
+
+    Parameters
+    ----------
+    oauth : pathlib.Path
+        file containing GitHub Oauth hash
+    orgname : str
+        organization name or username
+
+    Results
+    -------
+    op : github.AuthenticatedUser or github.Organization
+        handle to organization or user
+    sess : github.Github
+        GitHub session
+    """
     sess = github_session(oauth)
     guser = sess.get_user()
 
@@ -67,8 +108,19 @@ def repo_exists(user: Union[github.AuthenticatedUser.AuthenticatedUser,
                             github.Organization.Organization],
                 reponame: str) -> bool:
     """
-    user: GitHub user session
-    reponame: reponame under user e.g. pymap3d
+    Does a particular GitHub repo exist?
+
+    Parameters
+    ----------
+    user : github.AuthenticatedUser or github.Organization
+        GitHub user or organizaition handle
+    reponame : str
+        reponame under user e.g. pymap3d
+
+    Results
+    -------
+    exists : bool
+        GitHub repo exists
     """
     exists = False
     try:
@@ -84,7 +136,24 @@ def repo_exists(user: Union[github.AuthenticatedUser.AuthenticatedUser,
 
 def last_commit_date(sess: github.Github, name: str) -> Optional[datetime]:
     """
-    git show -s --format=%cI HEAD
+    What is the last commit date to this repo.
+
+    Equivalent to:
+
+        git show -s --format=%cI HEAD
+
+
+    Parameters
+    ----------
+    sess : github.Github
+        GitHub session
+    name : str
+        name of GitHub repo e.g. pymap3d
+
+    Results
+    -------
+    time : datetime.datetime
+        time of last repo modification
     """
     time = None
 
@@ -100,6 +169,19 @@ def last_commit_date(sess: github.Github, name: str) -> Optional[datetime]:
 
 
 def repo_isempty(repo: github.Repository) -> bool:
+    """
+    is a GitHub repo empty?
+
+    Parameters
+    ----------
+    repo : github.Repository
+        handle to GitHub repo
+
+    Results
+    -------
+    empty : bool
+        GitHub repo empty
+    """
     try:
         repo.get_contents('/')
         empty = False
@@ -114,6 +196,18 @@ def repo_isempty(repo: github.Repository) -> bool:
 def read_repos(fn: Path, sheet: str) -> Dict[str, str]:
     """
     make pandas.Series of email/id, Git url from spreadsheet
+
+    Parameters
+    ----------
+    fn : pathlib.Path
+        path to Excel spreadsheet listing usernames and repos to duplicate
+    sheet : str
+        name of Excel sheet to use
+
+    Results
+    -------
+    repos : dict
+        all the repos to duplicate
     """
 
     # %% get list of repos to duplicate
