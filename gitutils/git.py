@@ -3,7 +3,7 @@ from pathlib import Path
 from sys import stderr
 import subprocess
 from time import sleep
-from typing import Sequence, List, Tuple, Optional
+from typing import Sequence, List, Tuple
 from operator import attrgetter
 import collections
 try:
@@ -23,37 +23,8 @@ DOES NOT WORK ['git','log','--branches','--not','--remotes'],     # check for un
 """
 
 
-def findbranch(ok: str, rdir: Path) -> List[Tuple[Path, str]]:
-    """find all branches in tree not matching ok"""
-
-    rdir = Path(rdir).expanduser()
-
-    cmd = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
-
-    dlist = [x for x in rdir.iterdir() if not baddir(x)]
-
-    if not dlist:
-        if not baddir(rdir):
-            dlist = [rdir]
-        else:
-            raise FileNotFoundError(f'no Git repos found under {rdir}')
-
-    branch = []
-    for d in dlist:
-        try:
-            ret = subprocess.check_output(cmd, cwd=d,
-                                          universal_newlines=True).rstrip()
-
-            if ok not in ret:
-                branch.append((d, ret))
-        except subprocess.CalledProcessError as e:
-            print(d, e)
-
-    return branch
-
-
 def gitemail(path: Path, user: str,
-             exclude: Sequence[str]=None) -> Optional[List[Tuple[str, int]]]:
+             exclude: Sequence[str] = None) -> List[Tuple[str, int]]:
     """
     returns email addresses of everyone who ever made a Git commit in this repo.
     """
@@ -82,6 +53,22 @@ def gitemail(path: Path, user: str,
 
 
 def baddir(path: Path) -> bool:
+    """
+    tells if a directory is a valid Git repo or excluded.
+    A directory with top-level file ".nogit" is excluded.
+
+    Parameters
+    ----------
+
+    path : pathlib.Path
+        path to check if it's a Git repo
+
+    Results
+    -------
+
+    ok : bool
+        True if a non-excluded Git repo
+    """
     path = path.expanduser()
 
     return (path / '.nogit').is_file() or not (path / '.git').is_dir()
@@ -133,7 +120,7 @@ def fetchpull(mode: str, rdir: Path) -> List[str]:
     return failed
 
 
-def gitpushall(rdir: Path, verbose: bool=False) -> List[Path]:
+def gitpushall(rdir: Path, verbose: bool = False) -> List[Path]:
     rdir = Path(rdir).expanduser()
     dlist = [x for x in rdir.iterdir() if not baddir(x)]
 
@@ -162,7 +149,7 @@ def listchanged(path: Path) -> List[str]:
     return ret
 
 
-def detectchange(d: Path, verbose: bool=False) -> bool:
+def detectchange(d: Path, verbose: bool = False) -> bool:
     """in depth check"""
     c1 = ['git', 'status', '--porcelain']  # uncommitted or changed files
 
@@ -186,7 +173,7 @@ def detectchange(d: Path, verbose: bool=False) -> bool:
     return changed
 
 
-def _print_change(ret: str, d: Path, verbose: bool=False) -> bool:
+def _print_change(ret: str, d: Path, verbose: bool = False) -> bool:
     changed = False
 
     if ret:

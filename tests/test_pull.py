@@ -6,16 +6,9 @@ import pytest
 R = Path(__file__).resolve().parents[1]
 
 
-def test_gitpull():
-    subprocess.check_call(['gitpull', '.'], cwd=R)
-
-
-def test_gitfetch():
-    subprocess.check_call(['gitfetch', '.'], cwd=R)
-
-
-def test_gitcheck():
-    subprocess.check_call(['gitcheck', '.'], cwd=R)
+@pytest.mark.parametrize('op', ['gitpull', 'gitfetch', 'gitcheck'])
+def test_git(op):
+    subprocess.check_call([op, '.'], cwd=R)
 
 
 if __name__ == '__main__':

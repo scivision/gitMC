@@ -5,10 +5,12 @@ from pathlib import Path
 import github
 import logging
 import pandas as pd
+
 from .github_base import check_api_limit, github_session
 
 
-def repo_prober(user: str, oauth: Path=None, branch: str=None, verbose: bool=False) -> Tuple[pd.DataFrame, List[Tuple[str, int]]]:
+def repo_prober(user: str, oauth: Path = None, branch: str = None,
+                verbose: bool = False) -> Tuple[pd.DataFrame, List[Tuple[str, int]]]:
     # %% authenication
     sess = github_session(oauth)
 
@@ -36,8 +38,8 @@ def repo_prober(user: str, oauth: Path=None, branch: str=None, verbose: bool=Fal
 
 def fork_prober(repo, sess,
                 ahead: List[Tuple[str, int]],
-                branch: str=None,
-                verbose: bool=False) -> List[Tuple[str, int]]:
+                branch: str = None,
+                verbose: bool = False) -> List[Tuple[str, int]]:
 
     check_api_limit(sess)
 

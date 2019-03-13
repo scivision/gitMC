@@ -6,7 +6,7 @@ from typing import Union, Optional, Dict
 import pandas
 
 
-def check_api_limit(g: github.Github=None) -> bool:
+def check_api_limit(g: github.Github = None) -> bool:
     """
     https://developer.github.com/v3/#rate-limiting
     don't hammer the API, avoiding 502 errors
@@ -33,7 +33,7 @@ def check_api_limit(g: github.Github=None) -> bool:
     return ok
 
 
-def github_session(oauth: Path=None) -> github.Github:
+def github_session(oauth: Path = None) -> github.Github:
     if oauth:
         oauth = Path(oauth).expanduser()
         g = github.Github(oauth.read_text().strip())  # no trailing \n allowed
@@ -76,6 +76,7 @@ def repo_exists(user: Union[github.AuthenticatedUser.AuthenticatedUser,
         if repo.name:
             exists = True
     except github.GithubException as e:
+        logging.info(str(e))
         pass
 
     return exists
@@ -93,6 +94,7 @@ def last_commit_date(sess: github.Github, name: str) -> Optional[datetime]:
             time = repo.pushed_at
     except github.GithubException as e:
         logging.error(f'{name} not found \n')
+        logging.info(str(e))
 
     return time
 
@@ -104,6 +106,7 @@ def repo_isempty(repo: github.Repository) -> bool:
     except github.GithubException as e:
         logging.error(f'{repo.name} is empty. \n')
         empty = True
+        logging.info(str(e))
 
     return empty
 
