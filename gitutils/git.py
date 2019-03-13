@@ -44,7 +44,7 @@ def baddir(path: Path) -> bool:
     path = path.expanduser()
 
     try:
-        bad = (path / '.nogit').is_file() or not (path / '.git').is_dir()
+        bad = (path / '.nogit').is_file() or not (path / '.git' / 'HEAD').is_file()
     except PermissionError:
         bad = True
 

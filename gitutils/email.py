@@ -1,12 +1,13 @@
 from pathlib import Path
-from typing import Sequence, Tuple, List
+from typing import Tuple, List, Optional
 import collections
+import logging
 import subprocess
 
-from .git import baddir, MAGENTA, BLACK, GITEXE
+from .git import baddir, GITEXE
 
 
-def gitemail(path: Path, exclude: Sequence[str] = None) -> List[Tuple[str, int]]:
+def gitemail(path: Path, exclude: str = None) -> Optional[List[Tuple[str, int]]]:
     """
     returns email addresses of everyone who ever made a Git commit in this repo.
 
@@ -32,18 +33,17 @@ def gitemail(path: Path, exclude: Sequence[str] = None) -> List[Tuple[str, int]]
     assert isinstance(GITEXE, str)
     cmd = [GITEXE, 'log', '--pretty="%ce"']
 
-    ret = subprocess.check_output(cmd, cwd=path, universal_newlines=True)
+    try:
+        ret = subprocess.check_output(cmd, cwd=path, universal_newlines=True)
+    except subprocess.CalledProcessError as e:
+        logging.error(f'{path}  {e}')
+        return None
+
     ret = ret.replace('"', '')
     ret = filter(None, ret.split('\n'))  # remove blanks
-
-    # rset = set(ret)
-    # emails = list(rset.difference(set(exclude))) if exclude else list(rset)
+    if exclude:
+        ret = (n for n in ret if not n.startswith(exclude))
 
     emails = collections.Counter(ret).most_common()
-# %% output
-    print(MAGENTA + path.stem + BLACK)
-
-    for email in emails:
-        print(email[0], email[1])
 
     return emails
