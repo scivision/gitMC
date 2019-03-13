@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/63837564.svg)](https://zenodo.org/badge/latestdoi/63837564)
 [![Build Status](https://travis-ci.org/scivision/gitutils.svg?branch=master)](https://travis-ci.org/scivision/gitutils)
 [![Coverage Status](https://coveralls.io/repos/github/scivision/gitutils/badge.svg?branch=master)](https://coveralls.io/github/scivision/gitutils?branch=master)
 [![Build status](https://ci.appveyor.com/api/projects/status/99omgmbo508bwrib?svg=true)](https://ci.appveyor.com/project/scivision/gitutils)
