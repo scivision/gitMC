@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.5.3" />
+<title>gitutils.github_repo_stats API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.name small{font-weight:normal}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title"><code>gitutils.github_repo_stats</code> module</h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">from typing import Tuple, List
+from time import sleep
+import numpy as np
+from pathlib import Path
+import github
+import logging
+import pandas as pd
+
+from .github_base import check_api_limit, github_session
+
+
+def repo_prober(user: str, oauth: Path = None, branch: str = None,
+                verbose: bool = False) -&gt; Tuple[pd.DataFrame, List[Tuple[str, int]]]:
+    &#34;&#34;&#34;
+    probe all GitHub repos for a user to see how much forks of each repo are ahead.
+    Discover if there is an actively developed fork of your GitHub repos
+
+    Parameters
+    ----------
+    user : str
+        GitHub username
+    oauth : pathlib.Path
+        file containing GitHub Oauth hash
+    branch : str
+        Git branch to examine
+    verbose : bool
+        verbosity
+
+    Results
+    -------
+    dat : pandas.DataFrame
+        forks and stars for each repo
+    ahead : list of tuple of str, int
+        forked with repos with number of commits they&#39;re ahead of your repo
+    &#34;&#34;&#34;
+    # %% authentication
+    sess = github_session(oauth)
+
+    check_api_limit(sess)
+# %% prepare to loop over repos
+    repos = _get_repos(sess, user)
+
+    dat = pd.DataFrame(np.empty((len(repos), 2), int),
+                       index=[r.name for r in repos],
+                       columns=[&#39;forks&#39;, &#39;stars&#39;])
+
+    ahead: List[Tuple[str, int]] = []
+
+    for repo in repos:
+        ahead = fork_prober(repo, sess, ahead, branch)
+
+        dat.loc[repo.name, :] = (repo.forks_count, repo.stargazers_count)
+
+        check_api_limit(sess)
+
+        sleep(1.)
+
+    return dat, ahead
+
+
+def fork_prober(repo, sess,
+                ahead: List[Tuple[str, int]],
+                branch: str = None,
+                verbose: bool = False) -&gt; List[Tuple[str, int]]:
+    &#34;&#34;&#34;
+    check a GitHub repo for forks
+
+    Parameters
+    ----------
+    repo :
+        handle to GitHub repo
+    sess :
+        handle to GitHub session
+    ahead : list of tuple of str, int
+        forked with repos with number of commits they&#39;re ahead of your repo
+    branch : str
+        Git branch to examine
+    verbose : bool
+        verbosity
+
+    Results
+    -------
+    ahead : list of tuple of str, int
+        forked with repos with number of commits they&#39;re ahead of your repo
+    &#34;&#34;&#34;
+    check_api_limit(sess)
+
+    b = repo.default_branch if not branch else branch
+
+    try:
+        master = repo.get_branch(b)
+    except github.GithubException as e:
+        logging.error(f&#39;{repo.full_name}  {e}&#39;)
+        return ahead
+
+    forks = repo.get_forks()
+    for fork in forks:
+        sleep(0.2)  # don&#39;t hammer the API, avoiding 502 errors
+
+        check_api_limit(sess)
+
+        try:
+            fmaster = fork.get_branch(b)
+        except github.GithubException as e:
+            if e.data[&#39;message&#39;] == &#39;Not Found&#39;:  # repo/branch that they deleted  FIXME: should we check their default branch?
+                continue
+
+            logging.error(f&#39;{repo.full_name} {fork.full_name}  {e}&#39;)
+            continue
+
+        try:
+            comp = repo.compare(master.commit.sha, fmaster.commit.sha)
+        except github.GithubException as e:
+            if e.data[&#39;message&#39;].startswith(&#39;No common ancestor&#39;):
+                continue
+
+            logging.error(f&#39;{repo.full_name} {fork.full_name}  {e}&#39;)
+            continue
+
+        if comp.ahead_by:
+            ahead.append((fork.full_name, comp.ahead_by))
+            print(f&#39;{fork.full_name} ahead by {comp.ahead_by}&#39;, end=&#34;&#34;)
+            if verbose and comp.behind_by:
+                print(f&#39;behind by {comp.behind_by}&#39;, end=&#34;&#34;)
+            print()
+
+    return ahead
+
+
+def _get_repos(g: github.Github, user: str) -&gt; list:
+    repo = user.split(&#39;/&#39;)
+
+    if len(repo) == 2:  # assuming a single repo is specified
+        repos = [g.get_user(repo[0]).get_repo(repo[1])]
+    elif len(repo) == 1:
+        repos = list(g.get_user(repo[0]).get_repos())
+
+    return repos</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gitutils.github_repo_stats.fork_prober"><code class="name flex">
+<span>def <span class="ident">fork_prober</span></span>(<span>repo, sess, ahead, branch=None, verbose=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>check a GitHub repo for forks</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt>repo :</dt>
+<dt>handle to GitHub repo</dt>
+<dt>sess :</dt>
+<dt>handle to GitHub session</dt>
+<dt><strong><code>ahead</code></strong> :&ensp;<code>list</code> of <code>tuple</code> of <code>str</code>, <code>int</code></dt>
+<dd>forked with repos with number of commits they're ahead of your repo</dd>
+<dt><strong><code>branch</code></strong> :&ensp;<code>str</code></dt>
+<dd>Git branch to examine</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code></dt>
+<dd>verbosity</dd>
+</dl>
+<h2 id="results">Results</h2>
+<dl>
+<dt><strong><code>ahead</code></strong> :&ensp;<code>list</code> of <code>tuple</code> of <code>str</code>, <code>int</code></dt>
+<dd>forked with repos with number of commits they're ahead of your repo</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def fork_prober(repo, sess,
+                ahead: List[Tuple[str, int]],
+                branch: str = None,
+                verbose: bool = False) -&gt; List[Tuple[str, int]]:
+    &#34;&#34;&#34;
+    check a GitHub repo for forks
+
+    Parameters
+    ----------
+    repo :
+        handle to GitHub repo
+    sess :
+        handle to GitHub session
+    ahead : list of tuple of str, int
+        forked with repos with number of commits they&#39;re ahead of your repo
+    branch : str
+        Git branch to examine
+    verbose : bool
+        verbosity
+
+    Results
+    -------
+    ahead : list of tuple of str, int
+        forked with repos with number of commits they&#39;re ahead of your repo
+    &#34;&#34;&#34;
+    check_api_limit(sess)
+
+    b = repo.default_branch if not branch else branch
+
+    try:
+        master = repo.get_branch(b)
+    except github.GithubException as e:
+        logging.error(f&#39;{repo.full_name}  {e}&#39;)
+        return ahead
+
+    forks = repo.get_forks()
+    for fork in forks:
+        sleep(0.2)  # don&#39;t hammer the API, avoiding 502 errors
+
+        check_api_limit(sess)
+
+        try:
+            fmaster = fork.get_branch(b)
+        except github.GithubException as e:
+            if e.data[&#39;message&#39;] == &#39;Not Found&#39;:  # repo/branch that they deleted  FIXME: should we check their default branch?
+                continue
+
+            logging.error(f&#39;{repo.full_name} {fork.full_name}  {e}&#39;)
+            continue
+
+        try:
+            comp = repo.compare(master.commit.sha, fmaster.commit.sha)
+        except github.GithubException as e:
+            if e.data[&#39;message&#39;].startswith(&#39;No common ancestor&#39;):
+                continue
+
+            logging.error(f&#39;{repo.full_name} {fork.full_name}  {e}&#39;)
+            continue
+
+        if comp.ahead_by:
+            ahead.append((fork.full_name, comp.ahead_by))
+            print(f&#39;{fork.full_name} ahead by {comp.ahead_by}&#39;, end=&#34;&#34;)
+            if verbose and comp.behind_by:
+                print(f&#39;behind by {comp.behind_by}&#39;, end=&#34;&#34;)
+            print()
+
+    return ahead</code></pre>
+</details>
+</dd>
+<dt id="gitutils.github_repo_stats.repo_prober"><code class="name flex">
+<span>def <span class="ident">repo_prober</span></span>(<span>user, oauth=None, branch=None, verbose=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>probe all GitHub repos for a user to see how much forks of each repo are ahead.
+Discover if there is an actively developed fork of your GitHub repos</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>user</code></strong> :&ensp;<code>str</code></dt>
+<dd>GitHub username</dd>
+<dt><strong><code>oauth</code></strong> :&ensp;<code>pathlib.Path</code></dt>
+<dd>file containing GitHub Oauth hash</dd>
+<dt><strong><code>branch</code></strong> :&ensp;<code>str</code></dt>
+<dd>Git branch to examine</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code></dt>
+<dd>verbosity</dd>
+</dl>
+<h2 id="results">Results</h2>
+<dl>
+<dt><strong><code>dat</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>forks and stars for each repo</dd>
+<dt><strong><code>ahead</code></strong> :&ensp;<code>list</code> of <code>tuple</code> of <code>str</code>, <code>int</code></dt>
+<dd>forked with repos with number of commits they're ahead of your repo</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def repo_prober(user: str, oauth: Path = None, branch: str = None,
+                verbose: bool = False) -&gt; Tuple[pd.DataFrame, List[Tuple[str, int]]]:
+    &#34;&#34;&#34;
+    probe all GitHub repos for a user to see how much forks of each repo are ahead.
+    Discover if there is an actively developed fork of your GitHub repos
+
+    Parameters
+    ----------
+    user : str
+        GitHub username
+    oauth : pathlib.Path
+        file containing GitHub Oauth hash
+    branch : str
+        Git branch to examine
+    verbose : bool
+        verbosity
+
+    Results
+    -------
+    dat : pandas.DataFrame
+        forks and stars for each repo
+    ahead : list of tuple of str, int
+        forked with repos with number of commits they&#39;re ahead of your repo
+    &#34;&#34;&#34;
+    # %% authentication
+    sess = github_session(oauth)
+
+    check_api_limit(sess)
+# %% prepare to loop over repos
+    repos = _get_repos(sess, user)
+
+    dat = pd.DataFrame(np.empty((len(repos), 2), int),
+                       index=[r.name for r in repos],
+                       columns=[&#39;forks&#39;, &#39;stars&#39;])
+
+    ahead: List[Tuple[str, int]] = []
+
+    for repo in repos:
+        ahead = fork_prober(repo, sess, ahead, branch)
+
+        dat.loc[repo.name, :] = (repo.forks_count, repo.stargazers_count)
+
+        check_api_limit(sess)
+
+        sleep(1.)
+
+    return dat, ahead</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gitutils" href="index.html">gitutils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gitutils.github_repo_stats.fork_prober" href="#gitutils.github_repo_stats.fork_prober">fork_prober</a></code></li>
+<li><code><a title="gitutils.github_repo_stats.repo_prober" href="#gitutils.github_repo_stats.repo_prober">repo_prober</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.5.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

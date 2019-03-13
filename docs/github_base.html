@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.5.3" />
+<title>gitutils.github_base API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.name small{font-weight:normal}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title"><code>gitutils.github_base</code> module</h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">import github
+from pathlib import Path
+from datetime import datetime
+import logging
+from typing import Union, Optional, Dict
+import pandas
+
+
+def check_api_limit(g: github.Github = None) -&gt; bool:
+    &#34;&#34;&#34;
+    https://developer.github.com/v3/#rate-limiting
+    don&#39;t hammer the API, avoiding 502 errors
+
+    No penalty for checking rate limits
+
+    Parameters
+    ----------
+    g : optional
+        GitHub session
+
+    Results
+    -------
+    ok : bool
+        haven&#39;t yet exceeded GitHub API limits
+    &#34;&#34;&#34;
+    if g is None:
+        g = github_session()
+
+    ok = True
+
+    api_limits = g.rate_limiting   # remaining, limit
+    api_remaining, api_max = api_limits
+    treset = datetime.utcfromtimestamp(g.rate_limiting_resettime)  # local time
+
+    if api_remaining == 0:
+        raise RuntimeError(f&#39;GitHub rate limit exceeded: {api_remaining} / {api_max}. Try again after {treset} UTC.&#39;)
+        ok = False
+    elif api_remaining &lt; 10:
+        logging.warning(f&#39;approaching GitHub API limit, {api_remaining} / {api_max} remaining until {treset} UTC.&#39;)
+    else:
+        logging.debug(f&#39;GitHub API limit: {api_remaining} / {api_max} remaining until {treset} UTC.&#39;)
+
+    return ok
+
+
+def github_session(oauth: Path = None) -&gt; github.Github:
+    &#34;&#34;&#34;
+    setup GitHub session
+
+    Parameters
+    ----------
+
+    oauth : pathlib.Path, optional
+        file containing GitHub Oauth hash
+
+    Results
+    -------
+    g : github.Github
+        GitHub session handle
+    &#34;&#34;&#34;
+    if oauth:
+        oauth = Path(oauth).expanduser()
+        g = github.Github(oauth.read_text().strip())  # no trailing \n allowed
+    else:  # unauthenticated
+        g = github.Github()
+
+    return g
+
+
+def connect_github(oauth: Path, orgname: str = None) -&gt; tuple:
+    &#34;&#34;&#34;
+    retrieve organizations or users from GitHub
+
+    Parameters
+    ----------
+    oauth : pathlib.Path
+        file containing GitHub Oauth hash
+    orgname : str
+        organization name or username
+
+    Results
+    -------
+    op : github.AuthenticatedUser or github.Organization
+        handle to organization or user
+    sess : github.Github
+        GitHub session
+    &#34;&#34;&#34;
+    sess = github_session(oauth)
+    guser = sess.get_user()
+
+    org = None
+    if orgname:
+        orgs = list(guser.get_orgs())
+        for o in orgs:
+            if o.login == orgname:
+                org = o
+                break
+
+        assert org is not None
+        op = org
+    else:
+        op = guser
+
+    return op, sess
+
+
+def repo_exists(user: Union[github.AuthenticatedUser.AuthenticatedUser,
+                            github.Organization.Organization],
+                reponame: str) -&gt; bool:
+    &#34;&#34;&#34;
+    Does a particular GitHub repo exist?
+
+    Parameters
+    ----------
+    user : github.AuthenticatedUser or github.Organization
+        GitHub user or organizaition handle
+    reponame : str
+        reponame under user e.g. pymap3d
+
+    Results
+    -------
+    exists : bool
+        GitHub repo exists
+    &#34;&#34;&#34;
+    exists = False
+    try:
+        repo = user.get_repo(reponame)
+        if repo.name:
+            exists = True
+    except github.GithubException as e:
+        logging.info(str(e))
+        pass
+
+    return exists
+
+
+def last_commit_date(sess: github.Github, name: str) -&gt; Optional[datetime]:
+    &#34;&#34;&#34;
+    What is the last commit date to this repo.
+
+    Equivalent to:
+
+        git show -s --format=%cI HEAD
+
+
+    Parameters
+    ----------
+    sess : github.Github
+        GitHub session
+    name : str
+        name of GitHub repo e.g. pymap3d
+
+    Results
+    -------
+    time : datetime.datetime
+        time of last repo modification
+    &#34;&#34;&#34;
+    time = None
+
+    try:
+        repo = sess.get_repo(name)
+        if not repo_isempty(repo):
+            time = repo.pushed_at
+    except github.GithubException as e:
+        logging.error(f&#39;{name} not found \n&#39;)
+        logging.info(str(e))
+
+    return time
+
+
+def repo_isempty(repo: github.Repository) -&gt; bool:
+    &#34;&#34;&#34;
+    is a GitHub repo empty?
+
+    Parameters
+    ----------
+    repo : github.Repository
+        handle to GitHub repo
+
+    Results
+    -------
+    empty : bool
+        GitHub repo empty
+    &#34;&#34;&#34;
+    try:
+        repo.get_contents(&#39;/&#39;)
+        empty = False
+    except github.GithubException as e:
+        logging.error(f&#39;{repo.name} is empty. \n&#39;)
+        empty = True
+        logging.info(str(e))
+
+    return empty
+
+
+def read_repos(fn: Path, sheet: str) -&gt; Dict[str, str]:
+    &#34;&#34;&#34;
+    make pandas.Series of email/id, Git url from spreadsheet
+
+    Parameters
+    ----------
+    fn : pathlib.Path
+        path to Excel spreadsheet listing usernames and repos to duplicate
+    sheet : str
+        name of Excel sheet to use
+
+    Results
+    -------
+    repos : dict
+        all the repos to duplicate
+    &#34;&#34;&#34;
+
+    # %% get list of repos to duplicate
+    fn = Path(fn).expanduser()
+    repos = pandas.read_excel(fn, sheet_name=sheet, index_col=0, usecols=&#34;A, D&#34;).squeeze()
+    repos.dropna(how=&#39;any&#39;, inplace=True)
+
+    return repos.to_dict()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gitutils.github_base.check_api_limit"><code class="name flex">
+<span>def <span class="ident">check_api_limit</span></span>(<span>g=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p><a href="https://developer.github.com/v3/#rate-limiting">https://developer.github.com/v3/#rate-limiting</a>
+don't hammer the API, avoiding 502 errors</p>
+<p>No penalty for checking rate limits</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>g</code></strong> :&ensp;optional</dt>
+<dd>GitHub session</dd>
+</dl>
+<h2 id="results">Results</h2>
+<dl>
+<dt><strong><code>ok</code></strong> :&ensp;<code>bool</code></dt>
+<dd>haven't yet exceeded GitHub API limits</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def check_api_limit(g: github.Github = None) -&gt; bool:
+    &#34;&#34;&#34;
+    https://developer.github.com/v3/#rate-limiting
+    don&#39;t hammer the API, avoiding 502 errors
+
+    No penalty for checking rate limits
+
+    Parameters
+    ----------
+    g : optional
+        GitHub session
+
+    Results
+    -------
+    ok : bool
+        haven&#39;t yet exceeded GitHub API limits
+    &#34;&#34;&#34;
+    if g is None:
+        g = github_session()
+
+    ok = True
+
+    api_limits = g.rate_limiting   # remaining, limit
+    api_remaining, api_max = api_limits
+    treset = datetime.utcfromtimestamp(g.rate_limiting_resettime)  # local time
+
+    if api_remaining == 0:
+        raise RuntimeError(f&#39;GitHub rate limit exceeded: {api_remaining} / {api_max}. Try again after {treset} UTC.&#39;)
+        ok = False
+    elif api_remaining &lt; 10:
+        logging.warning(f&#39;approaching GitHub API limit, {api_remaining} / {api_max} remaining until {treset} UTC.&#39;)
+    else:
+        logging.debug(f&#39;GitHub API limit: {api_remaining} / {api_max} remaining until {treset} UTC.&#39;)
+
+    return ok</code></pre>
+</details>
+</dd>
+<dt id="gitutils.github_base.connect_github"><code class="name flex">
+<span>def <span class="ident">connect_github</span></span>(<span>oauth, orgname=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>retrieve organizations or users from GitHub</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>oauth</code></strong> :&ensp;<code>pathlib.Path</code></dt>
+<dd>file containing GitHub Oauth hash</dd>
+<dt><strong><code>orgname</code></strong> :&ensp;<code>str</code></dt>
+<dd>organization name or username</dd>
+</dl>
+<h2 id="results">Results</h2>
+<dl>
+<dt><strong><code>op</code></strong> :&ensp;<code>github.AuthenticatedUser</code> or <code>github.Organization</code></dt>
+<dd>handle to organization or user</dd>
+<dt><strong><code>sess</code></strong> :&ensp;<code>github.Github</code></dt>
+<dd>GitHub session</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def connect_github(oauth: Path, orgname: str = None) -&gt; tuple:
+    &#34;&#34;&#34;
+    retrieve organizations or users from GitHub
+
+    Parameters
+    ----------
+    oauth : pathlib.Path
+        file containing GitHub Oauth hash
+    orgname : str
+        organization name or username
+
+    Results
+    -------
+    op : github.AuthenticatedUser or github.Organization
+        handle to organization or user
+    sess : github.Github
+        GitHub session
+    &#34;&#34;&#34;
+    sess = github_session(oauth)
+    guser = sess.get_user()
+
+    org = None
+    if orgname:
+        orgs = list(guser.get_orgs())
+        for o in orgs:
+            if o.login == orgname:
+                org = o
+                break
+
+        assert org is not None
+        op = org
+    else:
+        op = guser
+
+    return op, sess</code></pre>
+</details>
+</dd>
+<dt id="gitutils.github_base.github_session"><code class="name flex">
+<span>def <span class="ident">github_session</span></span>(<span>oauth=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>setup GitHub session</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>oauth</code></strong> :&ensp;<code>pathlib.Path</code>, optional</dt>
+<dd>file containing GitHub Oauth hash</dd>
+</dl>
+<h2 id="results">Results</h2>
+<dl>
+<dt><strong><code>g</code></strong> :&ensp;<code>github.Github</code></dt>
+<dd>GitHub session handle</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def github_session(oauth: Path = None) -&gt; github.Github:
+    &#34;&#34;&#34;
+    setup GitHub session
+
+    Parameters
+    ----------
+
+    oauth : pathlib.Path, optional
+        file containing GitHub Oauth hash
+
+    Results
+    -------
+    g : github.Github
+        GitHub session handle
+    &#34;&#34;&#34;
+    if oauth:
+        oauth = Path(oauth).expanduser()
+        g = github.Github(oauth.read_text().strip())  # no trailing \n allowed
+    else:  # unauthenticated
+        g = github.Github()
+
+    return g</code></pre>
+</details>
+</dd>
+<dt id="gitutils.github_base.last_commit_date"><code class="name flex">
+<span>def <span class="ident">last_commit_date</span></span>(<span>sess, name)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>What is the last commit date to this repo.</p>
+<p>Equivalent to:</p>
+<pre><code>git show -s --format=%cI HEAD
+</code></pre>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>sess</code></strong> :&ensp;<code>github.Github</code></dt>
+<dd>GitHub session</dd>
+<dt><strong><code>name</code></strong> :&ensp;<code>str</code></dt>
+<dd>name of GitHub repo e.g. pymap3d</dd>
+</dl>
+<h2 id="results">Results</h2>
+<dl>
+<dt><strong><code>time</code></strong> :&ensp;<code>datetime.datetime</code></dt>
+<dd>time of last repo modification</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def last_commit_date(sess: github.Github, name: str) -&gt; Optional[datetime]:
+    &#34;&#34;&#34;
+    What is the last commit date to this repo.
+
+    Equivalent to:
+
+        git show -s --format=%cI HEAD
+
+
+    Parameters
+    ----------
+    sess : github.Github
+        GitHub session
+    name : str
+        name of GitHub repo e.g. pymap3d
+
+    Results
+    -------
+    time : datetime.datetime
+        time of last repo modification
+    &#34;&#34;&#34;
+    time = None
+
+    try:
+        repo = sess.get_repo(name)
+        if not repo_isempty(repo):
+            time = repo.pushed_at
+    except github.GithubException as e:
+        logging.error(f&#39;{name} not found \n&#39;)
+        logging.info(str(e))
+
+    return time</code></pre>
+</details>
+</dd>
+<dt id="gitutils.github_base.read_repos"><code class="name flex">
+<span>def <span class="ident">read_repos</span></span>(<span>fn, sheet)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>make pandas.Series of email/id, Git url from spreadsheet</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>fn</code></strong> :&ensp;<code>pathlib.Path</code></dt>
+<dd>path to Excel spreadsheet listing usernames and repos to duplicate</dd>
+<dt><strong><code>sheet</code></strong> :&ensp;<code>str</code></dt>
+<dd>name of Excel sheet to use</dd>
+</dl>
+<h2 id="results">Results</h2>
+<dl>
+<dt><strong><code>repos</code></strong> :&ensp;<code>dict</code></dt>
+<dd>all the repos to duplicate</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def read_repos(fn: Path, sheet: str) -&gt; Dict[str, str]:
+    &#34;&#34;&#34;
+    make pandas.Series of email/id, Git url from spreadsheet
+
+    Parameters
+    ----------
+    fn : pathlib.Path
+        path to Excel spreadsheet listing usernames and repos to duplicate
+    sheet : str
+        name of Excel sheet to use
+
+    Results
+    -------
+    repos : dict
+        all the repos to duplicate
+    &#34;&#34;&#34;
+
+    # %% get list of repos to duplicate
+    fn = Path(fn).expanduser()
+    repos = pandas.read_excel(fn, sheet_name=sheet, index_col=0, usecols=&#34;A, D&#34;).squeeze()
+    repos.dropna(how=&#39;any&#39;, inplace=True)
+
+    return repos.to_dict()</code></pre>
+</details>
+</dd>
+<dt id="gitutils.github_base.repo_exists"><code class="name flex">
+<span>def <span class="ident">repo_exists</span></span>(<span>user, reponame)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Does a particular GitHub repo exist?</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>user</code></strong> :&ensp;<code>github.AuthenticatedUser</code> or <code>github.Organization</code></dt>
+<dd>GitHub user or organizaition handle</dd>
+<dt><strong><code>reponame</code></strong> :&ensp;<code>str</code></dt>
+<dd>reponame under user e.g. pymap3d</dd>
+</dl>
+<h2 id="results">Results</h2>
+<dl>
+<dt><strong><code>exists</code></strong> :&ensp;<code>bool</code></dt>
+<dd>GitHub repo exists</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def repo_exists(user: Union[github.AuthenticatedUser.AuthenticatedUser,
+                            github.Organization.Organization],
+                reponame: str) -&gt; bool:
+    &#34;&#34;&#34;
+    Does a particular GitHub repo exist?
+
+    Parameters
+    ----------
+    user : github.AuthenticatedUser or github.Organization
+        GitHub user or organizaition handle
+    reponame : str
+        reponame under user e.g. pymap3d
+
+    Results
+    -------
+    exists : bool
+        GitHub repo exists
+    &#34;&#34;&#34;
+    exists = False
+    try:
+        repo = user.get_repo(reponame)
+        if repo.name:
+            exists = True
+    except github.GithubException as e:
+        logging.info(str(e))
+        pass
+
+    return exists</code></pre>
+</details>
+</dd>
+<dt id="gitutils.github_base.repo_isempty"><code class="name flex">
+<span>def <span class="ident">repo_isempty</span></span>(<span>repo)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>is a GitHub repo empty?</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>repo</code></strong> :&ensp;<code>github.Repository</code></dt>
+<dd>handle to GitHub repo</dd>
+</dl>
+<h2 id="results">Results</h2>
+<dl>
+<dt><strong><code>empty</code></strong> :&ensp;<code>bool</code></dt>
+<dd>GitHub repo empty</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def repo_isempty(repo: github.Repository) -&gt; bool:
+    &#34;&#34;&#34;
+    is a GitHub repo empty?
+
+    Parameters
+    ----------
+    repo : github.Repository
+        handle to GitHub repo
+
+    Results
+    -------
+    empty : bool
+        GitHub repo empty
+    &#34;&#34;&#34;
+    try:
+        repo.get_contents(&#39;/&#39;)
+        empty = False
+    except github.GithubException as e:
+        logging.error(f&#39;{repo.name} is empty. \n&#39;)
+        empty = True
+        logging.info(str(e))
+
+    return empty</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gitutils" href="index.html">gitutils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="gitutils.github_base.check_api_limit" href="#gitutils.github_base.check_api_limit">check_api_limit</a></code></li>
+<li><code><a title="gitutils.github_base.connect_github" href="#gitutils.github_base.connect_github">connect_github</a></code></li>
+<li><code><a title="gitutils.github_base.github_session" href="#gitutils.github_base.github_session">github_session</a></code></li>
+<li><code><a title="gitutils.github_base.last_commit_date" href="#gitutils.github_base.last_commit_date">last_commit_date</a></code></li>
+<li><code><a title="gitutils.github_base.read_repos" href="#gitutils.github_base.read_repos">read_repos</a></code></li>
+<li><code><a title="gitutils.github_base.repo_exists" href="#gitutils.github_base.repo_exists">repo_exists</a></code></li>
+<li><code><a title="gitutils.github_base.repo_isempty" href="#gitutils.github_base.repo_isempty">repo_isempty</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.5.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
