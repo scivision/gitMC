@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.5.3" />
 <title>gitutils.email API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="operations for Git author attributions" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,17 +20,23 @@
 <h1 class="title"><code>gitutils.email</code> module</h1>
 </header>
 <section id="section-intro">
+<p>operations for Git author attributions</p>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">from pathlib import Path
-from typing import Sequence, Tuple, List
+<pre><code class="python">&#34;&#34;&#34;
+operations for Git author attributions
+&#34;&#34;&#34;
+from pathlib import Path
+from typing import Tuple, Iterator, List
 import collections
+import logging
 import subprocess
 
-from .git import baddir, MAGENTA, BLACK, GITEXE
+from .git import gitdirs, GITEXE, TIMEOUT
 
 
-def gitemail(path: Path, exclude: Sequence[str] = None) -&gt; List[Tuple[str, int]]:
+def gitemail(path: Path,
+             exclude: str = None) -&gt; Iterator[Tuple[Path, List[Tuple[str, int]]]]:
     &#34;&#34;&#34;
     returns email addresses of everyone who ever made a Git commit in this repo.
 
@@ -42,35 +48,33 @@ def gitemail(path: Path, exclude: Sequence[str] = None) -&gt; List[Tuple[str, in
     exclude : list of str or tuple of str
         email addresses to exclude
 
-    Results
-    -------
-
-    emails : list of tuple of str, int
+    Yields
+    ------
+    d : pathlib.Path
+        path to the Git repo
+    emails : tuple of str, int
         email addresses with how many times they committed
     &#34;&#34;&#34;
-    path = Path(path).expanduser().resolve()
-
-    if baddir(path):
-        raise FileNotFoundError(f&#39;no Git repos found under {path}&#39;)
-
     assert isinstance(GITEXE, str)
     cmd = [GITEXE, &#39;log&#39;, &#39;--pretty=&#34;%ce&#34;&#39;]
 
-    ret = subprocess.check_output(cmd, cwd=path, universal_newlines=True)
-    ret = ret.replace(&#39;&#34;&#39;, &#39;&#39;)
-    ret = filter(None, ret.split(&#39;\n&#39;))  # remove blanks
+    for d in gitdirs(path):
 
-    # rset = set(ret)
-    # emails = list(rset.difference(set(exclude))) if exclude else list(rset)
+        try:
+            ret = subprocess.check_output(cmd, cwd=d, universal_newlines=True,
+                                          timeout=TIMEOUT)
+        except subprocess.CalledProcessError as e:
+            logging.error(f&#39;{path}  {e}&#39;)
+            continue
 
-    emails = collections.Counter(ret).most_common()
-# %% output
-    print(MAGENTA + path.stem + BLACK)
+        ret = ret.replace(&#39;&#34;&#39;, &#39;&#39;)
+        ret = filter(None, ret.split(&#39;\n&#39;))  # remove blanks
+        if exclude:
+            ret = (n for n in ret if not n.startswith(exclude))
 
-    for email in emails:
-        print(email[0], email[1])
+        emails = collections.Counter(ret).most_common()
 
-    return emails</code></pre>
+        yield d, emails</code></pre>
 </details>
 </section>
 <section>
@@ -92,14 +96,17 @@ def gitemail(path: Path, exclude: Sequence[str] = None) -&gt; List[Tuple[str, in
 <dt><strong><code>exclude</code></strong> :&ensp;<code>list</code> of <code>str</code> or <code>tuple</code> of <code>str</code></dt>
 <dd>email addresses to exclude</dd>
 </dl>
-<h2 id="results">Results</h2>
+<h2 id="yields">Yields</h2>
 <dl>
-<dt><strong><code>emails</code></strong> :&ensp;<code>list</code> of <code>tuple</code> of <code>str</code>, <code>int</code></dt>
+<dt><strong><code>d</code></strong> :&ensp;<code>pathlib.Path</code></dt>
+<dd>path to the Git repo</dd>
+<dt><strong><code>emails</code></strong> :&ensp;<code>tuple</code> of <code>str</code>, <code>int</code></dt>
 <dd>email addresses with how many times they committed</dd>
 </dl></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">def gitemail(path: Path, exclude: Sequence[str] = None) -&gt; List[Tuple[str, int]]:
+<pre><code class="python">def gitemail(path: Path,
+             exclude: str = None) -&gt; Iterator[Tuple[Path, List[Tuple[str, int]]]]:
     &#34;&#34;&#34;
     returns email addresses of everyone who ever made a Git commit in this repo.
 
@@ -111,35 +118,33 @@ def gitemail(path: Path, exclude: Sequence[str] = None) -&gt; List[Tuple[str, in
     exclude : list of str or tuple of str
         email addresses to exclude
 
-    Results
-    -------
-
-    emails : list of tuple of str, int
+    Yields
+    ------
+    d : pathlib.Path
+        path to the Git repo
+    emails : tuple of str, int
         email addresses with how many times they committed
     &#34;&#34;&#34;
-    path = Path(path).expanduser().resolve()
-
-    if baddir(path):
-        raise FileNotFoundError(f&#39;no Git repos found under {path}&#39;)
-
     assert isinstance(GITEXE, str)
     cmd = [GITEXE, &#39;log&#39;, &#39;--pretty=&#34;%ce&#34;&#39;]
 
-    ret = subprocess.check_output(cmd, cwd=path, universal_newlines=True)
-    ret = ret.replace(&#39;&#34;&#39;, &#39;&#39;)
-    ret = filter(None, ret.split(&#39;\n&#39;))  # remove blanks
+    for d in gitdirs(path):
 
-    # rset = set(ret)
-    # emails = list(rset.difference(set(exclude))) if exclude else list(rset)
+        try:
+            ret = subprocess.check_output(cmd, cwd=d, universal_newlines=True,
+                                          timeout=TIMEOUT)
+        except subprocess.CalledProcessError as e:
+            logging.error(f&#39;{path}  {e}&#39;)
+            continue
 
-    emails = collections.Counter(ret).most_common()
-# %% output
-    print(MAGENTA + path.stem + BLACK)
+        ret = ret.replace(&#39;&#34;&#39;, &#39;&#39;)
+        ret = filter(None, ret.split(&#39;\n&#39;))  # remove blanks
+        if exclude:
+            ret = (n for n in ret if not n.startswith(exclude))
 
-    for email in emails:
-        print(email[0], email[1])
+        emails = collections.Counter(ret).most_common()
 
-    return emails</code></pre>
+        yield d, emails</code></pre>
 </details>
 </dd>
 </dl>

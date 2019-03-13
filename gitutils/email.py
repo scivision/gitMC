@@ -1,13 +1,17 @@
+"""
+operations for Git author attributions
+"""
 from pathlib import Path
-from typing import Tuple, List, Optional
+from typing import Tuple, Iterator, List
 import collections
 import logging
 import subprocess
 
-from .git import baddir, GITEXE
+from .git import gitdirs, GITEXE, TIMEOUT
 
 
-def gitemail(path: Path, exclude: str = None) -> Optional[List[Tuple[str, int]]]:
+def gitemail(path: Path,
+             exclude: str = None) -> Iterator[Tuple[Path, List[Tuple[str, int]]]]:
     """
     returns email addresses of everyone who ever made a Git commit in this repo.
 
@@ -19,31 +23,30 @@ def gitemail(path: Path, exclude: str = None) -> Optional[List[Tuple[str, int]]]
     exclude : list of str or tuple of str
         email addresses to exclude
 
-    Results
-    -------
-
-    emails : list of tuple of str, int
+    Yields
+    ------
+    d : pathlib.Path
+        path to the Git repo
+    emails : tuple of str, int
         email addresses with how many times they committed
     """
-    path = Path(path).expanduser().resolve()
-
-    if baddir(path):
-        raise FileNotFoundError(f'no Git repos found under {path}')
-
     assert isinstance(GITEXE, str)
     cmd = [GITEXE, 'log', '--pretty="%ce"']
 
-    try:
-        ret = subprocess.check_output(cmd, cwd=path, universal_newlines=True)
-    except subprocess.CalledProcessError as e:
-        logging.error(f'{path}  {e}')
-        return None
+    for d in gitdirs(path):
 
-    ret = ret.replace('"', '')
-    ret = filter(None, ret.split('\n'))  # remove blanks
-    if exclude:
-        ret = (n for n in ret if not n.startswith(exclude))
+        try:
+            ret = subprocess.check_output(cmd, cwd=d, universal_newlines=True,
+                                          timeout=TIMEOUT)
+        except subprocess.CalledProcessError as e:
+            logging.error(f'{path}  {e}')
+            continue
 
-    emails = collections.Counter(ret).most_common()
+        ret = ret.replace('"', '')
+        ret = filter(None, ret.split('\n'))  # remove blanks
+        if exclude:
+            ret = (n for n in ret if not n.startswith(exclude))
 
-    return emails
+        emails = collections.Counter(ret).most_common()
+
+        yield d, emails

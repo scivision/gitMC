@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.5.3" />
 <title>gitutils API documentation</title>
-<meta name="description" content="These Git utilities use nothing beyond pure Python.
-Some routines are implemented concurrently for fastest operation on large
-numbers of repos, using …" />
+<meta name="description" content="These Git utilities use nothing beyond pure Python and command-line Git.
+Speed is emphasized throughout, with pipelining and concurrent `asyncio` …" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -22,16 +21,15 @@ numbers of repos, using …" />
 <h1 class="title"><code>gitutils</code> module</h1>
 </header>
 <section id="section-intro">
-<p>These Git utilities use nothing beyond pure Python.
-Some routines are implemented concurrently for fastest operation on large
-numbers of repos, using Python standard library <code>asyncio</code>.</p>
+<p>These Git utilities use nothing beyond pure Python and command-line Git.
+Speed is emphasized throughout, with pipelining and concurrent <code>asyncio</code> routines throughout
+for fastest operation on large numbers of repos.</p>
 <details class="source">
 <summary>Source code</summary>
 <pre><code class="python">&#34;&#34;&#34;
-These Git utilities use nothing beyond pure Python.
-Some routines are implemented concurrently for fastest operation on large
-numbers of repos, using Python standard library `asyncio`.
-
+These Git utilities use nothing beyond pure Python and command-line Git.
+Speed is emphasized throughout, with pipelining and concurrent `asyncio` routines throughout
+for fastest operation on large numbers of repos.
 &#34;&#34;&#34;
 from pathlib import Path
 from typing import List
@@ -64,7 +62,7 @@ def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -&gt; List
     &#34;&#34;&#34;
     path = Path(path).expanduser()
 
-    dlist = [x for x in path.iterdir() if x.is_dir()]
+    dlist = (x for x in path.iterdir() if x.is_dir())
 
     missing = []
     for d in dlist:
@@ -83,31 +81,31 @@ def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -&gt; List
 <dl>
 <dt><code class="name"><a title="gitutils.branch" href="branch.html">gitutils.branch</a></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>Operations for Git branches</p></section>
 </dd>
 <dt><code class="name"><a title="gitutils.email" href="email.html">gitutils.email</a></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>operations for Git author attributions</p></section>
 </dd>
 <dt><code class="name"><a title="gitutils.git" href="git.html">gitutils.git</a></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>Git utilities: focused on speed for very large numbers of Git repos</p></section>
 </dd>
 <dt><code class="name"><a title="gitutils.github_base" href="github_base.html">gitutils.github_base</a></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>GitHub API utilities</p></section>
 </dd>
 <dt><code class="name"><a title="gitutils.github_repo_stats" href="github_repo_stats.html">gitutils.github_repo_stats</a></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>How many total GitHub stars do you have?</p></section>
 </dd>
 <dt><code class="name"><a title="gitutils.pull" href="pull.html">gitutils.pull</a></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>Git fetch / pull functions</p></section>
 </dd>
 <dt><code class="name"><a title="gitutils.push" href="push.html">gitutils.push</a></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>detect Git local repo modifications. Crazy fast by not invoking remote.</p></section>
 </dd>
 </dl>
 </section>
@@ -157,7 +155,7 @@ def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -&gt; List
     &#34;&#34;&#34;
     path = Path(path).expanduser()
 
-    dlist = [x for x in path.iterdir() if x.is_dir()]
+    dlist = (x for x in path.iterdir() if x.is_dir())
 
     missing = []
     for d in dlist:

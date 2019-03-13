@@ -1,3 +1,6 @@
+"""
+How many total GitHub stars do you have?
+"""
 from typing import Tuple, List
 from time import sleep
 import numpy as np

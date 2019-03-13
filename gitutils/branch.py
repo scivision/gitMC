@@ -1,3 +1,7 @@
+"""
+Operations for Git branches
+"""
+
 from typing import List, Tuple
 from pathlib import Path
 import asyncio
@@ -12,7 +16,8 @@ if not GITEXE:
 
 
 async def findbranch(mainbranch: str, rdir: Path) -> List[Tuple[Path, str]]:
-    """find all branches in tree not matching ok
+    """
+    find all branches in tree not matching "mainbranch"
 
     Parameters
     ----------

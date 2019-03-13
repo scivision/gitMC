@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.5.3" />
 <title>gitutils.git API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Git utilities: focused on speed for very large numbers of Git repos" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,11 +20,15 @@
 <h1 class="title"><code>gitutils.git</code> module</h1>
 </header>
 <section id="section-intro">
+<p>Git utilities: focused on speed for very large numbers of Git repos</p>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">from pathlib import Path
+<pre><code class="python">&#34;&#34;&#34;
+Git utilities: focused on speed for very large numbers of Git repos
+&#34;&#34;&#34;
+from pathlib import Path
 import subprocess
-from typing import List
+from typing import List, Iterator, Any
 import shutil
 
 try:
@@ -35,7 +39,8 @@ try:
 except ImportError:
     MAGENTA = BLACK = &#39;&#39;
 
-GITEXE = shutil.which(&#39;git&#39;)
+TIMEOUT = 30.  # arbitrary, seconds
+GITEXE: Any = shutil.which(&#39;git&#39;)  # type: ignore
 if not GITEXE:
     raise FileNotFoundError(&#39;Could not find executable for Git&#39;)
 
@@ -46,6 +51,31 @@ replaced by git status --porcelain:
 
 DOES NOT WORK [&#39;git&#39;,&#39;log&#39;,&#39;--branches&#39;,&#39;--not&#39;,&#39;--remotes&#39;],     # check for uncommitted branches
 &#34;&#34;&#34;
+
+
+def gitdirs(path: Path) -&gt; Iterator[Path]:
+    &#34;&#34;&#34;
+    Generator for Git directories
+
+    Parameters
+    ----------
+    path: pathlib.Path
+        top-level Git directory
+
+    Yields
+    ------
+    dirs : generator
+        generator for Git repo paths
+    &#34;&#34;&#34;
+
+    path = Path(path).expanduser().resolve()
+
+    if baddir(path):  # assume top-level dir under which Git repos live
+        for x in path.iterdir():
+            if not baddir(x):
+                yield x
+    else:
+        yield path
 
 
 def baddir(path: Path) -&gt; bool:
@@ -68,7 +98,7 @@ def baddir(path: Path) -&gt; bool:
     path = path.expanduser()
 
     try:
-        bad = (path / &#39;.nogit&#39;).is_file() or not (path / &#39;.git&#39;).is_dir()
+        bad = (path / &#39;.nogit&#39;).is_file() or not (path / &#39;.git&#39; / &#39;HEAD&#39;).is_file()
     except PermissionError:
         bad = True
 
@@ -143,11 +173,53 @@ A directory with top-level file ".nogit" is excluded.</p>
     path = path.expanduser()
 
     try:
-        bad = (path / &#39;.nogit&#39;).is_file() or not (path / &#39;.git&#39;).is_dir()
+        bad = (path / &#39;.nogit&#39;).is_file() or not (path / &#39;.git&#39; / &#39;HEAD&#39;).is_file()
     except PermissionError:
         bad = True
 
     return bad</code></pre>
+</details>
+</dd>
+<dt id="gitutils.git.gitdirs"><code class="name flex">
+<span>def <span class="ident">gitdirs</span></span>(<span>path)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Generator for Git directories</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>pathlib.Path</code></dt>
+<dd>top-level Git directory</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><strong><code>dirs</code></strong> :&ensp;<code>generator</code></dt>
+<dd>generator for Git repo paths</dd>
+</dl></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def gitdirs(path: Path) -&gt; Iterator[Path]:
+    &#34;&#34;&#34;
+    Generator for Git directories
+
+    Parameters
+    ----------
+    path: pathlib.Path
+        top-level Git directory
+
+    Yields
+    ------
+    dirs : generator
+        generator for Git repo paths
+    &#34;&#34;&#34;
+
+    path = Path(path).expanduser().resolve()
+
+    if baddir(path):  # assume top-level dir under which Git repos live
+        for x in path.iterdir():
+            if not baddir(x):
+                yield x
+    else:
+        yield path</code></pre>
 </details>
 </dd>
 <dt id="gitutils.git.listchanged"><code class="name flex">
@@ -209,6 +281,7 @@ A directory with top-level file ".nogit" is excluded.</p>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="gitutils.git.baddir" href="#gitutils.git.baddir">baddir</a></code></li>
+<li><code><a title="gitutils.git.gitdirs" href="#gitutils.git.gitdirs">gitdirs</a></code></li>
 <li><code><a title="gitutils.git.listchanged" href="#gitutils.git.listchanged">listchanged</a></code></li>
 </ul>
 </li>

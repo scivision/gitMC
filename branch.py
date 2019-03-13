@@ -15,8 +15,6 @@ def main():
                    default='master', help='name of your main branch')
     P = p.parse_args()
 
-    loop = asyncio.new_event_loop()
-
     if os.name == 'nt':
         loop = asyncio.ProactorEventLoop()
         asyncio.set_event_loop(loop)

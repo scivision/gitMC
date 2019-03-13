@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.5.3" />
 <title>gitutils.branch API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Operations for Git branches" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,9 +20,14 @@
 <h1 class="title"><code>gitutils.branch</code> module</h1>
 </header>
 <section id="section-intro">
+<p>Operations for Git branches</p>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">from typing import List, Tuple
+<pre><code class="python">&#34;&#34;&#34;
+Operations for Git branches
+&#34;&#34;&#34;
+
+from typing import List, Tuple
 from pathlib import Path
 import asyncio
 import logging
@@ -36,7 +41,8 @@ if not GITEXE:
 
 
 async def findbranch(mainbranch: str, rdir: Path) -&gt; List[Tuple[Path, str]]:
-    &#34;&#34;&#34;find all branches in tree not matching ok
+    &#34;&#34;&#34;
+    find all branches in tree not matching &#34;mainbranch&#34;
 
     Parameters
     ----------
@@ -110,7 +116,7 @@ async def _worker(mainbranch: str, path: Path) -&gt; Tuple[Path, str]:
 <span>async def <span class="ident">findbranch</span></span>(<span>mainbranch, rdir)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>find all branches in tree not matching ok</p>
+<section class="desc"><p>find all branches in tree not matching "mainbranch"</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>mainbranch</code></strong> :&ensp;<code>str</code></dt>
@@ -128,7 +134,8 @@ async def _worker(mainbranch: str, path: Path) -&gt; Tuple[Path, str]:
 <details class="source">
 <summary>Source code</summary>
 <pre><code class="python">async def findbranch(mainbranch: str, rdir: Path) -&gt; List[Tuple[Path, str]]:
-    &#34;&#34;&#34;find all branches in tree not matching ok
+    &#34;&#34;&#34;
+    find all branches in tree not matching &#34;mainbranch&#34;
 
     Parameters
     ----------

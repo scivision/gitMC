@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.5.3" />
 <title>gitutils.push API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="detect Git local repo modifications. Crazy fast by not invoking remote." />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,17 +20,24 @@
 <h1 class="title"><code>gitutils.push</code> module</h1>
 </header>
 <section id="section-intro">
+<p>detect Git local repo modifications. Crazy fast by not invoking remote.</p>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">from pathlib import Path
-from typing import List
+<pre><code class="python">&#34;&#34;&#34;
+detect Git local repo modifications. Crazy fast by not invoking remote.
+&#34;&#34;&#34;
+from pathlib import Path
+from typing import Iterator
 import subprocess
 import logging
 
-from .git import baddir, MAGENTA, BLACK, GITEXE
+from .git import gitdirs, MAGENTA, BLACK, GITEXE, TIMEOUT
+
+C0 = [GITEXE, &#39;rev-parse&#39;, &#39;--abbrev-ref&#39;, &#39;HEAD&#39;]  # get branch name
+C1 = [GITEXE, &#39;status&#39;, &#39;--porcelain&#39;]  # uncommitted or changed files
 
 
-def gitpushall(rdir: Path, verbose: bool = False) -&gt; List[Path]:
+def gitpushall(rdir: Path, verbose: bool = False) -&gt; Iterator[Path]:
     &#34;&#34;&#34;
     Notes which Git repos have local changes that haven&#39;t been pushed to remote
 
@@ -41,26 +48,15 @@ def gitpushall(rdir: Path, verbose: bool = False) -&gt; List[Path]:
     verbose : bool
         verbosity
 
-    Results
-    -------
-    dir_topush : list of pathlib.Path
-        list of Git repos that have local changes
+    Yields
+    ------
+    dir_topush : generator of pathlib.Path
+        Git repos that have local changes
     &#34;&#34;&#34;
-    rdir = Path(rdir).expanduser()
-    dlist = [x for x in rdir.iterdir() if not baddir(x)]
 
-    if not dlist:
-        if not baddir(rdir):
-            dlist = [rdir]
-        else:
-            raise FileNotFoundError(f&#39;no Git repos found under {rdir}&#39;)
-
-    dir_topush = []
-    for d in dlist:
+    for d in gitdirs(rdir):
         if detectchange(d, verbose):
-            dir_topush.append(d)
-
-    return dir_topush
+            yield d
 
 
 def detectchange(d: Path, verbose: bool = False) -&gt; bool:
@@ -79,39 +75,35 @@ def detectchange(d: Path, verbose: bool = False) -&gt; bool:
     changed : bool
         has Git repo had local changes
     &#34;&#34;&#34;
-    c1 = [&#39;git&#39;, &#39;status&#39;, &#39;--porcelain&#39;]  # uncommitted or changed files
-    assert isinstance(GITEXE, str)
 
     try:
         # %% detect uncommitted changes
-        ret = subprocess.check_output(c1, cwd=d, universal_newlines=True)
-        changed = _print_change(ret, d, verbose)
+        ret = subprocess.check_output(C1, cwd=d, universal_newlines=True,
+                                      timeout=TIMEOUT)
+        changed = bool(ret)
+        _print_change(ret, d, verbose)
         if changed:
             return changed
-
 # %% detect committed, but not pushed
-        c0 = [GITEXE, &#39;rev-parse&#39;, &#39;--abbrev-ref&#39;, &#39;HEAD&#39;]  # get branch name
-        branch = subprocess.check_output(c0, cwd=d, universal_newlines=True)[:-1]
+        branch = subprocess.check_output(C0, cwd=d, universal_newlines=True,
+                                         timeout=TIMEOUT)[:-1]
 
-        c2 = [GITEXE, &#39;diff&#39;, &#39;--stat&#39;, f&#39;origin/{branch}..&#39;]
-        ret = subprocess.check_output(c2, cwd=d, universal_newlines=True)
-        changed = _print_change(ret, d, verbose)
+        C2 = [GITEXE, &#39;diff&#39;, &#39;--stat&#39;, f&#39;origin/{branch}..&#39;]
+        ret = subprocess.check_output(C2, cwd=d, universal_newlines=True,
+                                      timeout=TIMEOUT)
+
+        changed = bool(ret)
+        _print_change(ret, d, verbose)
     except subprocess.CalledProcessError as e:
         logging.error(f&#39;{d} {e.output}&#39;)
 
     return changed
 
 
-def _print_change(ret: str, d: Path, verbose: bool = False) -&gt; bool:
-    changed = False
-
-    if ret:
-        changed = True
-        if verbose:
-            print(MAGENTA + str(d))
-            print(BLACK + ret)
-
-    return changed</code></pre>
+def _print_change(ret: str, d: Path, verbose: bool = False):
+    if verbose and ret:
+        print(MAGENTA + str(d))
+        print(BLACK + ret)</code></pre>
 </details>
 </section>
 <section>
@@ -156,23 +148,25 @@ def _print_change(ret: str, d: Path, verbose: bool = False) -&gt; bool:
     changed : bool
         has Git repo had local changes
     &#34;&#34;&#34;
-    c1 = [&#39;git&#39;, &#39;status&#39;, &#39;--porcelain&#39;]  # uncommitted or changed files
-    assert isinstance(GITEXE, str)
 
     try:
         # %% detect uncommitted changes
-        ret = subprocess.check_output(c1, cwd=d, universal_newlines=True)
-        changed = _print_change(ret, d, verbose)
+        ret = subprocess.check_output(C1, cwd=d, universal_newlines=True,
+                                      timeout=TIMEOUT)
+        changed = bool(ret)
+        _print_change(ret, d, verbose)
         if changed:
             return changed
-
 # %% detect committed, but not pushed
-        c0 = [GITEXE, &#39;rev-parse&#39;, &#39;--abbrev-ref&#39;, &#39;HEAD&#39;]  # get branch name
-        branch = subprocess.check_output(c0, cwd=d, universal_newlines=True)[:-1]
+        branch = subprocess.check_output(C0, cwd=d, universal_newlines=True,
+                                         timeout=TIMEOUT)[:-1]
 
-        c2 = [GITEXE, &#39;diff&#39;, &#39;--stat&#39;, f&#39;origin/{branch}..&#39;]
-        ret = subprocess.check_output(c2, cwd=d, universal_newlines=True)
-        changed = _print_change(ret, d, verbose)
+        C2 = [GITEXE, &#39;diff&#39;, &#39;--stat&#39;, f&#39;origin/{branch}..&#39;]
+        ret = subprocess.check_output(C2, cwd=d, universal_newlines=True,
+                                      timeout=TIMEOUT)
+
+        changed = bool(ret)
+        _print_change(ret, d, verbose)
     except subprocess.CalledProcessError as e:
         logging.error(f&#39;{d} {e.output}&#39;)
 
@@ -191,14 +185,14 @@ def _print_change(ret: str, d: Path, verbose: bool = False) -&gt; bool:
 <dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code></dt>
 <dd>verbosity</dd>
 </dl>
-<h2 id="results">Results</h2>
+<h2 id="yields">Yields</h2>
 <dl>
-<dt><strong><code>dir_topush</code></strong> :&ensp;<code>list</code> of <code>pathlib.Path</code></dt>
-<dd>list of Git repos that have local changes</dd>
+<dt><strong><code>dir_topush</code></strong> :&ensp;<code>generator</code> of <code>pathlib.Path</code></dt>
+<dd>Git repos that have local changes</dd>
 </dl></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">def gitpushall(rdir: Path, verbose: bool = False) -&gt; List[Path]:
+<pre><code class="python">def gitpushall(rdir: Path, verbose: bool = False) -&gt; Iterator[Path]:
     &#34;&#34;&#34;
     Notes which Git repos have local changes that haven&#39;t been pushed to remote
 
@@ -209,26 +203,15 @@ def _print_change(ret: str, d: Path, verbose: bool = False) -&gt; bool:
     verbose : bool
         verbosity
 
-    Results
-    -------
-    dir_topush : list of pathlib.Path
-        list of Git repos that have local changes
+    Yields
+    ------
+    dir_topush : generator of pathlib.Path
+        Git repos that have local changes
     &#34;&#34;&#34;
-    rdir = Path(rdir).expanduser()
-    dlist = [x for x in rdir.iterdir() if not baddir(x)]
 
-    if not dlist:
-        if not baddir(rdir):
-            dlist = [rdir]
-        else:
-            raise FileNotFoundError(f&#39;no Git repos found under {rdir}&#39;)
-
-    dir_topush = []
-    for d in dlist:
+    for d in gitdirs(rdir):
         if detectchange(d, verbose):
-            dir_topush.append(d)
-
-    return dir_topush</code></pre>
+            yield d</code></pre>
 </details>
 </dd>
 </dl>

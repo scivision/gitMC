@@ -1,3 +1,6 @@
+"""
+GitHub API utilities
+"""
 import github
 from pathlib import Path
 from datetime import datetime

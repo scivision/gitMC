@@ -8,7 +8,9 @@
 # Git Utilities
 
 Platform-independent (Linux/Mac/Windows) Git utilities, useful for managing large (100+) numbers of Git repos.
-I use command-line `git` because PyGit also requires command-line Git installed, and I don't need the advanced functionality.
+Speed is an emphasis throughout, with concurrency `asyncio` and pipelining enabled in much of the program.
+
+This uses command-line `git` because PyGit also requires command-line Git installed, and we don't need the advanced functionality.
 
 An important feature in
 ```sh

@@ -1,8 +1,7 @@
 """
-These Git utilities use nothing beyond pure Python.
-Some routines are implemented concurrently for fastest operation on large
-numbers of repos, using Python standard library `asyncio`.
-
+These Git utilities use nothing beyond pure Python and command-line Git.
+Speed is emphasized throughout, with pipelining and concurrent `asyncio` routines throughout
+for fastest operation on large numbers of repos.
 """
 from pathlib import Path
 from typing import List
@@ -35,7 +34,7 @@ def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -> List[Pa
     """
     path = Path(path).expanduser()
 
-    dlist = [x for x in path.iterdir() if x.is_dir()]
+    dlist = (x for x in path.iterdir() if x.is_dir())
 
     missing = []
     for d in dlist:

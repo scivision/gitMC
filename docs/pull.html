@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.5.3" />
 <title>gitutils.pull API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Git fetch / pull functions" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,20 +20,20 @@
 <h1 class="title"><code>gitutils.pull</code> module</h1>
 </header>
 <section id="section-intro">
+<p>Git fetch / pull functions</p>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">from operator import attrgetter
+<pre><code class="python">&#34;&#34;&#34;
+Git fetch / pull functions
+&#34;&#34;&#34;
 from pathlib import Path
-from typing import List
+from typing import Iterator
 import subprocess
-import logging
-from time import sleep
-from sys import stderr
 
-from .git import baddir, GITEXE
+from .git import GITEXE, gitdirs, TIMEOUT
 
 
-def fetchpull(mode: str, rdir: Path) -&gt; List[str]:
+def fetchpull(mode: str, rdir: Path, verbose: bool = False) -&gt; Iterator[Path]:
     &#34;&#34;&#34;
     handles recursive &#34;git pull&#34; and &#34;git fetch&#34;
 
@@ -44,12 +44,13 @@ def fetchpull(mode: str, rdir: Path) -&gt; List[str]:
         fetch or pull
     rdir : pathlib.Path
         top-level path over Git repos
+    verbose : bool
+        verbosity
 
-    Results
-    -------
-
-    failed : list of str
-        names of Git repos with failures
+    Yields
+    ------
+    failed : Path
+        Git repos with failures
 
 
     Reference:
@@ -57,43 +58,32 @@ def fetchpull(mode: str, rdir: Path) -&gt; List[str]:
     format mini-language:
     https://docs.python.org/3/library/string.html#format-specification-mini-language
     &#34;&#34;&#34;
-    # leave .resolve() for useful error messages
-    rdir = Path(rdir).expanduser().resolve()
+    # Lmax = len(max(map(attrgetter(&#39;name&#39;), dlist), key=len))
 
-    dlist = [x for x in rdir.iterdir() if not baddir(x)]
-
-    if not dlist:
-        if not baddir(rdir):
-            dlist = [rdir]
-        else:
-            raise FileNotFoundError(f&#39;no Git repos found under {rdir}&#39;)
-
-    Lmax = len(max(map(attrgetter(&#39;name&#39;), dlist), key=len))
-    print(&#39;git&#39;, mode, len(dlist), &#39;paths under&#39;, rdir)
-
-    failed = []
     assert isinstance(GITEXE, str)
 
-    for d in dlist:
-
-        print(f&#39; --&gt; {d.name:&lt;{Lmax}}&#39;, end=&#34;&#34;, flush=True)
+    for d in gitdirs(rdir):
+        # assumes console is at least 80 characters wide
+        if verbose:
+            print(f&#39; --&gt; {d.name:&lt;80}&#39;, end=&#34;&#34;, flush=True)
         try:
             # don&#39;t use timeout as it doesn&#39;t work right when waiting for user input (password)
-            subprocess.check_output([GITEXE] + mode.split(), cwd=d,
-                                    universal_newlines=True)
-            print(end=&#34;\r&#34;)
-        except subprocess.CalledProcessError:
-            failed.append(d.name)
+            ret = subprocess.run([GITEXE] + mode.split(), cwd=d,
+                                 universal_newlines=True,
+                                 stdout=subprocess.DEVNULL,
+                                 stderr=subprocess.PIPE,
+                                 timeout=TIMEOUT)
 
-        sleep(.1)  # don&#39;t hammer the remote server
+            if ret.stderr:
+                print(d.name)
+                print(ret.stderr)
+                yield d
+            elif verbose:
+                print(end=&#34;\r&#34;)
 
-    print()
-    if failed:
-        logging.error(f&#39;git {mode} {rdir}&#39;)
-        # no backslash allowed in f-strings
-        print(&#39;\n&#39;.join(failed), file=stderr)
-
-    return failed</code></pre>
+        except subprocess.CalledProcessError as e:
+            print(f&#39;{d.name}  {e}&#39;)
+            yield d</code></pre>
 </details>
 </section>
 <section>
@@ -104,7 +94,7 @@ def fetchpull(mode: str, rdir: Path) -&gt; List[str]:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="gitutils.pull.fetchpull"><code class="name flex">
-<span>def <span class="ident">fetchpull</span></span>(<span>mode, rdir)</span>
+<span>def <span class="ident">fetchpull</span></span>(<span>mode, rdir, verbose=False)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>handles recursive "git pull" and "git fetch"</p>
@@ -114,18 +104,20 @@ def fetchpull(mode: str, rdir: Path) -&gt; List[str]:
 <dd>fetch or pull</dd>
 <dt><strong><code>rdir</code></strong> :&ensp;<code>pathlib.Path</code></dt>
 <dd>top-level path over Git repos</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code></dt>
+<dd>verbosity</dd>
 </dl>
-<h2 id="results">Results</h2>
+<h2 id="yields">Yields</h2>
 <dl>
-<dt><strong><code>failed</code></strong> :&ensp;<code>list</code> of <code>str</code></dt>
-<dd>names of Git repos with failures</dd>
+<dt><strong><code>failed</code></strong> :&ensp;<code>Path</code></dt>
+<dd>Git repos with failures</dd>
 </dl>
 <h2 id="reference">Reference:</h2>
 <p>format mini-language:
 <a href="https://docs.python.org/3/library/string.html#format-specification-mini-language">https://docs.python.org/3/library/string.html#format-specification-mini-language</a></p></section>
 <details class="source">
 <summary>Source code</summary>
-<pre><code class="python">def fetchpull(mode: str, rdir: Path) -&gt; List[str]:
+<pre><code class="python">def fetchpull(mode: str, rdir: Path, verbose: bool = False) -&gt; Iterator[Path]:
     &#34;&#34;&#34;
     handles recursive &#34;git pull&#34; and &#34;git fetch&#34;
 
@@ -136,12 +128,13 @@ def fetchpull(mode: str, rdir: Path) -&gt; List[str]:
         fetch or pull
     rdir : pathlib.Path
         top-level path over Git repos
+    verbose : bool
+        verbosity
 
-    Results
-    -------
-
-    failed : list of str
-        names of Git repos with failures
+    Yields
+    ------
+    failed : Path
+        Git repos with failures
 
 
     Reference:
@@ -149,43 +142,32 @@ def fetchpull(mode: str, rdir: Path) -&gt; List[str]:
     format mini-language:
     https://docs.python.org/3/library/string.html#format-specification-mini-language
     &#34;&#34;&#34;
-    # leave .resolve() for useful error messages
-    rdir = Path(rdir).expanduser().resolve()
+    # Lmax = len(max(map(attrgetter(&#39;name&#39;), dlist), key=len))
 
-    dlist = [x for x in rdir.iterdir() if not baddir(x)]
-
-    if not dlist:
-        if not baddir(rdir):
-            dlist = [rdir]
-        else:
-            raise FileNotFoundError(f&#39;no Git repos found under {rdir}&#39;)
-
-    Lmax = len(max(map(attrgetter(&#39;name&#39;), dlist), key=len))
-    print(&#39;git&#39;, mode, len(dlist), &#39;paths under&#39;, rdir)
-
-    failed = []
     assert isinstance(GITEXE, str)
 
-    for d in dlist:
-
-        print(f&#39; --&gt; {d.name:&lt;{Lmax}}&#39;, end=&#34;&#34;, flush=True)
+    for d in gitdirs(rdir):
+        # assumes console is at least 80 characters wide
+        if verbose:
+            print(f&#39; --&gt; {d.name:&lt;80}&#39;, end=&#34;&#34;, flush=True)
         try:
             # don&#39;t use timeout as it doesn&#39;t work right when waiting for user input (password)
-            subprocess.check_output([GITEXE] + mode.split(), cwd=d,
-                                    universal_newlines=True)
-            print(end=&#34;\r&#34;)
-        except subprocess.CalledProcessError:
-            failed.append(d.name)
+            ret = subprocess.run([GITEXE] + mode.split(), cwd=d,
+                                 universal_newlines=True,
+                                 stdout=subprocess.DEVNULL,
+                                 stderr=subprocess.PIPE,
+                                 timeout=TIMEOUT)
 
-        sleep(.1)  # don&#39;t hammer the remote server
+            if ret.stderr:
+                print(d.name)
+                print(ret.stderr)
+                yield d
+            elif verbose:
+                print(end=&#34;\r&#34;)
 
-    print()
-    if failed:
-        logging.error(f&#39;git {mode} {rdir}&#39;)
-        # no backslash allowed in f-strings
-        print(&#39;\n&#39;.join(failed), file=stderr)
-
-    return failed</code></pre>
+        except subprocess.CalledProcessError as e:
+            print(f&#39;{d.name}  {e}&#39;)
+            yield d</code></pre>
 </details>
 </dd>
 </dl>

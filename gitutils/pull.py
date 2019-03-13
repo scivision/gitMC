@@ -1,15 +1,14 @@
-from operator import attrgetter
+"""
+Git fetch / pull functions
+"""
 from pathlib import Path
-from typing import List
+from typing import Iterator
 import subprocess
-import logging
-from time import sleep
-from sys import stderr
 
-from .git import baddir, GITEXE
+from .git import GITEXE, gitdirs, TIMEOUT
 
 
-def fetchpull(mode: str, rdir: Path) -> List[str]:
+def fetchpull(mode: str, rdir: Path, verbose: bool = False) -> Iterator[Path]:
     """
     handles recursive "git pull" and "git fetch"
 
@@ -20,12 +19,13 @@ def fetchpull(mode: str, rdir: Path) -> List[str]:
         fetch or pull
     rdir : pathlib.Path
         top-level path over Git repos
+    verbose : bool
+        verbosity
 
-    Results
-    -------
-
-    failed : list of str
-        names of Git repos with failures
+    Yields
+    ------
+    failed : Path
+        Git repos with failures
 
 
     Reference:
@@ -33,40 +33,29 @@ def fetchpull(mode: str, rdir: Path) -> List[str]:
     format mini-language:
     https://docs.python.org/3/library/string.html#format-specification-mini-language
     """
-    # leave .resolve() for useful error messages
-    rdir = Path(rdir).expanduser().resolve()
+    # Lmax = len(max(map(attrgetter('name'), dlist), key=len))
 
-    dlist = [x for x in rdir.iterdir() if not baddir(x)]
-
-    if not dlist:
-        if not baddir(rdir):
-            dlist = [rdir]
-        else:
-            raise FileNotFoundError(f'no Git repos found under {rdir}')
-
-    Lmax = len(max(map(attrgetter('name'), dlist), key=len))
-    print('git', mode, len(dlist), 'paths under', rdir)
-
-    failed = []
     assert isinstance(GITEXE, str)
 
-    for d in dlist:
-
-        print(f' --> {d.name:<{Lmax}}', end="", flush=True)
+    for d in gitdirs(rdir):
+        # assumes console is at least 80 characters wide
+        if verbose:
+            print(f' --> {d.name:<80}', end="", flush=True)
         try:
             # don't use timeout as it doesn't work right when waiting for user input (password)
-            subprocess.check_output([GITEXE] + mode.split(), cwd=d,
-                                    universal_newlines=True)
-            print(end="\r")
-        except subprocess.CalledProcessError:
-            failed.append(d.name)
+            ret = subprocess.run([GITEXE] + mode.split(), cwd=d,
+                                 universal_newlines=True,
+                                 stdout=subprocess.DEVNULL,
+                                 stderr=subprocess.PIPE,
+                                 timeout=TIMEOUT)
 
-        sleep(.1)  # don't hammer the remote server
+            if ret.stderr:
+                print(d.name)
+                print(ret.stderr)
+                yield d
+            elif verbose:
+                print(end="\r")
 
-    print()
-    if failed:
-        logging.error(f'git {mode} {rdir}')
-        # no backslash allowed in f-strings
-        print('\n'.join(failed), file=stderr)
-
-    return failed
+        except subprocess.CalledProcessError as e:
+            print(f'{d.name}  {e}')
+            yield d

@@ -1,12 +1,18 @@
+"""
+detect Git local repo modifications. Crazy fast by not invoking remote.
+"""
 from pathlib import Path
-from typing import List
+from typing import Iterator
 import subprocess
 import logging
 
-from .git import baddir, MAGENTA, BLACK, GITEXE
+from .git import gitdirs, MAGENTA, BLACK, GITEXE, TIMEOUT
+
+C0 = [GITEXE, 'rev-parse', '--abbrev-ref', 'HEAD']  # get branch name
+C1 = [GITEXE, 'status', '--porcelain']  # uncommitted or changed files
 
 
-def gitpushall(rdir: Path, verbose: bool = False) -> List[Path]:
+def gitpushall(rdir: Path, verbose: bool = False) -> Iterator[Path]:
     """
     Notes which Git repos have local changes that haven't been pushed to remote
 
@@ -17,26 +23,15 @@ def gitpushall(rdir: Path, verbose: bool = False) -> List[Path]:
     verbose : bool
         verbosity
 
-    Results
-    -------
-    dir_topush : list of pathlib.Path
-        list of Git repos that have local changes
+    Yields
+    ------
+    dir_topush : generator of pathlib.Path
+        Git repos that have local changes
     """
-    rdir = Path(rdir).expanduser()
-    dlist = [x for x in rdir.iterdir() if not baddir(x)]
 
-    if not dlist:
-        if not baddir(rdir):
-            dlist = [rdir]
-        else:
-            raise FileNotFoundError(f'no Git repos found under {rdir}')
-
-    dir_topush = []
-    for d in dlist:
+    for d in gitdirs(rdir):
         if detectchange(d, verbose):
-            dir_topush.append(d)
-
-    return dir_topush
+            yield d
 
 
 def detectchange(d: Path, verbose: bool = False) -> bool:
@@ -55,36 +50,32 @@ def detectchange(d: Path, verbose: bool = False) -> bool:
     changed : bool
         has Git repo had local changes
     """
-    c1 = ['git', 'status', '--porcelain']  # uncommitted or changed files
-    assert isinstance(GITEXE, str)
 
     try:
         # %% detect uncommitted changes
-        ret = subprocess.check_output(c1, cwd=d, universal_newlines=True)
-        changed = _print_change(ret, d, verbose)
+        ret = subprocess.check_output(C1, cwd=d, universal_newlines=True,
+                                      timeout=TIMEOUT)
+        changed = bool(ret)
+        _print_change(ret, d, verbose)
         if changed:
             return changed
-
 # %% detect committed, but not pushed
-        c0 = [GITEXE, 'rev-parse', '--abbrev-ref', 'HEAD']  # get branch name
-        branch = subprocess.check_output(c0, cwd=d, universal_newlines=True)[:-1]
+        branch = subprocess.check_output(C0, cwd=d, universal_newlines=True,
+                                         timeout=TIMEOUT)[:-1]
 
-        c2 = [GITEXE, 'diff', '--stat', f'origin/{branch}..']
-        ret = subprocess.check_output(c2, cwd=d, universal_newlines=True)
-        changed = _print_change(ret, d, verbose)
+        C2 = [GITEXE, 'diff', '--stat', f'origin/{branch}..']
+        ret = subprocess.check_output(C2, cwd=d, universal_newlines=True,
+                                      timeout=TIMEOUT)
+
+        changed = bool(ret)
+        _print_change(ret, d, verbose)
     except subprocess.CalledProcessError as e:
         logging.error(f'{d} {e.output}')
 
     return changed
 
 
-def _print_change(ret: str, d: Path, verbose: bool = False) -> bool:
-    changed = False
-
-    if ret:
-        changed = True
-        if verbose:
-            print(MAGENTA + str(d))
-            print(BLACK + ret)
-
-    return changed
+def _print_change(ret: str, d: Path, verbose: bool = False):
+    if verbose and ret:
+        print(MAGENTA + str(d))
+        print(BLACK + ret)

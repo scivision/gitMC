@@ -1,6 +1,9 @@
+"""
+Git utilities: focused on speed for very large numbers of Git repos
+"""
 from pathlib import Path
 import subprocess
-from typing import List
+from typing import List, Iterator, Any
 import shutil
 
 try:
@@ -11,7 +14,8 @@ try:
 except ImportError:
     MAGENTA = BLACK = ''
 
-GITEXE = shutil.which('git')
+TIMEOUT = 30.  # arbitrary, seconds
+GITEXE: Any = shutil.which('git')  # type: ignore
 if not GITEXE:
     raise FileNotFoundError('Could not find executable for Git')
 
@@ -22,6 +26,31 @@ replaced by git status --porcelain:
 
 DOES NOT WORK ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches
 """
+
+
+def gitdirs(path: Path) -> Iterator[Path]:
+    """
+    Generator for Git directories
+
+    Parameters
+    ----------
+    path: pathlib.Path
+        top-level Git directory
+
+    Yields
+    ------
+    dirs : generator
+        generator for Git repo paths
+    """
+
+    path = Path(path).expanduser().resolve()
+
+    if baddir(path):  # assume top-level dir under which Git repos live
+        for x in path.iterdir():
+            if not baddir(x):
+                yield x
+    else:
+        yield path
 
 
 def baddir(path: Path) -> bool:

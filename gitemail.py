@@ -20,7 +20,7 @@ from typing import Sequence
 from argparse import ArgumentParser
 
 from gitutils import gitemail
-from gitutils.git import baddir, MAGENTA, BLACK
+from gitutils.git import MAGENTA, BLACK
 
 cwd = Path(__file__).parent
 github = '@users.noreply.github.com'
@@ -42,24 +42,14 @@ def main():
     p.add_argument('-a', '--amend', help='change all non-exclused commits to username')
     p = p.parse_args()
 
-    path = Path(p.path).expanduser()
-
-    if baddir(path):  # assume this is a top-level dir over Git subdirs
-        dlist = (d for d in path.iterdir() if not baddir(d))
-    else:
-        dlist = [path]
-
-    for d in dlist:
-        emails = gitemail(d, p.exclude)
-        if not emails:
-            continue
+    for d, emails in gitemail(p.path, p.exclude):
 
         if p.amend:
             amend(d, emails, p.amend)
 
         print(MAGENTA + d.stem + BLACK)
         for email in emails:
-            print(email[0], email[1])
+            print(*email)
 
 
 if __name__ == '__main__':
