@@ -14,6 +14,8 @@ GITEXE = shutil.which('git')
 if not GITEXE:
     raise FileNotFoundError('Could not find executable for Git')
 
+CMD = [GITEXE, 'rev-parse', '--abbrev-ref', 'HEAD']
+
 
 async def findbranch(mainbranch: str, rdir: Path) -> List[Tuple[Path, str]]:
     """
@@ -66,10 +68,7 @@ async def _arbiter(mainbranch: str, path: Path) -> Tuple[Path, str]:
 
 async def _worker(mainbranch: str, path: Path) -> Tuple[Path, str]:
 
-    assert isinstance(GITEXE, str)
-    cmd = [GITEXE, 'rev-parse', '--abbrev-ref', 'HEAD']
-
-    proc = await asyncio.create_subprocess_exec(*cmd, cwd=path,
+    proc = await asyncio.create_subprocess_exec(*CMD, cwd=path,
                                                 stdout=asyncio.subprocess.PIPE)
     stdout, _ = await proc.communicate()
 

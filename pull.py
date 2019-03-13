@@ -12,9 +12,7 @@ def main():
     p.add_argument('codepath', help='path to code root', nargs='?', default='~/code')
     P = p.parse_args()
 
-    for new_remote in fetchpull('pull', P.codepath):
-        # no backslash allowed in f-strings
-        print(new_remote)
+    print('\n'.join(map(str, fetchpull('pull', P.codepath))))
 
 
 if __name__ == '__main__':

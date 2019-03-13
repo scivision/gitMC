@@ -9,6 +9,8 @@ import subprocess
 
 from .git import gitdirs, GITEXE, TIMEOUT
 
+CMD = [GITEXE, 'log', '--pretty="%ce"']
+
 
 def gitemail(path: Path,
              exclude: str = None) -> Iterator[Tuple[Path, List[Tuple[str, int]]]]:
@@ -30,13 +32,11 @@ def gitemail(path: Path,
     emails : tuple of str, int
         email addresses with how many times they committed
     """
-    assert isinstance(GITEXE, str)
-    cmd = [GITEXE, 'log', '--pretty="%ce"']
 
     for d in gitdirs(path):
 
         try:
-            ret = subprocess.check_output(cmd, cwd=d, universal_newlines=True,
+            ret = subprocess.check_output(CMD, cwd=d, universal_newlines=True,
                                           timeout=TIMEOUT)
         except subprocess.CalledProcessError as e:
             logging.error(f'{path}  {e}')

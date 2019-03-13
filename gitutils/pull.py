@@ -35,8 +35,6 @@ def fetchpull(mode: str, rdir: Path, verbose: bool = False) -> Iterator[Path]:
     """
     # Lmax = len(max(map(attrgetter('name'), dlist), key=len))
 
-    assert isinstance(GITEXE, str)
-
     for d in gitdirs(rdir):
         # assumes console is at least 80 characters wide
         if verbose:
