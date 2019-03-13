@@ -48,7 +48,7 @@ def main():
     dlist = [d for d in path.iterdir() if (d / '.git').is_dir()] if p.recurse else [path]
 
     for d in dlist:
-        emails = gitemail(d, p.user, p.exclude)
+        emails = gitemail(d, p.exclude)
         if p.user and p.amend and emails is not None:
             amend(d, emails, p.user)
 
