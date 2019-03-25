@@ -11,7 +11,7 @@ from .git import listchanged  # noqa: F401
 from .branch import findbranch  # noqa: F401
 from .email import gitemail  # noqa: F401
 from .pull import fetchpull  # noqa: F401
-from .push import gitpushall, detectchange  # noqa: F401
+from .push import gitpushall  # noqa: F401
 
 
 def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -> List[Path]:
