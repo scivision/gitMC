@@ -13,6 +13,7 @@ from .github_base import check_api_limit, github_session
 
 
 def repo_prober(user: str, oauth: Path = None, branch: str = None,
+                starsonly: bool = False,
                 verbose: bool = False) -> Tuple[pd.DataFrame, List[Tuple[str, int]]]:
     """
     probe all GitHub repos for a user to see how much forks of each repo are ahead.
@@ -50,13 +51,12 @@ def repo_prober(user: str, oauth: Path = None, branch: str = None,
     ahead: List[Tuple[str, int]] = []
 
     for repo in repos:
-        ahead = fork_prober(repo, sess, ahead, branch)
+        if not starsonly:
+            ahead += fork_prober(repo, sess, ahead, branch, verbose)
 
         dat.loc[repo.name, :] = (repo.forks_count, repo.stargazers_count)
 
         check_api_limit(sess)
-
-        sleep(1.)
 
     return dat, ahead
 
@@ -98,7 +98,7 @@ def fork_prober(repo, sess,
 
     forks = repo.get_forks()
     for fork in forks:
-        sleep(0.2)  # don't hammer the API, avoiding 502 errors
+        sleep(0.1)  # don't hammer the API, avoiding 502 errors
 
         check_api_limit(sess)
 

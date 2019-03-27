@@ -20,6 +20,14 @@ is showing which forks of your repos have had changes "ahead of" your code.
 This shows your code is being improved, even if the forked repo didn't make a pull request.
 I don't know of any other easy way out there to find this.
 
+Count how many total GitHub stars an account has:
+
+```sh
+python ListAllGithubRepos.py githubusername oauth.key -stars
+```
+
+That will take only a second or two even for large numbers of repos.
+
 Also see Git [utilities](https://github.com/scivision/gitedu) for managing large (100+) numbers of users / teams, particularly for education and institutions.
 
 ## Install
@@ -71,7 +79,7 @@ For private repos, simply clone with SSH as usual
 ### Preview all changed Jekyll files
 
 This is for a website made using
-[Jekyll](https://www.scivision.co/create-jekyll-github-pages-website):
+[Jekyll](https://www.scivision.dev/create-jekyll-github-pages-website):
 ```sh
 ActOnChanged -j
 ```

@@ -17,9 +17,12 @@ def main():
     p = ArgumentParser(description='list all Github repos for a particular user')
     p.add_argument('user', help='Github username')
     p.add_argument('oauth', help='Oauth filename', nargs='?')
-
+    p.add_argument('-b', '--branch', help='branch to consider')
+    p.add_argument('-stars', help='only get star count', action='store_true')
+    p.add_argument('-v', '--verbose', action='store_true')
     p = p.parse_args()
-    dat, ahead = gu.repo_prober(p.user, p.oauth)
+
+    dat, ahead = gu.repo_prober(p.user, p.oauth, p.branch, p.stars, p.verbose)
 
     datnz = dat[~(dat == 0).all(axis=1)]
 # %%  Stars and Forks
@@ -30,9 +33,10 @@ def main():
 
     print(datnz.sort_values(['stars', 'forks'], ascending=False))
 # %% Forks ahead
-    print(f'\n{p.user} Forks that are ahead by N commits')
-    for a in ahead:
-        print(a)
+    if ahead:
+        print(f'\n{p.user} Forks that are ahead by N commits')
+        for a in ahead:
+            print(a)
 
 
 if __name__ == '__main__':
