@@ -20,13 +20,13 @@ is showing which forks of your repos have had changes "ahead of" your code.
 This shows your code is being improved, even if the forked repo didn't make a pull request.
 I don't know of any other easy way out there to find this.
 
-Count how many total GitHub stars an account has:
+Count how many total GitHub stars a GitHub account has:
 
 ```sh
-python ListAllGithubRepos.py githubusername oauth.key -stars
+python GithubStarTotal.py username
 ```
 
-That will take only a second or two even for large numbers of repos.
+That will take a couple seconds even for large numbers of repos.
 
 Also see Git [utilities](https://github.com/scivision/gitedu) for managing large (100+) numbers of users / teams, particularly for education and institutions.
 

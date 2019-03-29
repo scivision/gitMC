@@ -3,18 +3,18 @@ How many total GitHub stars do you have?
 """
 from typing import Tuple, List
 from time import sleep
-import numpy as np
 from pathlib import Path
 import github
 import logging
-import pandas as pd
 
 from .github_base import check_api_limit, github_session
 
 
-def repo_prober(user: str, oauth: Path = None, branch: str = None,
+def repo_prober(user: str,
+                oauth: Path = None,
+                branch: str = None,
                 starsonly: bool = False,
-                verbose: bool = False) -> Tuple[pd.DataFrame, List[Tuple[str, int]]]:
+                verbose: bool = False) -> Tuple[List[Tuple[str, int, int]], List[Tuple[str, int]]]:
     """
     probe all GitHub repos for a user to see how much forks of each repo are ahead.
     Discover if there is an actively developed fork of your GitHub repos
@@ -23,16 +23,18 @@ def repo_prober(user: str, oauth: Path = None, branch: str = None,
     ----------
     user : str
         GitHub username
-    oauth : pathlib.Path
+    oauth : pathlib.Path, optional
         file containing GitHub Oauth hash
-    branch : str
+    branch : str, optional
         Git branch to examine
-    verbose : bool
+    starsonly: bool, optional
+        far faster to only count forks and stars
+    verbose : bool, optional
         verbosity
 
     Results
     -------
-    dat : pandas.DataFrame
+    counts : list of tuple of str, int, int
         forks and stars for each repo
     ahead : list of tuple of str, int
         forked with repos with number of commits they're ahead of your repo
@@ -44,21 +46,18 @@ def repo_prober(user: str, oauth: Path = None, branch: str = None,
 # %% prepare to loop over repos
     repos = _get_repos(sess, user)
 
-    dat = pd.DataFrame(np.empty((len(repos), 2), int),
-                       index=[r.name for r in repos],
-                       columns=['forks', 'stars'])
-
+    counts = []
     ahead: List[Tuple[str, int]] = []
 
-    for repo in repos:
+    for i, repo in enumerate(repos):
         if not starsonly:
             ahead += fork_prober(repo, sess, ahead, branch, verbose)
 
-        dat.loc[repo.name, :] = (repo.forks_count, repo.stargazers_count)
+        counts.append((repo.name, repo.forks_count, repo.stargazers_count))
 
         check_api_limit(sess)
 
-    return dat, ahead
+    return counts, ahead
 
 
 def fork_prober(repo, sess,
@@ -76,9 +75,9 @@ def fork_prober(repo, sess,
         handle to GitHub session
     ahead : list of tuple of str, int
         forked with repos with number of commits they're ahead of your repo
-    branch : str
+    branch : str, optional
         Git branch to examine
-    verbose : bool
+    verbose : bool, optional
         verbosity
 
     Results
