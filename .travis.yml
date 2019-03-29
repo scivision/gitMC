@@ -20,4 +20,6 @@ matrix:
     - pytest --cov
     - coveralls
 
+install: pip install -e .[tests]
+
 script: pytest -v

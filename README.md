@@ -48,12 +48,11 @@ python -m pip install -e .
 I didn't know of any other easy ways to do these Git tasks:
 
 * `gitbranch` Tells of any non-master branches under directory ~/code
-* `git_filemode_windows`  Sets all git repos to don't care permissions under directory ~/code
 * `gitemail` list all contributor email addresses. Optionally, amend email addresses for prior Git commits
 
 ### Sync large number of git repos
 
-These assume numerous subdirectories under `~/code` or `c:\code`. 
+These assume numerous subdirectories under `~/code` or `c:\code`.
 They work very quickly for large numbers (100+) repos.
 
 
@@ -67,7 +66,7 @@ You can place an empty file `.nogit` in a subdirectory to skip it.
 
 #### [optional] speedup with https pull
 For public repos, to make the Git remote checking go at least twice as fast, and significantly reduce the computational burden when SSH is used for `git push` (as is recommended), consider the "pushInsteadOf" global Git config.
-To do this, when cloning a public repo (including ones you're a collaborator on), use `git clone https://`. 
+To do this, when cloning a public repo (including ones you're a collaborator on), use `git clone https://`.
 This global SSH push config one-time does SSH push for HTTPS-cloned repos:
 ```sh
 git config --global url."ssh://github.com/".pushInsteadOf https://github.com/

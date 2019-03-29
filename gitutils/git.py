@@ -21,10 +21,10 @@ if not GITEXE:
 
 """
 replaced by git status --porcelain:
-  ['git','ls-files','-o','-d','--exclude-standard']): # check for uncommitted files
-  ['git','--no-pager','diff','HEAD'], # check for uncommitted work
+  git ls-files -o -d --exclude-standard: # check for uncommitted files
+  git --no-pager diff HEAD , # check for uncommitted work
 
-DOES NOT WORK ['git','log','--branches','--not','--remotes'],     # check for uncommitted branches
+DOES NOT WORK git log --branches --not --remotes     # check for uncommitted branches
 """
 
 
@@ -94,7 +94,7 @@ def listchanged(path: Path) -> List[str]:
     changes : list of str
         filenames changed in this Git repo
     """
-    ret = subprocess.check_output(['git', 'ls-files', '--modified'],
+    ret = subprocess.check_output([GITEXE, 'ls-files', '--modified'],
                                   universal_newlines=True,
                                   cwd=path)
 

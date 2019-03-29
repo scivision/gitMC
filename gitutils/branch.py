@@ -6,13 +6,8 @@ from typing import List, Tuple
 from pathlib import Path
 import asyncio
 import logging
-import shutil
 
-from .git import baddir
-
-GITEXE = shutil.which('git')
-if not GITEXE:
-    raise FileNotFoundError('Could not find executable for Git')
+from .git import baddir, GITEXE
 
 CMD = [GITEXE, 'rev-parse', '--abbrev-ref', 'HEAD']
 
