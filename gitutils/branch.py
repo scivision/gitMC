@@ -9,8 +9,6 @@ import logging
 
 from .git import baddir, GITEXE
 
-CMD = [GITEXE, 'rev-parse', '--abbrev-ref', 'HEAD']
-
 
 async def findbranch(mainbranch: str, rdir: Path) -> List[Tuple[Path, str]]:
     """
@@ -63,7 +61,7 @@ async def _arbiter(mainbranch: str, path: Path) -> Tuple[Path, str]:
 
 async def _worker(mainbranch: str, path: Path) -> Tuple[Path, str]:
 
-    proc = await asyncio.create_subprocess_exec(*CMD, cwd=path,
+    proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(path), 'rev-parse', '--abbrev-ref', 'HEAD'],
                                                 stdout=asyncio.subprocess.PIPE)
     stdout, _ = await proc.communicate()
 

@@ -6,8 +6,8 @@ from typing import Tuple, Iterator
 import subprocess
 from .git import gitdirs, GITEXE, TIMEOUT
 
-C0 = [GITEXE, 'rev-parse', '--abbrev-ref', 'HEAD']  # get branch name
-C1 = [GITEXE, 'status', '--porcelain']  # uncommitted or changed files
+C0 = ['rev-parse', '--abbrev-ref', 'HEAD']  # get branch name
+C1 = ['status', '--porcelain']  # uncommitted or changed files
 
 
 def gitpushall(rdir: Path) -> Iterator[Tuple[Path, str]]:
@@ -27,17 +27,17 @@ def gitpushall(rdir: Path) -> Iterator[Tuple[Path, str]]:
     for d in gitdirs(rdir):
         try:
             # %% detect uncommitted changes
-            ret = subprocess.check_output(C1, cwd=d, universal_newlines=True,
+            ret = subprocess.check_output([GITEXE, '-C', str(d)] + C1, universal_newlines=True,
                                           timeout=TIMEOUT)
             if ret:
                 yield d, ret
                 continue
     # %% detect committed, but not pushed
-            branch = subprocess.check_output(C0, cwd=d, universal_newlines=True,
+            branch = subprocess.check_output([GITEXE, '-C', str(d)] + C0, universal_newlines=True,
                                              timeout=TIMEOUT)[:-1]
 
-            C2 = [GITEXE, 'diff', '--stat', f'origin/{branch}..']
-            ret = subprocess.check_output(C2, cwd=d, universal_newlines=True,
+            C2 = [GITEXE, '-C', str(d), 'diff', '--stat', f'origin/{branch}..']
+            ret = subprocess.check_output(C2, universal_newlines=True,
                                           timeout=TIMEOUT)
             if ret:
                 yield d, ret

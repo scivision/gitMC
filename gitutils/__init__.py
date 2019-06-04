@@ -36,7 +36,7 @@ def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -> List[Pa
 
     dlist = (x for x in path.iterdir() if x.is_dir())
 
-    missing = []
+    missing: List[Path] = []
     for d in dlist:
         if not (d / fn).is_file():
             if isinstance(copyfile, Path):

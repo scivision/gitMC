@@ -94,9 +94,8 @@ def listchanged(path: Path) -> List[str]:
     changes : list of str
         filenames changed in this Git repo
     """
-    ret = subprocess.check_output([GITEXE, 'ls-files', '--modified'],
-                                  universal_newlines=True,
-                                  cwd=path)
+    ret = subprocess.check_output([GITEXE, '-C', str(path), 'ls-files', '--modified'],
+                                  universal_newlines=True)
 
     changes = ret.split('\n')
 
