@@ -36,8 +36,8 @@ def main():
     if not to_archive:
         raise SystemExit(f'no repos left to archive under {P.user}/{P.pattern}')
 
-    print('\ntype y to archive', '\n'.join([repo.full_name for repo in to_archive]))
-    if input() != 'y':
+    print('\ntype affirmative to archive', '\n'.join([repo.full_name for repo in to_archive]))
+    if input() != 'affirmative':
         raise SystemExit('Aborted')
 
     for repo in to_archive:
