@@ -36,7 +36,8 @@ def main():
     if not to_archive:
         raise SystemExit(f'no repos left to archive under {P.user}/{P.pattern}')
 
-    print('\ntype affirmative to archive', '\n'.join([repo.full_name for repo in to_archive]))
+    print('NOTE: presently, you can only UNarchive through the website manually.')
+    print('\ntype affirmative to ARCHIVE (make read-only)', '\n'.join([repo.full_name for repo in to_archive]))
     if input() != 'affirmative':
         raise SystemExit('Aborted')
 
