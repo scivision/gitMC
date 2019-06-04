@@ -219,3 +219,14 @@ def read_repos(fn: Path, sheet: str) -> Dict[str, str]:
     repos.dropna(how='any', inplace=True)
 
     return repos.to_dict()
+
+
+def get_repos(g: github.Github, user: str) -> list:
+    repo = user.split('/')
+
+    if len(repo) == 2:  # assuming a single repo is specified
+        repos = [g.get_user(repo[0]).get_repo(repo[1])]
+    elif len(repo) == 1:
+        repos = list(g.get_user(repo[0]).get_repos())
+
+    return repos

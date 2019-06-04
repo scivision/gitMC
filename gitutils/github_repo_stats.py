@@ -7,7 +7,7 @@ from pathlib import Path
 import github
 import logging
 
-from .github_base import check_api_limit, github_session
+from .github_base import check_api_limit, github_session, get_repos
 
 
 def repo_prober(user: str,
@@ -44,7 +44,7 @@ def repo_prober(user: str,
 
     check_api_limit(sess)
 # %% prepare to loop over repos
-    repos = _get_repos(sess, user)
+    repos = get_repos(sess, user)
 
     counts = []
     ahead: List[Tuple[str, int]] = []
@@ -127,14 +127,3 @@ def fork_prober(repo, sess,
             print()
 
     return ahead
-
-
-def _get_repos(g: github.Github, user: str) -> list:
-    repo = user.split('/')
-
-    if len(repo) == 2:  # assuming a single repo is specified
-        repos = [g.get_user(repo[0]).get_repo(repo[1])]
-    elif len(repo) == 1:
-        repos = list(g.get_user(repo[0]).get_repos())
-
-    return repos
