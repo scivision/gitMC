@@ -5,7 +5,7 @@ import github
 from pathlib import Path
 from datetime import datetime
 import logging
-from typing import Union, Optional, Dict
+from typing import Union, Dict, List
 import pandas
 
 
@@ -137,7 +137,7 @@ def repo_exists(user: Union[github.AuthenticatedUser.AuthenticatedUser,
     return exists
 
 
-def last_commit_date(sess: github.Github, name: str) -> Optional[datetime]:
+def last_commit_date(sess: github.Github, name: str) -> datetime:
     """
     What is the last commit date to this repo.
 
@@ -221,12 +221,25 @@ def read_repos(fn: Path, sheet: str) -> Dict[str, str]:
     return repos.to_dict()
 
 
-def get_repos(g: github.Github, user: str) -> list:
+def get_repos(g: github.Github, user: str) -> List[github.Repository.Repository]:
+    """
+    get list of Repositories for a user or organization
+
+    name: username or organization name
+    """
     repo = user.split('/')
+    name = repo[0]
+
+    try:
+        list(g.search_users(f'user:{name}'))
+    except github.GithubException:
+        raise ValueError(f'{name} not found on GitHub')
 
     if len(repo) == 2:  # assuming a single repo is specified
-        repos = [g.get_user(repo[0]).get_repo(repo[1])]
+        repos = [g.get_user(name).get_repo(repo[1])]
     elif len(repo) == 1:
-        repos = list(g.get_user(repo[0]).get_repos())
+        repos = list(g.get_user(name).get_repos())
+    else:
+        raise ValueError(f'unknown username or reponame {repo}')
 
     return repos
