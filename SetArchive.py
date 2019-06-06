@@ -31,6 +31,8 @@ def main():
     gb.check_api_limit(sess)
 # %% prepare to loop over repos
     repos = gb.get_repos(sess, P.user)
+    if not repos:
+        raise SystemExit(f'no repos for {P.user}')
 
     to_archive = [repo for repo in repos if repo.name.startswith(P.pattern) and not repo.archived]
     if not to_archive:
