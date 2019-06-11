@@ -1,5 +1,8 @@
 """
 Operations for Git branches
+
+git branch get name methods:
+https://stackoverflow.com/a/45028375
 """
 
 from typing import List, Tuple
@@ -8,6 +11,11 @@ import asyncio
 import logging
 
 from .git import baddir, GITEXE
+
+BRANCH_REV = ['rev-parse', '--abbrev-ref', 'HEAD']
+BRANCH_SYM = ['symbolic-ref', '--short', 'HEAD']
+BRANCH_NAME = ['name-rev', '--name-only', 'HEAD']
+BRANCH_SIMPLE = ['branch', '--show-current']  # Git >= 2.22
 
 
 async def findbranch(mainbranch: str, rdir: Path) -> List[Tuple[Path, str]]:
@@ -61,7 +69,7 @@ async def _arbiter(mainbranch: str, path: Path) -> Tuple[Path, str]:
 
 async def _worker(mainbranch: str, path: Path) -> Tuple[Path, str]:
 
-    proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(path), 'rev-parse', '--abbrev-ref', 'HEAD'],
+    proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(path)] + BRANCH_REV,
                                                 stdout=asyncio.subprocess.PIPE)
     stdout, _ = await proc.communicate()
 
