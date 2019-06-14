@@ -5,28 +5,30 @@
 [![pypi versions](https://img.shields.io/pypi/pyversions/gitutils.svg)](https://pypi.python.org/pypi/gitutils)
 [![PyPi Download stats](http://pepy.tech/badge/gitutils)](http://pepy.tech/project/gitutils)
 
-# Git Utilities
+# GitMC -- concurrent asynchronous Git Utililes for operations on massive numbers of Git repos
 
 Platform-independent (Linux/Mac/Windows) Git utilities, useful for managing large (100+) numbers of Git repos.
-Speed is an emphasis throughout, with concurrency `asyncio` and pipelining enabled in much of the program.
+Speed is an emphasis throughout, with concurrency via Python `asyncio` and pipelining.
 
-This uses command-line `git` because PyGit also requires command-line Git installed, and we don't need the advanced functionality.
+GitMC uses command-line Git because PyGit also requires command-line Git installed, and we don't need the advanced functionality.
 
 An important feature in
 ```sh
-ListAllGithubRepos
+python CountGithubForks.py username
 ```
-is showing which forks of your repos have had changes "ahead of" your code.
-This shows your code is being improved, even if the forked repo didn't make a pull request.
-I don't know of any other easy way out there to find this.
+is showing which forks of your repos have had changes "ahead of" the parent repo.
+
+---
 
 Count how many total GitHub stars a GitHub account has:
 
 ```sh
-python GithubStarTotal.py username
+python CountGithubStars.py username
 ```
 
 That will take a couple seconds even for large numbers of repos.
+
+---
 
 Also see Git [utilities](https://github.com/scivision/gitedu) for managing large (100+) numbers of users / teams, particularly for education and institutions.
 
@@ -42,10 +44,13 @@ Install Git in a way accessible from the command line line
 python -m pip install -e .
 ```
 
+For better speed, optionally we suggest Git &ge; 2.18 and Git wire protocol v2:
+```sh
+git config --global protocol.version 2
+```
+This benefits both HTTPS and SSH connections.
 
 ## Usage
-
-I didn't know of any other easy ways to do these Git tasks:
 
 * `gitbranch` Tells of any non-master branches under directory ~/code
 * `gitemail` list all contributor email addresses. Optionally, amend email addresses for prior Git commits
@@ -99,4 +104,3 @@ It requires extra prereqs via:
 ```sh
 pip install -e .[github]
 ```
-

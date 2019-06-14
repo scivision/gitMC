@@ -2,9 +2,21 @@
 """
 detects uncommitted work/files in all git repos under a directory
 """
+import os
+import asyncio
+from pathlib import Path
 from argparse import ArgumentParser
-from gitutils import gitpushall
+from gitutils.push import git_modified
 from gitutils.git import MAGENTA, BLACK
+
+
+async def find_modified(path: Path, verbose: bool):
+    c = MAGENTA if verbose else ''
+
+    async for d, v in git_modified(path):
+        print(c + str(d))
+        if verbose:
+            print(BLACK + v)
 
 
 def main():
@@ -13,11 +25,10 @@ def main():
     p.add_argument('-v', '--verbose', action='store_true')
     P = p.parse_args()
 
-    c = MAGENTA if P.verbose else ''
-    for d, v in gitpushall(P.codepath):
-        print(c + str(d))
-        if P.verbose:
-            print(BLACK + v)
+    if os.name == 'nt':
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
+    asyncio.run(find_modified(P.codepath, P.verbose))
 
 
 if __name__ == '__main__':

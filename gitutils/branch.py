@@ -5,12 +5,11 @@ git branch get name methods:
 https://stackoverflow.com/a/45028375
 """
 
-from typing import List, Tuple
+from typing import AsyncGenerator, Tuple
 from pathlib import Path
 import asyncio
-import logging
 
-from .git import baddir, GITEXE
+from .git import GITEXE, gitdirs
 
 BRANCH_REV = ['rev-parse', '--abbrev-ref', 'HEAD']
 BRANCH_SYM = ['symbolic-ref', '--short', 'HEAD']
@@ -18,7 +17,7 @@ BRANCH_NAME = ['name-rev', '--name-only', 'HEAD']
 BRANCH_SIMPLE = ['branch', '--show-current']  # Git >= 2.22
 
 
-async def findbranch(mainbranch: str, rdir: Path) -> List[Tuple[Path, str]]:
+async def findbranch(mainbranch: str, rdir: Path) -> AsyncGenerator[Tuple[str, str], None]:
     """
     find all branches in tree not matching "mainbranch"
 
@@ -30,11 +29,11 @@ async def findbranch(mainbranch: str, rdir: Path) -> List[Tuple[Path, str]]:
     rdir : pathlib.Path
         top-level directory to work under e.g. ~/code/
 
-    Results
-    -------
+    Yields
+    ------
 
-    branch : list of tuple of pathlib.Path, str
-        repo paths and branch names
+    branch : tuple of pathlib.Path, str
+        repo path and branch name
 
     asyncio.get_child_watcher() must be instantiated by calling function:
     https://docs.python.org/3/library/asyncio-subprocess.html#subprocess-and-threads
@@ -42,39 +41,14 @@ async def findbranch(mainbranch: str, rdir: Path) -> List[Tuple[Path, str]]:
 
     rdir = Path(rdir).expanduser()
 
-    dirs = (x for x in rdir.iterdir() if not baddir(x))
+    for d in gitdirs(rdir):
+        proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(d)] + BRANCH_REV,
+                                                    stdout=asyncio.subprocess.PIPE)
+        stdout, _ = await proc.communicate()
 
-    futures = [_arbiter(mainbranch, d) for d in dirs]
+        branchname = stdout.decode('utf8').rstrip()
 
-    branch = await asyncio.gather(*futures)
+        if mainbranch in branchname:
+            continue
 
-    non_mainbranch = []
-    for r, b in branch:
-        if b:
-            non_mainbranch.append((r, b))
-
-    return non_mainbranch
-
-
-async def _arbiter(mainbranch: str, path: Path) -> Tuple[Path, str]:
-
-    try:
-        tup = await asyncio.wait_for(_worker(mainbranch, path), timeout=5.0)
-    except (asyncio.TimeoutError, FileNotFoundError, PermissionError) as e:
-        logging.error(f'{path}   {e}')
-        tup = (path, '')
-
-    return tup
-
-
-async def _worker(mainbranch: str, path: Path) -> Tuple[Path, str]:
-
-    proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(path)] + BRANCH_REV,
-                                                stdout=asyncio.subprocess.PIPE)
-    stdout, _ = await proc.communicate()
-
-    branchname = stdout.decode('utf8').rstrip()
-
-    tup = (path, '') if mainbranch in branchname else (path, branchname)
-
-    return tup
+        yield d.name, branchname

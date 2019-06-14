@@ -4,8 +4,16 @@ report on git repos not on the expected branch e.g. 'master'
 """
 from argparse import ArgumentParser
 from gitutils import findbranch
+from pathlib import Path
 import asyncio
 import os
+
+
+async def find_branch(branch: str, path: Path):
+    path = Path(path).expanduser()
+
+    async for b in findbranch(branch, path):
+        print(b[0], ' => ', b[1])
 
 
 def main():
@@ -16,18 +24,9 @@ def main():
     P = p.parse_args()
 
     if os.name == 'nt':
-        loop = asyncio.ProactorEventLoop()
-        asyncio.set_event_loop(loop)
-    else:
-        loop = asyncio.new_event_loop()
-        # necessary since we're returning from subprocess
-        # for other types of applications, asyncio.run() does this implicitly.
-        asyncio.get_child_watcher().attach_loop(loop)
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
-    branch = loop.run_until_complete(findbranch(P.mainbranch, P.codepath))
-
-    for b in branch:
-        print(b[0], ' => ', b[1])
+    asyncio.run(find_branch(P.mainbranch, P.codepath))
 
 
 if __name__ == '__main__':

@@ -1,16 +1,17 @@
 """
 detect Git local repo modifications. Crazy fast by not invoking remote.
 """
+import asyncio
 from pathlib import Path
-from typing import Tuple, Iterator
-import subprocess
-from .git import gitdirs, GITEXE, TIMEOUT
+from typing import Tuple, AsyncGenerator
+
+from .git import gitdirs, GITEXE
 
 C0 = ['rev-parse', '--abbrev-ref', 'HEAD']  # get branch name
 C1 = ['status', '--porcelain']  # uncommitted or changed files
 
 
-def gitpushall(rdir: Path) -> Iterator[Tuple[Path, str]]:
+async def git_modified(rdir: Path) -> AsyncGenerator[Tuple[str, str], None]:
     """
     Notes which Git repos have local changes that haven't been pushed to remote
 
@@ -25,21 +26,24 @@ def gitpushall(rdir: Path) -> Iterator[Tuple[Path, str]]:
         Git repos that have local changes
     """
     for d in gitdirs(rdir):
-        try:
-            # %% detect uncommitted changes
-            ret = subprocess.check_output([GITEXE, '-C', str(d)] + C1, universal_newlines=True,
-                                          timeout=TIMEOUT)
-            if ret:
-                yield d, ret
-                continue
-    # %% detect committed, but not pushed
-            branch = subprocess.check_output([GITEXE, '-C', str(d)] + C0, universal_newlines=True,
-                                             timeout=TIMEOUT)[:-1]
+        proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(d)] + C1,
+                                                    stdout=asyncio.subprocess.PIPE)
+        stdout, _ = await proc.communicate()
+        ret = stdout.decode('utf8').rstrip()
+# %% detect uncommitted changes
+        if ret:
+            yield d.name, ret
+            continue
+# %% detect committed, but not pushed
+        proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(d)] + C0,
+                                                    stdout=asyncio.subprocess.PIPE)
+        stdout, _ = await proc.communicate()
+        branch = stdout.decode('utf8').rstrip()
 
-            C2 = [GITEXE, '-C', str(d), 'diff', '--stat', f'origin/{branch}..']
-            ret = subprocess.check_output(C2, universal_newlines=True,
-                                          timeout=TIMEOUT)
-            if ret:
-                yield d, ret
-        except subprocess.CalledProcessError as e:
-            yield d, e.output
+        C2 = [GITEXE, '-C', str(d), 'diff', '--stat', f'origin/{branch}..']
+        proc = await asyncio.create_subprocess_exec(*C2, stdout=asyncio.subprocess.PIPE)
+        stdout, _ = await proc.communicate()
+        ret = stdout.decode('utf8').rstrip()
+
+        if ret:
+            yield d.name, ret

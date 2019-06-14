@@ -6,7 +6,7 @@ def test_compare_forks():
     pgu = pytest.importorskip('gitutils.github_repo_stats')
 
     try:
-        repos, ahead = pgu.repo_prober('scivision/gitutils')
+        repos, ahead = pgu.repo_prober('scivision/gitmc')
     except RuntimeError:
         pytest.skip('GitHub API limit exceeded')
 

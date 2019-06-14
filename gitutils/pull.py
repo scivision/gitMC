@@ -1,13 +1,16 @@
 """
 Git fetch / pull functions
 """
-from pathlib import Path
-from typing import Iterator, Tuple
+import asyncio
 import subprocess
-from .git import GITEXE, gitdirs, TIMEOUT
+from pathlib import Path
+from typing import AsyncGenerator, Tuple
+
+from .git import GITEXE, gitdirs
 
 
-def fetchpull(mode: str, rdir: Path) -> Iterator[Tuple[Path, str]]:
+async def fetchpull(mode: str, rdir: Path,
+                    verbose: bool = False) -> AsyncGenerator[Tuple[str, str], None]:
     """
     handles recursive "git pull" and "git fetch"
 
@@ -18,6 +21,8 @@ def fetchpull(mode: str, rdir: Path) -> Iterator[Tuple[Path, str]]:
         fetch or pull
     rdir : pathlib.Path
         top-level path over Git repos
+    verbose: bool
+        print repo being checked
 
     Yields
     ------
@@ -30,14 +35,15 @@ def fetchpull(mode: str, rdir: Path) -> Iterator[Tuple[Path, str]]:
     format mini-language:
     https://docs.python.org/3/library/string.html#format-specification-mini-language
     """
-    # Lmax = len(max(map(attrgetter('name'), dlist), key=len))
 
     for d in gitdirs(rdir):
-        ret = subprocess.run([GITEXE, '-C', str(d), mode],
-                             universal_newlines=True,
-                             stdout=subprocess.DEVNULL,
-                             stderr=subprocess.PIPE,
-                             timeout=TIMEOUT)
+        if verbose:
+            print(mode, d.name)
+        proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(d), mode],
+                                                    stdout=subprocess.DEVNULL,
+                                                    stderr=asyncio.subprocess.PIPE)
+        _, stderr = await proc.communicate()
+        err = stderr.decode('utf8').rstrip()
 
-        if ret.returncode:
-            yield d, ret.stderr
+        if proc.returncode:
+            yield d.name, err
