@@ -5,7 +5,7 @@
 [![pypi versions](https://img.shields.io/pypi/pyversions/gitutils.svg)](https://pypi.python.org/pypi/gitutils)
 [![PyPi Download stats](http://pepy.tech/badge/gitutils)](http://pepy.tech/project/gitutils)
 
-# GitMC -- concurrent asynchronous Git Utililes for operations on massive numbers of Git repos
+# GitMC -- concurrent asynchronous Git Utilities for operations on massive numbers of Git repos
 
 Platform-independent (Linux/Mac/Windows) Git utilities, useful for managing large (100+) numbers of Git repos.
 Speed is an emphasis throughout, with concurrency via Python `asyncio` and pipelining.

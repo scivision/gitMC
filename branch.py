@@ -7,6 +7,7 @@ from gitutils import findbranch
 from pathlib import Path
 import asyncio
 import os
+import sys
 
 
 async def find_branch(branch: str, path: Path):
@@ -23,7 +24,7 @@ def main():
                    default='master', help='name of your main branch')
     P = p.parse_args()
 
-    if os.name == 'nt':
+    if os.name == 'nt' and sys.version_info < (3, 8):
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
     asyncio.run(find_branch(P.mainbranch, P.codepath))

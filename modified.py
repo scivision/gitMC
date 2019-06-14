@@ -3,6 +3,7 @@
 detects uncommitted work/files in all git repos under a directory
 """
 import os
+import sys
 import asyncio
 from pathlib import Path
 from argparse import ArgumentParser
@@ -25,7 +26,7 @@ def main():
     p.add_argument('-v', '--verbose', action='store_true')
     P = p.parse_args()
 
-    if os.name == 'nt':
+    if os.name == 'nt' and sys.version_info < (3, 8):
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
     asyncio.run(find_modified(P.codepath, P.verbose))
