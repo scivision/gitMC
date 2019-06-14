@@ -1,7 +1,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2592584.svg)](https://doi.org/10.5281/zenodo.2592584)
-[![Build Status](https://travis-ci.org/scivision/gitutils.svg?branch=master)](https://travis-ci.org/scivision/gitutils)
-[![Coverage Status](https://coveralls.io/repos/github/scivision/gitutils/badge.svg?branch=master)](https://coveralls.io/github/scivision/gitutils?branch=master)
-[![Build status](https://ci.appveyor.com/api/projects/status/99omgmbo508bwrib?svg=true)](https://ci.appveyor.com/project/scivision/gitutils)
+[![Build Status](https://travis-ci.org/scivision/gitMC.svg?branch=master)](https://travis-ci.org/scivision/gitMC)
+[![Coverage Status](https://coveralls.io/repos/github/scivision/gitMC/badge.svg?branch=master)](https://coveralls.io/github/scivision/gitMC?branch=master)
+[![Build status](https://ci.appveyor.com/api/projects/status/co2em7skpsu0p8r3?svg=true)](https://ci.appveyor.com/project/scivision/gitmc)
 [![pypi versions](https://img.shields.io/pypi/pyversions/gitutils.svg)](https://pypi.python.org/pypi/gitutils)
 [![PyPi Download stats](http://pepy.tech/badge/gitutils)](http://pepy.tech/project/gitutils)
 
