@@ -34,6 +34,10 @@ async def fetchpull(mode: str, rdir: Path,
     ----------
     format mini-language:
     https://docs.python.org/3/library/string.html#format-specification-mini-language
+
+
+    Note: Don't use git pull --quiet because you get no output at all when remote change
+    occured. Leave it as is with stdout=DEVNULL and no --quiet.
     """
 
     for d in gitdirs(rdir):
