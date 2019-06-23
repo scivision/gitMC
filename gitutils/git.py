@@ -100,6 +100,4 @@ def listchanged(path: Path) -> List[str]:
     ret = subprocess.check_output([GITEXE, '-C', str(path), 'ls-files', '--modified'],
                                   universal_newlines=True)
 
-    changes = ret.split('\n')
-
-    return changes
+    return ret.split('\n')

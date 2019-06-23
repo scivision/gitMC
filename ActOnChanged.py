@@ -6,23 +6,24 @@ all changed files in a static rendered web preview (Jekyll, Hugo)
 """
 import webbrowser
 from pathlib import Path
-from gitutils import listchanged
+from gitutils.git import listchanged
 from argparse import ArgumentParser
 
 
 def main():
     p = ArgumentParser()
     p.add_argument('path', help='git directory to operate on')
-    p.add_argument('-j', '--jekyll', help='web browser preview of localhost', action='store_true')
+    p.add_argument('-p', '--preview', help='web browser preview of localhost', action='store_true')
+    p.add_argument('--port', help='port of localhost web server (Jekyll: 4000, Hugo: 1313)', type=int, default=1313)
     P = p.parse_args()
 
     path = Path(P.path).expanduser().resolve()
     flist = listchanged(path)
 # %%
-    if P.jekyll:
-        prefix = 'http://localhost:4000/'
+    if P.preview:
+        prefix = 'http://localhost:{}/'.format(P.port)
 
-        if path.name == '_posts':
+        if path.name == '_posts':  # Jekyll with leading date in filename
             cut = 11
         else:
             cut = 0
