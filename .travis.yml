@@ -9,16 +9,26 @@ git:
 matrix:
   include:
   - os: linux
+    name: Integration install
+    python: 3.7
+    install:
+    - python setup.py install
+    - pip install gitutils[tests]
+    script:
+    - cd $HOME
+    - python -m pytest $TRAVIS_BUILD_DIR/tests -r a -v
+  - os: linux
+    name: PEP8 MyPy Coverage
     python: 3.7
     install: pip install -e .[tests,cov]
     script:
     - flake8
     - mypy .
-    - pytest -v
+    - pytest -r a -v
     after_success:
     - pytest --cov
     - coveralls
 
 install: pip install -e .[tests]
 
-script: pytest -v
+script: pytest -r a -v
