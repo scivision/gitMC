@@ -5,56 +5,59 @@ To check your Git commits locally for:
 * PEP8 (python only)
 * mypy type hint (python only)
 
-1. set Git to look for pre-commit hook by in Termina:
+1. set Git to look for pre-commit hook by in Terminal:
     git config --global core.hooksPath ~/.git/hooks
 2. put this script at ~/.git/hooks/pre-commit (no .py extension)
 
-
-Requires Python >= 3.5
+Works on Python 2.7 and 3.x
 
 * https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks
 * https://www.scivision.dev/git-commit-precheck-pep8/
 """
 
+from __future__ import print_function
 import subprocess
-from pathlib import Path
 import sys
-import shutil
-
-# %% pre-flight checks
-if sys.version_info < (3, 5):
-    raise SystemExit('Python >= 3.5 required for Git pre-commit hooks')
+import os
+# Python 2.7 doesn't have shutil.which
+NUL = open(os.devnull, 'wb')
+try:
+    subprocess.check_call(['flake8', '--help'], stdout=NUL)
+    flake8 = True
+except (OSError, subprocess.CalledProcessError):
+    flake8 = False
+try:
+    subprocess.check_call(['mypy', '--help'], stdout=NUL)
+    mypy = True
+except (OSError, subprocess.CalledProcessError):
+    mypy = False
 
 # %% Python checking
-ret = subprocess.run(['git', 'diff', '--staged', '--name-only'], stdout=subprocess.PIPE, universal_newlines=True)
-if ret.returncode:
-    raise SystemExit('failed to run Git diff')
+stdout = subprocess.check_output(['git', 'diff', '--staged', '--name-only'], universal_newlines=True)
 
-pystaged = [f for f in ret.stdout.split('\n') if f.endswith('.py') and Path(f).is_file()]
+pystaged = [f for f in stdout.split('\n') if f.endswith('.py') and os.path.isfile(f)]
 
 for f in pystaged:
-    code = Path(f).read_text()
-    if "breakpoint(" in code:
+    txt = open(f).read()
+    if "breakpoint(" in txt:
         raise SystemExit('Remove breakpoint in {} before commit'.format(f))
 
 if pystaged:
-    flake8 = shutil.which('flake8')
     if flake8:
-        ret = subprocess.run(['flake8'] + pystaged)
-        if ret.returncode:
+        code = subprocess.call(['flake8'] + pystaged)  # type: int
+        if code:
             raise SystemExit('fix PEP8 issues before commit')
     else:
         print('could not find flake8', file=sys.stderr)
 
-    mypy = shutil.which('mypy')
     if mypy:
-        ret = subprocess.run(['mypy'] + pystaged)
-        if ret.returncode:
+        code = subprocess.call(['mypy'] + pystaged)
+        if code:
             raise SystemExit('fix type hinting issues before commit')
     else:
         print('could not find mypy', file=sys.stderr)
 
 # %% general checks
-ret = subprocess.run(['git', 'diff-index', '--check', '--cached', 'HEAD', '--'])
-if ret.returncode:
+code = subprocess.call(['git', 'diff-index', '--check', '--cached', 'HEAD', '--'])
+if code:
     raise SystemExit('Fix whitespace issues before commit')
