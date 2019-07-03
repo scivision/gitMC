@@ -26,11 +26,13 @@ try:
     flake8 = True
 except (OSError, subprocess.CalledProcessError):
     flake8 = False
+    print('could not find flake8', file=sys.stderr)
 try:
     subprocess.check_call(['mypy', '--help'], stdout=NUL)
     mypy = True
 except (OSError, subprocess.CalledProcessError):
     mypy = False
+    print('could not find mypy', file=sys.stderr)
 
 # %% Python checking
 stdout = subprocess.check_output(['git', 'diff', '--staged', '--name-only'], universal_newlines=True)
@@ -44,20 +46,13 @@ for f in pystaged:
 
 if pystaged:
     if flake8:
-        code = subprocess.call(['flake8'] + pystaged)  # type: int
-        if code:
+        if subprocess.call(['flake8'] + pystaged):
             raise SystemExit('fix PEP8 issues before commit')
-    else:
-        print('could not find flake8', file=sys.stderr)
 
     if mypy:
-        code = subprocess.call(['mypy'] + pystaged)
-        if code:
+        if subprocess.call(['mypy'] + pystaged):
             raise SystemExit('fix type hinting issues before commit')
-    else:
-        print('could not find mypy', file=sys.stderr)
 
 # %% general checks
-code = subprocess.call(['git', 'diff-index', '--check', '--cached', 'HEAD', '--'])
-if code:
+if subprocess.call(['git', 'diff-index', '--check', '--cached', 'HEAD', '--']):
     raise SystemExit('Fix whitespace issues before commit')
