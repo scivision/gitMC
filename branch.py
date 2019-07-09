@@ -24,10 +24,19 @@ def main():
                    default='master', help='name of your main branch')
     P = p.parse_args()
 
-    if os.name == 'nt' and sys.version_info < (3, 8):
+    if os.name == 'nt' and (3, 7) <= sys.version_info < (3, 8):
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
-    asyncio.run(find_branch(P.mainbranch, P.codepath))
+    if sys.version_info >= (3, 7):
+        asyncio.run(find_branch(P.mainbranch, P.codepath))
+    else:
+        if os.name == 'nt':
+            loop = asyncio.ProactorEventLoop()
+        else:
+            loop = asyncio.new_event_loop()
+            asyncio.get_child_watcher().attach_loop(loop)
+        loop.run_until_complete(find_branch(P.mainbranch, P.codepath))
+        loop.close()
 
 
 if __name__ == '__main__':

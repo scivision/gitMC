@@ -3,14 +3,14 @@ Git fetch / pull functions
 """
 import asyncio
 import subprocess
+import logging
 from pathlib import Path
-from typing import AsyncGenerator, Tuple
+from typing import AsyncGenerator, Tuple, List
 
-from .git import GITEXE, gitdirs
+from .git import GITEXE, gitdirs, MAGENTA, BLACK
 
 
-async def fetchpull(mode: str, rdir: Path,
-                    verbose: bool = False) -> AsyncGenerator[Tuple[str, str], None]:
+async def fetchpull(mode: List[str], rdir: Path) -> AsyncGenerator[Tuple[str, str], None]:
     """
     handles recursive "git pull" and "git fetch"
 
@@ -39,11 +39,14 @@ async def fetchpull(mode: str, rdir: Path,
     Note: Don't use git pull --quiet because you get no output at all when remote change
     occured. Leave it as is with stdout=DEVNULL and no --quiet.
     """
+    if isinstance(mode, str):
+        mode = [mode]
 
     for d in gitdirs(rdir):
-        if verbose:
-            print(mode, d.name)
-        proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(d), mode],
+        logging.info(f'{mode} {d.name}')
+        cmd = [GITEXE, '-C', str(d)] + mode
+
+        proc = await asyncio.create_subprocess_exec(*cmd,
                                                     stdout=subprocess.DEVNULL,
                                                     stderr=asyncio.subprocess.PIPE)
         _, stderr = await proc.communicate()
@@ -51,3 +54,10 @@ async def fetchpull(mode: str, rdir: Path,
 
         if proc.returncode:
             yield d.name, err
+
+
+async def find_remote(mode: List[str], path: Path):
+
+    async for d, v in fetchpull(mode, path):
+        print(MAGENTA + str(d))
+        print(BLACK + v)
