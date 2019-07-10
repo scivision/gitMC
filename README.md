@@ -83,10 +83,13 @@ For private repos, simply clone with SSH as usual
 ### Preview all changed Jekyll files
 
 This is for a website made using
-[Jekyll](https://www.scivision.dev/create-jekyll-github-pages-website):
+[Jekyll](https://www.scivision.dev/create-jekyll-github-pages-website)
+or Hugo:
 ```sh
-ActOnChanged -j
+ActOnChanged -p
 ```
+
+It shows web page previews of all pages changed locally--start the Jekyll or Hugo debug server first e.g. `hugo serve`
 
 ## Github
 Python GitHub [API](https://pypi.org/project/PyGithub/)
