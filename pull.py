@@ -3,13 +3,11 @@
 for a root directory, assumes all subdirectories are Git repos
 and "git pull" each of them.
 """
-import sys
-import os
 import logging
-import asyncio
 from argparse import ArgumentParser
 
-from gitutils.pull import find_remote
+from gitutils.pull import coro_remote
+from gitutils.runner import runner
 
 MODE = 'pull'
 
@@ -23,19 +21,8 @@ def main():
     if P.verbose:
         logging.basicConfig(level=logging.DEBUG)
 
-    if os.name == 'nt' and (3, 7) <= sys.version_info < (3, 8):
-        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-
-    if sys.version_info >= (3, 7):
-        asyncio.run(find_remote(MODE, P.codepath))
-    else:
-        if os.name == 'nt':
-            loop = asyncio.ProactorEventLoop()
-        else:
-            loop = asyncio.new_event_loop()
-            asyncio.get_child_watcher().attach_loop(loop)
-        loop.run_until_complete(find_remote(MODE, P.codepath))
-        loop.close()
+    remotes = runner(coro_remote, MODE, P.codepath)
+    print('\n'.join(map(str, remotes)))
 
 
 if __name__ == '__main__':

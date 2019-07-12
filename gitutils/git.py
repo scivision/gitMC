@@ -3,7 +3,7 @@ Git utilities: focused on speed for very large numbers of Git repos
 """
 from pathlib import Path
 import subprocess
-from typing import List, Iterator, Any
+import typing
 import shutil
 
 try:
@@ -15,9 +15,9 @@ except ImportError:
     MAGENTA = BLACK = ''
 
 TIMEOUT = 30.  # arbitrary, seconds
-GITEXE: Any = shutil.which('git')  # type: ignore
+GITEXE = shutil.which('git')  # type: str
 if not GITEXE:
-    raise FileNotFoundError('Could not find executable for Git')
+    raise ImportError('Could not find executable for Git')
 
 """
 replaced by git status --porcelain:
@@ -28,7 +28,7 @@ DOES NOT WORK git log --branches --not --remotes     # check for uncommitted bra
 """
 
 
-def gitdirs(path: Path) -> Iterator[Path]:
+def gitdirs(path: Path) -> typing.Iterator[Path]:
     """
     Generator for Git directories
 
@@ -77,13 +77,13 @@ def baddir(path: Path) -> bool:
 
     try:
         bad = (path / '.nogit').is_file() or not (path / '.git' / 'HEAD').is_file()
-    except PermissionError:
+    except PermissionError:  # Windows
         bad = True
 
     return bad
 
 
-def listchanged(path: Path) -> List[str]:
+def listchanged(path: Path) -> typing.List[str]:
     """very quick check if any files were modified in this Git repo
 
     Parameters

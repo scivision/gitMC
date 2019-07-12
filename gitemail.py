@@ -19,7 +19,7 @@ import subprocess
 from typing import Sequence
 from argparse import ArgumentParser
 
-from gitutils import gitemail
+from gitutils.email import gitemail
 from gitutils.git import MAGENTA, BLACK
 
 cwd = Path(__file__).parent

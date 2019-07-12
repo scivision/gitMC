@@ -53,7 +53,7 @@ def main():
         if modify:
             if repo.archived:
                 logging.error(f'could not remove collabs from archived {repo.full_name}')
-                webbrowser.open_new_tab('https://github.com/'+repo.full_name+'/settings')
+                webbrowser.open_new_tab('https://github.com/' + repo.full_name + '/settings')
                 continue
 
             for admin in admins:

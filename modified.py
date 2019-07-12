@@ -2,22 +2,11 @@
 """
 detects uncommitted work/files in all git repos under a directory
 """
-import os
-import sys
-import asyncio
-from pathlib import Path
+import logging
 from argparse import ArgumentParser
-from gitutils.push import git_modified
+from gitutils.push import coro_local
+from gitutils.runner import runner
 from gitutils.git import MAGENTA, BLACK
-
-
-async def find_modified(path: Path, verbose: bool):
-    c = MAGENTA if verbose else ''
-
-    async for d, v in git_modified(path):
-        print(c + str(d))
-        if verbose:
-            print(BLACK + v)
 
 
 def main():
@@ -26,19 +15,17 @@ def main():
     p.add_argument('-v', '--verbose', action='store_true')
     P = p.parse_args()
 
-    if os.name == 'nt' and (3, 7) <= sys.version_info < (3, 8):
-        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+    if P.verbose:
+        logging.basicConfig(level=logging.DEBUG)
 
-    if sys.version_info >= (3, 7):
-        asyncio.run(find_modified(P.codepath, P.verbose))
-    else:
-        if os.name == 'nt':
-            loop = asyncio.ProactorEventLoop()
-        else:
-            loop = asyncio.new_event_loop()
-            asyncio.get_child_watcher().attach_loop(loop)
-        loop.run_until_complete(find_modified(P.codepath, P.verbose))
-        loop.close()
+    changes = runner(coro_local, P.codepath)
+
+    c = MAGENTA if P.verbose else ''
+
+    for d, v in changes:
+        print(c + str(d))
+        if P.verbose:
+            print(BLACK + v)
 
 
 if __name__ == '__main__':

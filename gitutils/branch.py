@@ -5,9 +5,10 @@ git branch get name methods:
 https://stackoverflow.com/a/45028375
 """
 
-from typing import AsyncGenerator, Tuple
+import typing
 from pathlib import Path
 import asyncio
+import logging
 
 from .git import GITEXE, gitdirs
 
@@ -17,20 +18,20 @@ BRANCH_NAME = ['name-rev', '--name-only', 'HEAD']
 BRANCH_SIMPLE = ['branch', '--show-current']  # Git >= 2.22
 
 
-async def findbranch(mainbranch: str, rdir: Path) -> AsyncGenerator[Tuple[str, str], None]:
+async def different_branch(mainbranch: str, path: Path) -> typing.Tuple[str, str]:
     """
-    find all branches in tree not matching "mainbranch"
+    does branch not match "mainbranch"
 
     Parameters
     ----------
 
     mainbranch : str
         branch name that's "normal" e.g. master
-    rdir : pathlib.Path
-        top-level directory to work under e.g. ~/code/
+    path : pathlib.Path
+        Git repo to check
 
-    Yields
-    ------
+    Returns
+    -------
 
     branch : tuple of pathlib.Path, str
         repo path and branch name
@@ -39,16 +40,18 @@ async def findbranch(mainbranch: str, rdir: Path) -> AsyncGenerator[Tuple[str, s
     https://docs.python.org/3/library/asyncio-subprocess.html#subprocess-and-threads
     """
 
-    rdir = Path(rdir).expanduser()
+    proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(path)] + BRANCH_REV,
+                                                stdout=asyncio.subprocess.PIPE)
+    stdout, _ = await proc.communicate()
+    logging.info(str(path))
 
-    for d in gitdirs(rdir):
-        proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(d)] + BRANCH_REV,
-                                                    stdout=asyncio.subprocess.PIPE)
-        stdout, _ = await proc.communicate()
+    branchname = stdout.decode('utf8').rstrip()
 
-        branchname = stdout.decode('utf8').rstrip()
+    if mainbranch != branchname:
+        return path.name, branchname
+    return None
 
-        if mainbranch in branchname:
-            continue
 
-        yield d.name, branchname
+async def coro_local(branch: str, path: Path) -> typing.List[Path]:
+    futures = [different_branch(branch, d) for d in gitdirs(path)]
+    return list(filter(None, await asyncio.gather(*futures)))

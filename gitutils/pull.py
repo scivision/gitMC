@@ -5,12 +5,12 @@ import asyncio
 import subprocess
 import logging
 from pathlib import Path
-from typing import AsyncGenerator, Tuple, List
+import typing
 
-from .git import GITEXE, gitdirs, MAGENTA, BLACK
+from .git import GITEXE, gitdirs
 
 
-async def fetchpull(mode: List[str], rdir: Path) -> AsyncGenerator[Tuple[str, str], None]:
+async def fetchpull(mode: typing.List[str], path: Path) -> Path:
     """
     handles recursive "git pull" and "git fetch"
 
@@ -19,14 +19,12 @@ async def fetchpull(mode: List[str], rdir: Path) -> AsyncGenerator[Tuple[str, st
 
     mode : str
         fetch or pull
-    rdir : pathlib.Path
-        top-level path over Git repos
-    verbose: bool
-        print repo being checked
+    path : pathlib.Path
+        Git repo path
 
-    Yields
-    ------
-    failed : Path
+    Returns
+    -------
+    failed : pathlib.Path
         Git repos with failures
 
 
@@ -42,22 +40,20 @@ async def fetchpull(mode: List[str], rdir: Path) -> AsyncGenerator[Tuple[str, st
     if isinstance(mode, str):
         mode = [mode]
 
-    for d in gitdirs(rdir):
-        logging.info(f'{mode} {d.name}')
-        cmd = [GITEXE, '-C', str(d)] + mode
+    cmd = [GITEXE, '-C', str(path)] + mode
+    proc = await asyncio.create_subprocess_exec(*cmd,
+                                                stdout=subprocess.DEVNULL,
+                                                stderr=asyncio.subprocess.PIPE)
+    _, stderr = await proc.communicate()
+    logging.info(f'{mode} {path.name}')
 
-        proc = await asyncio.create_subprocess_exec(*cmd,
-                                                    stdout=subprocess.DEVNULL,
-                                                    stderr=asyncio.subprocess.PIPE)
-        _, stderr = await proc.communicate()
-        err = stderr.decode('utf8').rstrip()
-
-        if proc.returncode:
-            yield d.name, err
+    err = stderr.decode('utf8').rstrip()
+    if proc.returncode:
+        print(path.name, err)
+        return path
+    return None
 
 
-async def find_remote(mode: List[str], path: Path):
-
-    async for d, v in fetchpull(mode, path):
-        print(MAGENTA + str(d))
-        print(BLACK + v)
+async def coro_remote(mode: typing.List[str], path: Path) -> typing.List[Path]:
+    futures = [fetchpull(mode, d) for d in gitdirs(path)]
+    return list(filter(None, await asyncio.gather(*futures)))
