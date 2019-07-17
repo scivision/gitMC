@@ -1,0 +1,28 @@
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-latest'
+    mac:
+      imageName: 'macos-10.14'
+    windows:
+      imageName: 'windows-2019'
+
+pool:
+  vmImage: $(imageName)
+
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
+      Python36:
+        python.version: '3.6'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+
+  - script: pip install -e .[tests]
+    displayName: 'Python: Package Devel mode'
+  - script: pytest -r a -v
+    displayName: 'Pytest'

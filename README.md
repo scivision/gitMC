@@ -1,4 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2592584.svg)](https://doi.org/10.5281/zenodo.2592584)
+
+[![Build Status](https://dev.azure.com/mhirsch0512/GitMC/_apis/build/status/scivision.gitMC?branchName=master)](https://dev.azure.com/mhirsch0512/GitMC/_build/latest?definitionId=2&branchName=master)
 [![Build Status](https://travis-ci.org/scivision/gitMC.svg?branch=master)](https://travis-ci.org/scivision/gitMC)
 [![Coverage Status](https://coveralls.io/repos/github/scivision/gitMC/badge.svg?branch=master)](https://coveralls.io/github/scivision/gitMC?branch=master)
 [![Build status](https://ci.appveyor.com/api/projects/status/co2em7skpsu0p8r3?svg=true)](https://ci.appveyor.com/project/scivision/gitmc)
@@ -9,6 +11,7 @@
 
 Platform-independent (Linux/Mac/Windows) Git utilities, useful for managing large (100+) numbers of Git repos.
 Speed is an emphasis throughout, with concurrency via Python `asyncio` and pipelining.
+In general, GitMC works with all GitHub repos, including organization private repos--assuming you have created a GitHub Oauth key with appropriate permissions ("repo" needed for private org/user repos").
 
 GitMC uses command-line Git because PyGit also requires command-line Git installed, and we don't need the advanced functionality.
 

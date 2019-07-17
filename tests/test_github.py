@@ -17,11 +17,12 @@ def test_bad_username():
 
 
 def test_get_repos():
+    gexc = pytest.importorskip('github.GithubException')
     pgu = pytest.importorskip('gitutils.github_base')
-    userorg = pgu.user_or_org(pgu.github_session(), OK_username)
     try:
+        userorg = pgu.user_or_org(pgu.github_session(), OK_username)
         repos = pgu.get_repos(userorg)
-    except ConnectionRefusedError:
+    except (ConnectionRefusedError, gexc.RateLimitExceededException):
         pytest.skip('GitHub API limit exceeded')
 
     assert len(repos) > 0
