@@ -27,9 +27,9 @@ matrix:
     - flake8
     - mypy .
     - pytest -r a -v
-    after_success:
-    - pytest --cov
-    - coveralls
+#    after_success:
+#    - pytest --cov
+#    - coveralls
 
 install: pip install -e .[tests]
 

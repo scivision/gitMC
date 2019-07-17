@@ -19,7 +19,7 @@ pool:
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '$(python.version)'
+    versionSpec: $(python.version)
 
 - script: pip install -e .[tests,cov,github]
   displayName: Dev install
@@ -28,6 +28,23 @@ steps:
 - script: mypy .
   displayName: Type Check
 - script: pytest -r a -v
+  condition: ne(variables['Agent.JobName'], 'Job linux_py37')
   displayName: Pytest
-- script: pytest --cov
-  displayName: Coverage
+
+- script: pytest --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
+  condition: eq(variables['Agent.JobName'], 'Job linux_py37')
+  displayName: PytestCoverage
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFiles: '**/test-*.xml'
+    testRunTitle: 'Publish test results for Python $(python.version)'
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/python?view=azure-devops#publish-code-coverage-results
+- task: PublishCodeCoverageResults@1
+  condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux_py37'))
+  inputs:
+    codeCoverageTool: Cobertura
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+    reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
