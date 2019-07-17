@@ -5,8 +5,11 @@ import github
 from pathlib import Path
 from datetime import datetime
 import logging
-from typing import Union, Dict, List
+import typing
 import pandas
+
+TYPE_USERORG = typing.Union[github.NamedUser.NamedUser, github.Organization.Organization]
+TYPE_AUTH = typing.Union[github.AuthenticatedUser.AuthenticatedUser, github.Organization.Organization]
 
 
 def check_api_limit(g: github.Github = None) -> bool:
@@ -36,10 +39,10 @@ def check_api_limit(g: github.Github = None) -> bool:
     treset = datetime.utcfromtimestamp(g.rate_limiting_resettime)  # local time
 
     if api_remaining == 0:
-        raise RuntimeError(f'GitHub rate limit exceeded: {api_remaining} / {api_max}. Try again after {treset} UTC.')
+        raise ConnectionRefusedError(f'GitHub rate limit exceeded: {api_remaining} / {api_max}. Try again after {treset} UTC.')
         ok = False
     elif api_remaining < 10:
-        logging.warning(f'approaching GitHub API limit, {api_remaining} / {api_max} remaining until {treset} UTC.')
+        logging.warning(ResourceWarning(f'approaching GitHub API limit, {api_remaining} / {api_max} remaining until {treset} UTC.'))
     else:
         logging.debug(f'GitHub API limit: {api_remaining} / {api_max} remaining until {treset} UTC.')
 
@@ -70,7 +73,8 @@ def github_session(oauth: Path = None) -> github.Github:
     return g
 
 
-def connect_github(oauth: Path, orgname: str = None) -> tuple:
+def connect_github(oauth: Path,
+                   orgname: str = None) -> typing.Tuple[TYPE_AUTH, github.Github]:
     """
     retrieve organizations or users from GitHub
 
@@ -83,7 +87,7 @@ def connect_github(oauth: Path, orgname: str = None) -> tuple:
 
     Results
     -------
-    op : github.AuthenticatedUser or github.Organization
+    op : github.AuthenticatedUser.AuthenticatedUser or github.Organization.Organization
         handle to organization or user
     sess : github.Github
         GitHub session
@@ -99,7 +103,8 @@ def connect_github(oauth: Path, orgname: str = None) -> tuple:
                 org = o
                 break
 
-        assert org is not None
+        if org is None:
+            raise ValueError(f'Organization {org} authentication could not be established')
         op = org
     else:
         op = guser
@@ -107,15 +112,14 @@ def connect_github(oauth: Path, orgname: str = None) -> tuple:
     return op, sess
 
 
-def repo_exists(user: Union[github.AuthenticatedUser.AuthenticatedUser,
-                            github.Organization.Organization],
+def repo_exists(user: TYPE_AUTH,
                 reponame: str) -> bool:
     """
     Does a particular GitHub repo exist?
 
     Parameters
     ----------
-    user : github.AuthenticatedUser or github.Organization
+    user : github.AuthenticatedUser.AuthenticatedUser or github.Organization.Organization
         GitHub user or organizaition handle
     reponame : str
         reponame under user e.g. pymap3d
@@ -196,7 +200,36 @@ def repo_isempty(repo: github.Repository) -> bool:
     return empty
 
 
-def read_repos(fn: Path, sheet: str) -> Dict[str, str]:
+def user_or_org(g: github.Github, user: str) -> TYPE_USERORG:
+    """
+    Determines if user is a GitHub organizaition or standard user.
+    This is relevant to getting private repos.
+
+    Parameters
+    ----------
+    g: github.Github
+        Github session handle
+    user: str
+        username or organization name
+
+    Returns
+    -------
+    h: github.NamedUser.NamedUser or github.Organization.Organization
+        the handle to the Organization or Username.
+    """
+    try:
+        list(g.search_users(f'user:{user}'))
+    except github.GithubException as e:
+        raise ValueError(f'{user} not found on GitHub\n{e}')
+
+    try:
+        h = g.get_organization(user)
+    except github.GithubException:
+        h = g.get_user(user)
+    return h
+
+
+def read_repos(fn: Path, sheet: str) -> typing.Dict[str, str]:
     """
     make pandas.Series of email/id, Git url from spreadsheet
 
@@ -221,25 +254,18 @@ def read_repos(fn: Path, sheet: str) -> Dict[str, str]:
     return repos.to_dict()
 
 
-def get_repos(g: github.Github, user: str) -> List[github.Repository.Repository]:
+def get_repos(userorg: TYPE_USERORG) -> typing.List[github.Repository.Repository]:
     """
     get list of Repositories for a user or organization
 
-    name: username or organization name
+    Parameters
+    ----------
+    userorg: github.NamedUser.NamedUser or github.Organization.Organization
+        username or organization handle
+
+    Returns
+    -------
+    repos: list of github.Repository
+        all repos for a username / orgname
     """
-    repo = user.split('/')
-    name = repo[0]
-
-    try:
-        list(g.search_users(f'user:{name}'))
-    except github.GithubException:
-        raise ValueError(f'{name} not found on GitHub')
-
-    if len(repo) == 2:  # assuming a single repo is specified
-        repos = [g.get_user(name).get_repo(repo[1])]
-    elif len(repo) == 1:
-        repos = list(g.get_user(name).get_repos())
-    else:
-        raise ValueError(f'unknown username or reponame {repo}')
-
-    return repos
+    return list(userorg.get_repos(type='all'))

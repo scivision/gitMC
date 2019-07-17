@@ -30,10 +30,11 @@ def main():
 
 # %% authentication
     sess = gb.github_session(P.oauth)
-
     gb.check_api_limit(sess)
+# %% get user / organization handle
+    userorg = gb.user_or_org(sess, P.user)
 # %% prepare to loop over repos
-    repos = gb.get_repos(sess, P.user)
+    repos = gb.get_repos(userorg)
 
     to_modify = [repo for repo in repos if repo.name.startswith(P.pattern)]
     if not to_modify:

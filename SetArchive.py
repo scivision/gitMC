@@ -6,6 +6,9 @@ Requires GitHub Oauth login with sufficient permissions "repo:public_repo".
 (admin:org Oauth does not work)
 It's suggested you create an Oauth key for this, and then disable/delete this key permissions when done
 to avoid a security issue.
+To do this, including for Organizations, go to your
+Username, Settings, Developer Settings, Personal Access Tokens and set repo:public_repo.
+For organization private repos, you need "repo" permissions on the Oauth token.
 
 if you get error
 
@@ -27,10 +30,11 @@ def main():
 
 # %% authentication
     sess = gb.github_session(P.oauth)
-
     gb.check_api_limit(sess)
+# %% get user / organization handle
+    userorg = gb.user_or_org(sess, P.user)
 # %% prepare to loop over repos
-    repos = gb.get_repos(sess, P.user)
+    repos = gb.get_repos(userorg)
     if not repos:
         raise SystemExit(f'no repos for {P.user}')
 
