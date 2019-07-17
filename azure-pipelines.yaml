@@ -1,28 +1,33 @@
 strategy:
   matrix:
-    linux:
+    linux_py37:
       imageName: 'ubuntu-latest'
+      python.version: '3.7'
+    linux_py36:
+      imageName: 'ubuntu-latest'
+      python.version: '3.6'
     mac:
       imageName: 'macos-10.14'
+      python.version: '3.7'
     windows:
       imageName: 'windows-2019'
+      python.version: '3.7'
 
 pool:
   vmImage: $(imageName)
 
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
-      Python36:
-        python.version: '3.6'
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
 
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-
-  - script: pip install -e .[tests]
-    displayName: 'Python: Package Devel mode'
-  - script: pytest -r a -v
-    displayName: 'Pytest'
+- script: pip install -e .[tests,cov,github]
+  displayName: Dev install
+- script: flake8
+  displayName: PEP8
+- script: mypy .
+  displayName: Type Check
+- script: pytest -r a -v
+  displayName: Pytest
+- script: pytest --cov
+  displayName: Coverage
