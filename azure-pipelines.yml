@@ -22,49 +22,7 @@ stages:
     - script: mypy .
       displayName: Type Check
 
-- stage: UnitTests
-  jobs:
-
-  - job: UbuntuIntegration
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.6'
-        addToPath: true
-    - script: pip install -e .[tests,github]
-      displayName: 'Dev install'
-    - script: pytest -r a -v
-      displayName: PyTest
-
-  - job: MacOSIntegration
-    pool:
-      vmImage: macos-latest
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.6'
-        addToPath: true
-    - script: pip install -e .[tests,github]
-      displayName: 'Dev install'
-    - script: pytest -r a -v
-      displayName: PyTest
-
-  - job: WindowsIntegration
-    pool:
-      vmImage: windows-latest
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.6'
-        addToPath: true
-    - script: pip install -e .[tests,github]
-      displayName: 'Dev install'
-    - script: pytest -r a -v
-      displayName: PyTest
-
-- stage: IntegrationTests
+- stage: PackageInstall
   jobs:
 
   - job: UbuntuInstall
@@ -84,6 +42,48 @@ stages:
         cd $HOME
         python -m pytest $(Build.SourcesDirectory) -r a -v
       displayName: 'Build Python'
+
+- stage: IntegrationTests
+  jobs:
+
+  - job: Ubuntu
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.6'
+        addToPath: true
+    - script: pip install -e .[tests,github]
+      displayName: 'Dev install'
+    - script: pytest -r a -v
+      displayName: PyTest
+
+  - job: MacOS
+    pool:
+      vmImage: macos-latest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.6'
+        addToPath: true
+    - script: pip install -e .[tests,github]
+      displayName: 'Dev install'
+    - script: pytest -r a -v
+      displayName: PyTest
+
+  - job: Windows
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.6'
+        addToPath: true
+    - script: pip install -e .[tests,github]
+      displayName: 'Dev install'
+    - script: pytest -r a -v
+      displayName: PyTest
 
 - stage: CoverageTests
 
