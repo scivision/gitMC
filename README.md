@@ -1,9 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2592584.svg)](https://doi.org/10.5281/zenodo.2592584)
 
-[![Build Status](https://dev.azure.com/mhirsch0512/GitMC/_apis/build/status/scivision.gitMC?branchName=master)](https://dev.azure.com/mhirsch0512/GitMC/_build/latest?definitionId=2&branchName=master)
-[![Build Status](https://travis-ci.org/scivision/gitMC.svg?branch=master)](https://travis-ci.org/scivision/gitMC)
-[![Coverage Status](https://coveralls.io/repos/github/scivision/gitMC/badge.svg?branch=master)](https://coveralls.io/github/scivision/gitMC?branch=master)
-[![Build status](https://ci.appveyor.com/api/projects/status/co2em7skpsu0p8r3?svg=true)](https://ci.appveyor.com/project/scivision/gitmc)
+[![Build Status](https://dev.azure.com/mhirsch0512/GitMC/_apis/build/status/scivision.gitMC?branchName=master)](https://dev.azure.com/mhirsch0512/GitMC/_build/latest?definitionId=12&branchName=master)
 [![pypi versions](https://img.shields.io/pypi/pyversions/gitutils.svg)](https://pypi.python.org/pypi/gitutils)
 [![PyPi Download stats](http://pepy.tech/badge/gitutils)](http://pepy.tech/project/gitutils)
 

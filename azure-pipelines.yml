@@ -1,50 +1,115 @@
-strategy:
-  matrix:
-    linux_py37:
-      imageName: 'ubuntu-latest'
-      python.version: '3.7'
-    linux_py36:
-      imageName: 'ubuntu-latest'
-      python.version: '3.6'
-    mac:
-      imageName: 'macos-10.14'
-      python.version: '3.7'
-    windows:
-      imageName: 'windows-2019'
-      python.version: '3.7'
+variables:
+ CI: true
+ project_name: gitutils
 
-pool:
-  vmImage: $(imageName)
+stages:
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: $(python.version)
+- stage: SyntaxChecks
+  jobs:
 
-- script: pip install -e .[tests,cov,github]
-  displayName: Dev install
-- script: flake8
-  displayName: PEP8
-- script: mypy .
-  displayName: Type Check
-- script: pytest -r a -v
-  condition: ne(variables['Agent.JobName'], 'Job linux_py37')
-  displayName: Pytest
+  - job: PEP8_MyPy
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        addToPath: true
+    - script: pip install -e .[cov]
+      displayName: 'Dev install'
+    - script: flake8
+      displayName: PEP8
+    - script: mypy .
+      displayName: Type Check
 
-- script: pytest --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
-  condition: eq(variables['Agent.JobName'], 'Job linux_py37')
-  displayName: PytestCoverage
+- stage: UnitTests
+  jobs:
 
-- task: PublishTestResults@2
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFiles: '**/test-*.xml'
-    testRunTitle: 'Publish test results for Python $(python.version)'
+  - job: UbuntuIntegration
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.6'
+        addToPath: true
+    - script: pip install -e .[tests,github]
+      displayName: 'Dev install'
+    - script: pytest -r a -v
+      displayName: PyTest
 
+  - job: MacOSIntegration
+    pool:
+      vmImage: macos-latest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.6'
+        addToPath: true
+    - script: pip install -e .[tests,github]
+      displayName: 'Dev install'
+    - script: pytest -r a -v
+      displayName: PyTest
+
+  - job: WindowsIntegration
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.6'
+        addToPath: true
+    - script: pip install -e .[tests,github]
+      displayName: 'Dev install'
+    - script: pytest -r a -v
+      displayName: PyTest
+
+- stage: IntegrationTests
+  jobs:
+
+  - job: UbuntuInstall
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.6'
+        addToPath: true
+    - script: |
+        python setup.py install
+        pip install $(project_name)[tests]
+      displayName: 'hard install'
+    - script: |
+        cd $HOME
+        python -m pytest $(Build.SourcesDirectory) -r a -v
+      displayName: 'Build Python'
+
+- stage: CoverageTests
+
+  jobs:
+  - job: Coverage
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        addToPath: true
+    - script: pip install -e .[tests,cov,github]
+      displayName: 'Dev install'
+    - script: pytest --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
+      displayName: Coverage
+
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFiles: '**/test-*.xml'
+        testRunTitle: 'Publish test results for Python $(python.version)'
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/python?view=azure-devops#publish-code-coverage-results
-- task: PublishCodeCoverageResults@1
-  condition: and(succeeded(), eq(variables['Agent.JobName'], 'Job linux_py37'))
-  inputs:
-    codeCoverageTool: Cobertura
-    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-    reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+    - task: PublishCodeCoverageResults@1
+      condition: succeeded()
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+        reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
