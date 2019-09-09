@@ -24,12 +24,12 @@ def main():
                              columns=['forks', 'stars'])
         dat = pandas.concat((dat, d))
 
-    datnz = dat[~(dat == 0).all(axis=1)]
+    datnz = dat[~(dat == 0).all(axis=1)].drop_duplicates()
 # %%  Stars and Forks
     pandas.set_option('display.max_rows', 500)
 
-    print(f'\n{" ".join(p.user)} total stars received {dat["stars"].sum()}')
-    print(f'{" ".join(p.user)} total other users forked {dat["forks"].sum()}\n')
+    print(f'\n{" ".join(p.user)} total stars received {datnz["stars"].sum()}')
+    print(f'{" ".join(p.user)} total other users forked {datnz["forks"].sum()}\n')
 
     print(datnz.sort_values(['stars', 'forks'], ascending=False))
 

@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2592584.svg)](https://doi.org/10.5281/zenodo.2592584)
+[![Actions Status](https://github.com/scivision/gitmc/workflows/ci/badge.svg)](https://github.com/scivision/gitmc/actions)
 
-[![Build Status](https://dev.azure.com/mhirsch0512/GitMC/_apis/build/status/scivision.gitMC?branchName=master)](https://dev.azure.com/mhirsch0512/GitMC/_build/latest?definitionId=12&branchName=master)
 [![pypi versions](https://img.shields.io/pypi/pyversions/gitutils.svg)](https://pypi.python.org/pypi/gitutils)
 [![PyPi Download stats](http://pepy.tech/badge/gitutils)](http://pepy.tech/project/gitutils)
 
