@@ -49,7 +49,7 @@ def repo_prober(user: str,
     counts = []
     ahead: List[Tuple[str, int]] = []
 
-    for i, repo in enumerate(repos):
+    for repo in repos:
         if not starsonly:
             ahead += fork_prober(repo, sess, ahead, branch, verbose)
 
