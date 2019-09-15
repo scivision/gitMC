@@ -30,11 +30,9 @@ def main():
     userorg = gb.user_or_org(sess, P.user)
 # %% prepare to loop over repos
     repos = gb.get_repos(userorg)
-    if not repos:
-        raise SystemExit(f'no repos for {P.user}')
 
     if P.pattern:
-        repos = [repo for repo in repos if repo.name.startswith(P.pattern)]
+        repos = (repo for repo in repos if repo.name.startswith(P.pattern))
 
     for repo in repos:
         print(repo.full_name)

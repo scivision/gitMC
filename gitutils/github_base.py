@@ -254,7 +254,7 @@ def read_repos(fn: Path, sheet: str) -> typing.Dict[str, str]:
     return repos.to_dict()
 
 
-def get_repos(userorg: TYPE_USERORG) -> typing.List[github.Repository.Repository]:
+def get_repos(userorg: TYPE_USERORG) -> typing.Iterable[github.Repository.Repository]:
     """
     get list of Repositories for a user or organization
 
@@ -268,4 +268,4 @@ def get_repos(userorg: TYPE_USERORG) -> typing.List[github.Repository.Repository
     repos: list of github.Repository
         all repos for a username / orgname
     """
-    return list(userorg.get_repos(type='all'))
+    return userorg.get_repos(type='all')
