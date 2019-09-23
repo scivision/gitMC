@@ -9,30 +9,28 @@ To check your Git commits locally for:
     git config --global core.hooksPath ~/.git/hooks
 2. put this script at ~/.git/hooks/pre-commit (no .py extension)
 
-Works on Python 2.7 and 3.x
+Works on Python 3.x
 
 * https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks
 * https://www.scivision.dev/git-commit-precheck-pep8/
 """
 
-from __future__ import print_function
+import shutil
 import subprocess
 import sys
 import os
-# Python 2.7 doesn't have shutil.which
-NUL = open(os.devnull, 'wb')
 try:
-    subprocess.check_call(['flake8', '--help'], stdout=NUL)
-    flake8 = True
-except (OSError, subprocess.CalledProcessError):
-    flake8 = False
-    print('could not find flake8', file=sys.stderr)
-try:
-    subprocess.check_call(['mypy', '--help'], stdout=NUL)
-    mypy = True
-except (OSError, subprocess.CalledProcessError):
-    mypy = False
-    print('could not find mypy', file=sys.stderr)
+    import yaml
+except ImportError:
+    yaml = None
+    print('yaml checks not available', file=sys.stderr)
+
+flake8 = shutil.which('flake8')
+if not flake8:
+    print('flake8 checks not available', file=sys.stderr)
+mypy = shutil.which('mypy')
+if not mypy:
+    print('mypy checks not available', file=sys.stderr)
 
 # %% Python checking
 stdout = subprocess.check_output(['git', 'diff', '--staged', '--name-only'], universal_newlines=True)
@@ -46,12 +44,17 @@ for f in pystaged:
 
 if pystaged:
     if flake8:
-        if subprocess.call(['flake8'] + pystaged):
+        if subprocess.call([flake8] + pystaged):
             raise SystemExit('fix PEP8 issues before commit')
 
     if mypy:
-        if subprocess.call(['mypy'] + pystaged):
+        if subprocess.call([mypy] + pystaged):
             raise SystemExit('fix type hinting issues before commit')
+
+if yaml is not None:
+    ymlstaged = (f for f in stdout.split('\n') if f.endswith(('.yml', '.yaml')) and os.path.isfile(f))
+    for f in ymlstaged:
+        yaml.safe_load(open(f).read())
 
 # %% general checks
 if subprocess.call(['git', 'diff-index', '--check', '--cached', 'HEAD', '--']):

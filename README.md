@@ -12,25 +12,10 @@ In general, GitMC works with all GitHub repos, including organization private re
 
 GitMC uses command-line Git because PyGit also requires command-line Git installed, and we don't need the advanced functionality.
 
-An important feature in
-```sh
-python CountGithubForks.py username
-```
-is showing which forks of your repos have had changes "ahead of" the parent repo.
 
 ---
 
-Count how many total GitHub stars a GitHub account has:
-
-```sh
-python CountGithubStars.py username
-```
-
-That will take a couple seconds even for large numbers of repos.
-
----
-
-Also see Git [utilities](https://github.com/scivision/gitedu) for managing large (100+) numbers of users / teams, particularly for education and institutions.
+Also see PyGitHub [utilities](https://github.com/scivision/pygithub-utils) for managing large (100+) numbers of users / teams.
 
 ## Install
 
@@ -90,20 +75,3 @@ ActOnChanged -p
 ```
 
 It shows web page previews of all pages changed locally--start the Jekyll or Hugo debug server first e.g. `hugo serve`
-
-## Github
-Python GitHub [API](https://pypi.org/project/PyGithub/)
-
-Most users will need a GitHub API token, as the unauthenticated API access is severly limited.
-
-1. [Generate](https://github.com/settings/tokens) GitHub API token with ONLY the `user:email` permission.
-2. Copy that text string to a secure location on your computer.
-
-### GitHub user stats
-
-`ListAllGithubRepos username OauthKey`
-Gives stats on GitHub repos for a particular user.
-It requires extra prereqs via:
-```sh
-pip install -e .[github]
-```
