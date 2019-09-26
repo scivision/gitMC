@@ -8,16 +8,17 @@ import shutil
 
 try:
     import colorama
+
     MAGENTA = colorama.Back.MAGENTA
     BLACK = colorama.Back.BLACK
     colorama.init()
 except ImportError:
-    MAGENTA = BLACK = ''
+    MAGENTA = BLACK = ""
 
-TIMEOUT = 30.  # arbitrary, seconds
-GITEXE = shutil.which('git')  # type: str
+TIMEOUT = 30.0  # arbitrary, seconds
+GITEXE = shutil.which("git")  # type: str
 if not GITEXE:
-    raise ImportError('Could not find executable for Git')
+    raise ImportError("Could not find executable for Git")
 
 """
 replaced by git status --porcelain:
@@ -76,7 +77,7 @@ def baddir(path: Path) -> bool:
         return True
 
     try:
-        bad = (path / '.nogit').is_file() or not (path / '.git' / 'HEAD').is_file()
+        bad = (path / ".nogit").is_file() or not (path / ".git" / "HEAD").is_file()
     except PermissionError:  # Windows
         bad = True
 
@@ -97,7 +98,6 @@ def listchanged(path: Path) -> typing.List[str]:
     changes : list of str
         filenames changed in this Git repo
     """
-    ret = subprocess.check_output([GITEXE, '-C', str(path), 'ls-files', '--modified'],
-                                  universal_newlines=True)
+    ret = subprocess.check_output([GITEXE, "-C", str(path), "ls-files", "--modified"], universal_newlines=True)
 
-    return ret.split('\n')
+    return ret.split("\n")

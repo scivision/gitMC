@@ -19,43 +19,44 @@ import shutil
 import subprocess
 import sys
 import os
+
 try:
     import yaml
 except ImportError:
     yaml = None
-    print('yaml checks not available', file=sys.stderr)
+    print("yaml checks not available", file=sys.stderr)
 
-flake8 = shutil.which('flake8')
+flake8 = shutil.which("flake8")
 if not flake8:
-    print('flake8 checks not available', file=sys.stderr)
-mypy = shutil.which('mypy')
+    print("flake8 checks not available", file=sys.stderr)
+mypy = shutil.which("mypy")
 if not mypy:
-    print('mypy checks not available', file=sys.stderr)
+    print("mypy checks not available", file=sys.stderr)
 
 # %% Python checking
-stdout = subprocess.check_output(['git', 'diff', '--staged', '--name-only'], universal_newlines=True)
+stdout = subprocess.check_output(["git", "diff", "--staged", "--name-only"], universal_newlines=True)
 
-pystaged = [f for f in stdout.split('\n') if f.endswith('.py') and os.path.isfile(f)]
+pystaged = [f for f in stdout.split("\n") if f.endswith(".py") and os.path.isfile(f)]
 
 for f in pystaged:
     txt = open(f).read()
     if "breakpoint(" in txt:
-        raise SystemExit('Remove breakpoint in {} before commit'.format(f))
+        raise SystemExit("Remove breakpoint in {} before commit".format(f))
 
 if pystaged:
     if flake8:
         if subprocess.call([flake8] + pystaged):
-            raise SystemExit('fix PEP8 issues before commit')
+            raise SystemExit("fix PEP8 issues before commit")
 
     if mypy:
         if subprocess.call([mypy] + pystaged):
-            raise SystemExit('fix type hinting issues before commit')
+            raise SystemExit("fix type hinting issues before commit")
 
 if yaml is not None:
-    ymlstaged = (f for f in stdout.split('\n') if f.endswith(('.yml', '.yaml')) and os.path.isfile(f))
+    ymlstaged = (f for f in stdout.split("\n") if f.endswith((".yml", ".yaml")) and os.path.isfile(f))
     for f in ymlstaged:
         yaml.safe_load(open(f).read())
 
 # %% general checks
-if subprocess.call(['git', 'diff-index', '--check', '--cached', 'HEAD', '--']):
-    raise SystemExit('Fix whitespace issues before commit')
+if subprocess.call(["git", "diff-index", "--check", "--cached", "HEAD", "--"]):
+    raise SystemExit("Fix whitespace issues before commit")

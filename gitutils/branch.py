@@ -12,10 +12,10 @@ import logging
 
 from .git import GITEXE, gitdirs
 
-BRANCH_REV = ['rev-parse', '--abbrev-ref', 'HEAD']
-BRANCH_SYM = ['symbolic-ref', '--short', 'HEAD']
-BRANCH_NAME = ['name-rev', '--name-only', 'HEAD']
-BRANCH_SIMPLE = ['branch', '--show-current']  # Git >= 2.22
+BRANCH_REV = ["rev-parse", "--abbrev-ref", "HEAD"]
+BRANCH_SYM = ["symbolic-ref", "--short", "HEAD"]
+BRANCH_NAME = ["name-rev", "--name-only", "HEAD"]
+BRANCH_SIMPLE = ["branch", "--show-current"]  # Git >= 2.22
 
 
 async def different_branch(mainbranch: str, path: Path) -> typing.Tuple[str, str]:
@@ -40,12 +40,11 @@ async def different_branch(mainbranch: str, path: Path) -> typing.Tuple[str, str
     https://docs.python.org/3/library/asyncio-subprocess.html#subprocess-and-threads
     """
 
-    proc = await asyncio.create_subprocess_exec(*[GITEXE, '-C', str(path)] + BRANCH_REV,
-                                                stdout=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_exec(*[GITEXE, "-C", str(path)] + BRANCH_REV, stdout=asyncio.subprocess.PIPE)
     stdout, _ = await proc.communicate()
     logging.info(str(path))
 
-    branchname = stdout.decode('utf8').rstrip()
+    branchname = stdout.decode("utf8").rstrip()
 
     if mainbranch != branchname:
         return path.name, branchname

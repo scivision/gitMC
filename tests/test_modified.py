@@ -8,7 +8,7 @@ R = Path(__file__).parent
 
 
 def test_script():
-    subprocess.check_call(['gitmodified', str(R.parent)])
+    subprocess.check_call(["gitmodified", str(R.parent)])
 
 
 def test_mod():

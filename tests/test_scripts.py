@@ -6,10 +6,10 @@ import pytest
 R = Path(__file__).parent
 
 
-@pytest.mark.parametrize('op', ['gitemail'])
+@pytest.mark.parametrize("op", ["gitemail"])
 def test_git(op):
-    subprocess.check_call([op, '..'], cwd=R)
+    subprocess.check_call([op, ".."], cwd=R)
 
 
-if __name__ == '__main__':
-    pytest.main(['-x', __file__])
+if __name__ == "__main__":
+    pytest.main(["-x", __file__])

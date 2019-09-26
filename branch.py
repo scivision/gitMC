@@ -10,10 +10,9 @@ from gitutils.runner import runner
 
 def main():
     p = ArgumentParser()
-    p.add_argument('codepath', help='path to code root', nargs='?', default='~/code')
-    p.add_argument('mainbranch', nargs='?',
-                   default='master', help='name of your main branch')
-    p.add_argument('-v', '--verbose', action='store_true')
+    p.add_argument("codepath", help="path to code root", nargs="?", default="~/code")
+    p.add_argument("mainbranch", nargs="?", default="master", help="name of your main branch")
+    p.add_argument("-v", "--verbose", action="store_true")
     P = p.parse_args()
 
     if P.verbose:
@@ -21,8 +20,8 @@ def main():
 
     branches = runner(coro_local, P.mainbranch, P.codepath)
     for b in branches:
-        print(b[0], ' => ', b[1])
+        print(b[0], " => ", b[1])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

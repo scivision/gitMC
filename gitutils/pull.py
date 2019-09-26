@@ -40,14 +40,12 @@ async def fetchpull(mode: typing.List[str], path: Path) -> Path:
     if isinstance(mode, str):
         mode = [mode]
 
-    cmd = [GITEXE, '-C', str(path)] + mode
-    proc = await asyncio.create_subprocess_exec(*cmd,
-                                                stdout=subprocess.DEVNULL,
-                                                stderr=asyncio.subprocess.PIPE)
+    cmd = [GITEXE, "-C", str(path)] + mode
+    proc = await asyncio.create_subprocess_exec(*cmd, stdout=subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE)
     _, stderr = await proc.communicate()
-    logging.info(f'{mode} {path.name}')
+    logging.info(f"{mode} {path.name}")
 
-    err = stderr.decode('utf8').rstrip()
+    err = stderr.decode("utf8").rstrip()
     if proc.returncode:
         print(path.name, err)
         return path

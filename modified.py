@@ -11,8 +11,8 @@ from gitutils.git import MAGENTA, BLACK
 
 def main():
     p = ArgumentParser()
-    p.add_argument('codepath', help='path to code root', nargs='?', default='~/code')
-    p.add_argument('-v', '--verbose', action='store_true')
+    p.add_argument("codepath", help="path to code root", nargs="?", default="~/code")
+    p.add_argument("-v", "--verbose", action="store_true")
     P = p.parse_args()
 
     if P.verbose:
@@ -20,7 +20,7 @@ def main():
 
     changes = runner(coro_local, P.codepath)
 
-    c = MAGENTA if P.verbose else ''
+    c = MAGENTA if P.verbose else ""
 
     for d, v in changes:
         print(c + str(d))
@@ -28,5 +28,5 @@ def main():
             print(BLACK + v)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

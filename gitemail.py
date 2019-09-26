@@ -23,7 +23,7 @@ from gitutils.email import gitemail
 from gitutils.git import MAGENTA, BLACK
 
 cwd = Path(__file__).parent
-github = '@users.noreply.github.com'
+github = "@users.noreply.github.com"
 
 
 def amend(path: Path, emails: Sequence[str], user: str):
@@ -31,15 +31,15 @@ def amend(path: Path, emails: Sequence[str], user: str):
 
     for email in emails:
         if email != user + github:
-            cmd = [str(cwd / 'amender.sh'), email, user]
+            cmd = [str(cwd / "amender.sh"), email, user]
             subprocess.check_call(cmd, cwd=path)
 
 
 def main():
     p = ArgumentParser()
-    p.add_argument('path', help='path to Git repo', nargs='?', default='.')
-    p.add_argument('-e', '--exclude', help='user to ignore (keep)')
-    p.add_argument('-a', '--amend', help='change all non-exclused commits to username')
+    p.add_argument("path", help="path to Git repo", nargs="?", default=".")
+    p.add_argument("-e", "--exclude", help="user to ignore (keep)")
+    p.add_argument("-a", "--amend", help="change all non-exclused commits to username")
     p = p.parse_args()
 
     for d, emails in gitemail(p.path, p.exclude):
@@ -52,5 +52,5 @@ def main():
             print(*email)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

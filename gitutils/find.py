@@ -32,7 +32,7 @@ def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -> typing.
         if not (d / fn).is_file():
             if isinstance(copyfile, Path):
                 shutil.copy(copyfile, d)
-                print('copied', copyfile, 'to', d)
+                print("copied", copyfile, "to", d)
             else:
                 missing.append(d)
 
