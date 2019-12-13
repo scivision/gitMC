@@ -30,4 +30,4 @@ def test_actonchanged():
 
 
 if __name__ == "__main__":
-    pytest.main(["-x", __file__])
+    pytest.main([__file__])

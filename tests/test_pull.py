@@ -31,4 +31,4 @@ def test_fakeGit_dir(tmp_path, mode):
 
 
 if __name__ == "__main__":
-    pytest.main(["-x", __file__])
+    pytest.main([__file__])
