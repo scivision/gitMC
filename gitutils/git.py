@@ -6,14 +6,9 @@ import subprocess
 import typing
 import shutil
 
-try:
-    import colorama
-
-    MAGENTA = colorama.Back.MAGENTA
-    BLACK = colorama.Back.BLACK
-    colorama.init()
-except ImportError:
-    MAGENTA = BLACK = ""
+# from colorama.
+MAGENTA = "\x1b[45m"
+BLACK = "\x1b[40m"
 
 TIMEOUT = 30.0  # arbitrary, seconds
 GITEXE = shutil.which("git")  # type: str

@@ -28,23 +28,29 @@ async def git_modified(path: Path) -> typing.Tuple[str, str]:
     """
     proc = await asyncio.create_subprocess_exec(*[GITEXE, "-C", str(path)] + C1, stdout=asyncio.subprocess.PIPE)
     stdout, _ = await proc.communicate()
-    ret = stdout.decode("utf8").rstrip()
-    logging.info(f"{path.name}")
+    if proc.returncode != 0:
+        logging.error(f"{path.name} return code {proc.returncode}  {C1}")
+    out = stdout.decode("utf8", errors="ignore").rstrip()
+    logging.info(path.name)
     # %% detect uncommitted changes
-    if ret:
-        return path.name, ret
+    if out:
+        return path.name, out
     # %% detect committed, but not pushed
     proc = await asyncio.create_subprocess_exec(*[GITEXE, "-C", str(path)] + C0, stdout=asyncio.subprocess.PIPE)
     stdout, _ = await proc.communicate()
-    branch = stdout.decode("utf8").rstrip()
+    if proc.returncode != 0:
+        logging.error(f"{path.name} return code {proc.returncode}  {C0}")
+    branch = stdout.decode("utf8", errors="ignore").rstrip()
 
     C2 = [GITEXE, "-C", str(path), "diff", "--stat", f"origin/{branch}.."]
     proc = await asyncio.create_subprocess_exec(*C2, stdout=asyncio.subprocess.PIPE)
     stdout, _ = await proc.communicate()
-    ret = stdout.decode("utf8").rstrip()
+    if proc.returncode != 0:
+        logging.error(f"{path.name} return code {proc.returncode}  {branch}")
+    out = stdout.decode("utf8", errors="ignore").rstrip()
 
-    if ret:
-        return path.name, ret
+    if out:
+        return path.name, out
     return None
 
 

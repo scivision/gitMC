@@ -42,6 +42,8 @@ async def different_branch(mainbranch: str, path: Path) -> typing.Tuple[str, str
 
     proc = await asyncio.create_subprocess_exec(*[GITEXE, "-C", str(path)] + BRANCH_REV, stdout=asyncio.subprocess.PIPE)
     stdout, _ = await proc.communicate()
+    if proc.returncode != 0:
+        logging.error(f"{path.name} return code {proc.returncode}  {BRANCH_REV}")
     logging.info(str(path))
 
     branchname = stdout.decode("utf8").rstrip()

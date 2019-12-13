@@ -43,6 +43,8 @@ async def fetchpull(mode: typing.List[str], path: Path) -> Path:
     cmd = [GITEXE, "-C", str(path)] + mode
     proc = await asyncio.create_subprocess_exec(*cmd, stdout=subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE)
     _, stderr = await proc.communicate()
+    if proc.returncode != 0:
+        logging.error(f"{path.name} return code {proc.returncode}  {mode}")
     logging.info(f"{mode} {path.name}")
 
     err = stderr.decode("utf8").rstrip()
