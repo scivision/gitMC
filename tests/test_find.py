@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from pathlib import Path
 import subprocess
+import sys
 import pytest
 import gitutils.find as pgf
 
@@ -22,11 +23,11 @@ def test_findfile_baddir(tmp_path):
 
 
 def test_findfile_script():
-    subprocess.check_call(["find_missing_file", "blahblah", str(R.parent)])
+    subprocess.check_call([sys.executable, "find_missing_file.py", "blahblah", str(R.parent)], cwd=R.parent)
 
 
 def test_actonchanged():
-    subprocess.check_call(["ActOnChanged", str(R)])
+    subprocess.check_call([sys.executable, "ActOnChanged.py", str(R)], cwd=R.parent)
 
 
 if __name__ == "__main__":

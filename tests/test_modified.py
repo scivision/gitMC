@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import subprocess
 import pytest
+import sys
 from pathlib import Path
 from gitutils.push import coro_local
 from gitutils.runner import runner
@@ -9,7 +10,7 @@ R = Path(__file__).parent
 
 
 def test_script():
-    subprocess.check_call(["gitmodified", str(R.parent)])
+    subprocess.check_call([sys.executable, "modified.py", str(R.parent)], cwd=R.parent)
 
 
 def test_mod():
