@@ -3,7 +3,7 @@ import typing
 import shutil
 
 
-def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -> typing.List[Path]:
+def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -> typing.Iterator[Path]:
     """
     if directory is missing a file, copy the file to that directory
 
@@ -16,24 +16,24 @@ def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -> typing.
     copyfile : pathlib.Path, optional
         if present, copy this file into the directory that doesn't have it
 
-    Results
+    Yields
     -------
-    missing : list of pathlib.Path
-        directories that were missing the file and it wasn't copied there.
+    missing : pathlib.Path
+        directories missing the file
     """
-    path = Path(path).expanduser()
+
+    path = Path(path).expanduser().resolve()
     if not path.is_dir():
         raise NotADirectoryError(path)
+    if copyfile and not isinstance(copyfile, Path):
+        raise TypeError("copyfile must be Path or None")
 
     dlist = (x for x in path.iterdir() if x.is_dir())
 
-    missing = []  # type: typing.List[Path]
     for d in dlist:
         if not (d / fn).is_file():
             if isinstance(copyfile, Path):
-                shutil.copy(copyfile, d)
-                print("copied", copyfile, "to", d)
-            else:
-                missing.append(d)
+                shutil.copy2(copyfile, d)
+                print(f"copied {copyfile} to {d}")
 
-    return missing
+            yield d

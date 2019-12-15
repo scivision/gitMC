@@ -4,4 +4,4 @@ Speed is emphasized throughout, with pipelining and concurrent `asyncio` routine
 for fastest operation on large numbers of repos.
 """
 
-from .runner import runner  # noqa: F401
+from .runner import runner

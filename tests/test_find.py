@@ -10,16 +10,16 @@ R = Path(__file__).parent
 
 def test_findfile():
     missdir = pgf.find_dir_missing_file("blahblah", "..")
-    assert len(missdir) > 0
+    assert len(list(missdir)) > 0
 
 
 def test_findfile_baddir(tmp_path):
     with pytest.raises(NotADirectoryError):
-        pgf.find_dir_missing_file("blahblah", "asdfasfdfoo")
+        next(pgf.find_dir_missing_file("blahblah", "asdfasfdfoo"))
 
-    assert len(pgf.find_dir_missing_file("blahblah", tmp_path)) == 0
+    assert len(list(pgf.find_dir_missing_file("blahblah", tmp_path))) == 0
 
-    assert len(pgf.find_dir_missing_file("test_find.py", R)) == 1
+    assert len(list(pgf.find_dir_missing_file("test_find.py", R))) == 1
 
 
 def test_findfile_script():

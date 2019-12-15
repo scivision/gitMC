@@ -68,7 +68,10 @@ def baddir(path: Path) -> bool:
     """
     path = path.expanduser()
 
-    if not path.is_dir():
+    try:
+        if not path.is_dir():
+            return True
+    except PermissionError:
         return True
 
     try:
@@ -93,6 +96,8 @@ def listchanged(path: Path) -> typing.List[str]:
     changes : list of str
         filenames changed in this Git repo
     """
-    ret = subprocess.check_output([GITEXE, "-C", str(path), "ls-files", "--modified"], universal_newlines=True)
+
+    cmd = [GITEXE, "-C", str(path), "ls-files", "--modified"]
+    ret = subprocess.check_output(cmd, universal_newlines=True, errors="ignore")
 
     return ret.split("\n")

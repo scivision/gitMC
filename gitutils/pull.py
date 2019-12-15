@@ -4,6 +4,7 @@ Git fetch / pull functions
 import asyncio
 import subprocess
 import logging
+import sys
 from pathlib import Path
 import typing
 
@@ -17,7 +18,7 @@ async def fetchpull(mode: typing.List[str], path: Path) -> Path:
     Parameters
     ----------
 
-    mode : str
+    mode : str, list of str
         fetch or pull
     path : pathlib.Path
         Git repo path
@@ -37,6 +38,7 @@ async def fetchpull(mode: typing.List[str], path: Path) -> Path:
     Note: Don't use git pull --quiet because you get no output at all when remote change
     occured. Leave it as is with stdout=DEVNULL and no --quiet.
     """
+
     if isinstance(mode, str):
         mode = [mode]
 
@@ -47,9 +49,9 @@ async def fetchpull(mode: typing.List[str], path: Path) -> Path:
         logging.error(f"{path.name} return code {proc.returncode}  {mode}")
     logging.info(f"{mode} {path.name}")
 
-    err = stderr.decode("utf8").rstrip()
+    err = stderr.decode("utf8", errors="ignore").rstrip()
     if proc.returncode:
-        print(path.name, err)
+        print(path.name, err, file=sys.stderr)
         return path
     return None
 
