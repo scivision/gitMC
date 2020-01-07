@@ -1,0 +1,7 @@
+include *.py
+include *.sh
+include pyproject.toml
+include LICENSE.txt
+include CITATION
+include pytest.ini
+recursive-include tests *.py
