@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 list changed files and run program on them.
 Optionally chop off (fixed width) first part of filename--useful for previewing
@@ -32,8 +32,8 @@ def main():
         for f in flist:
             webbrowser.open_new_tab(f)
     else:
-        flist = [str(path / f) for f in flist]
-        print("\n".join(flist))
+        for f in flist:
+            print(path / f)
 
 
 if __name__ == "__main__":

@@ -98,6 +98,7 @@ def listchanged(path: Path) -> typing.List[str]:
     """
 
     cmd = [GITEXE, "-C", str(path), "ls-files", "--modified"]
-    ret = subprocess.check_output(cmd, universal_newlines=True, errors="ignore")
+    # .strip() avoids returning a blank last element
+    ret = subprocess.check_output(cmd, universal_newlines=True, errors="ignore").strip()
 
     return ret.split("\n")

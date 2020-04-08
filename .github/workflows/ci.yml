@@ -5,7 +5,6 @@ on:
     paths:
       - "**.py"
   pull_request:
-  release:
 
 jobs:
 
@@ -16,11 +15,13 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
+
     - run: pip install .[tests,lint]
+
     - run: flake8
     - run: mypy .
     - run: pytest
-      working-directory: tests
+      working-directory: ${HOME}
 
   integration:
     runs-on: ${{ matrix.os }}
@@ -32,6 +33,8 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
+
     - run: pip install .[tests]
+
     - run: pytest
-      working-directory: tests
+      working-directory: ${HOME}
