@@ -7,7 +7,7 @@ import sys
 from gitutils.runner import runner
 from gitutils.pull import coro_remote
 
-R = Path(__file__).resolve().parents[1]
+R = Path(__file__).resolve().parents[2]
 
 
 @pytest.mark.parametrize("op", ["pull.py", "fetch.py", "check.py"])

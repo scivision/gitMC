@@ -1,8 +1,7 @@
 # GitMC -- concurrent asynchronous Git Utilities for operations on massive numbers of Git repos
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3339891.svg)](https://doi.org/10.5281/zenodo.3339891)
-[![Actions Status](https://github.com/scivision/gitmc/workflows/ci/badge.svg)](https://github.com/scivision/gitmc/actions)
-
+![Actions Status](https://github.com/scivision/gitmc/workflows/ci/badge.svg)
 [![pypi versions](https://img.shields.io/pypi/pyversions/gitutils.svg)](https://pypi.python.org/pypi/gitutils)
 [![PyPi Download stats](http://pepy.tech/badge/gitutils)](http://pepy.tech/project/gitutils)
 
@@ -35,7 +34,7 @@ python -m pip install -e .
 
 ### Sync large number of git repos
 
-These assume numerous subdirectories under `~/code` or `c:\code`.
+These assume numerous subdirectories under `~/code`.
 They work very quickly for large numbers (100+) repos.
 
 * `gitmodified` check if any local repos have pending changes

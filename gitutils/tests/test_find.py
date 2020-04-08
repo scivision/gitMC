@@ -6,6 +6,7 @@ import pytest
 import gitutils.find as pgf
 
 R = Path(__file__).parent
+T = Path(__file__).resolve().parents[2]
 
 
 def test_findfile():
@@ -23,11 +24,11 @@ def test_findfile_baddir(tmp_path):
 
 
 def test_findfile_script():
-    subprocess.check_call([sys.executable, "find_missing_file.py", "blahblah", str(R.parent)], cwd=R.parent)
+    subprocess.check_call([sys.executable, "find_missing_file.py", "blahblah", str(T)], cwd=T)
 
 
 def test_actonchanged():
-    subprocess.check_call([sys.executable, "ActOnChanged.py", str(R)], cwd=R.parent)
+    subprocess.check_call([sys.executable, "ActOnChanged.py", str(R)], cwd=T)
 
 
 if __name__ == "__main__":

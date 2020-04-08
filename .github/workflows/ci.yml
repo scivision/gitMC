@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "**.py"
+      - ".github/workflows/ci.yml"
   pull_request:
 
 jobs:
@@ -21,7 +22,7 @@ jobs:
     - run: flake8
     - run: mypy .
     - run: pytest
-      working-directory: ${HOME}
+
 
   integration:
     runs-on: ${{ matrix.os }}
@@ -37,4 +38,3 @@ jobs:
     - run: pip install .[tests]
 
     - run: pytest
-      working-directory: ${HOME}

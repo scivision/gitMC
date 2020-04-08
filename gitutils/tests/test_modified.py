@@ -7,14 +7,15 @@ from gitutils.push import coro_local
 from gitutils.runner import runner
 
 R = Path(__file__).parent
+T = Path(__file__).resolve().parents[2]
 
 
 def test_script():
-    subprocess.check_call([sys.executable, "modified.py", str(R.parent)], cwd=R.parent)
+    subprocess.check_call([sys.executable, "modified.py", str(T)], cwd=T)
 
 
 def test_mod():
-    repos = runner(coro_local, R.parent)
+    repos = runner(coro_local, T)
     assert len(repos) in {0, 1}
 
 

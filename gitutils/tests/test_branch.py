@@ -7,13 +7,14 @@ import sys
 from pathlib import Path
 
 R = Path(__file__).parent
+T = Path(__file__).resolve().parents[2]
 
 
 def test_script():
-    subprocess.check_call([sys.executable, "branch.py", str(R.parent)], cwd=R.parent)
+    subprocess.check_call([sys.executable, "branch.py", str(T)], cwd=T)
 
 
-@pytest.mark.parametrize("path, N", [(R, 0), (R.parent, 1)])
+@pytest.mark.parametrize("path, N", [(R, 0), (T, 1)])
 def test_branch(path, N):
 
     branches = runner(coro_local, "fake_branchname", path)
