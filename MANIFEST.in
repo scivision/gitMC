@@ -4,4 +4,4 @@ include pyproject.toml
 include LICENSE.txt
 include CITATION
 include pytest.ini
-recursive-include tests *.py
+recursive-include gitutils/tests *.py
