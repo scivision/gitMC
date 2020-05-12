@@ -31,6 +31,8 @@ python -m pip install -e .
 
 * `gitbranch` Tells of any non-master branches under directory ~/code
 * `gitemail` list all contributor email addresses. Optionally, amend email addresses for prior Git commits
+* find_missing_file: find directories missing exact fullpath to file
+* find_matching_file: find directoires matching exact fullpath to file
 
 ### Sync large number of git repos
 

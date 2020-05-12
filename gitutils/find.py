@@ -1,9 +1,37 @@
 from pathlib import Path
-import typing
+import typing as T
 import shutil
 
 
-def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -> typing.Iterator[Path]:
+def find_matching_file(fn: str, path: Path) -> T.Iterator[Path]:
+    """
+    if full path file is found, return that filename
+
+    Parameters
+    ----------
+    fn : str
+        filename to look for
+    path : pathlib.Path
+        top-level directory to check directories under
+
+    Yields
+    -------
+    matched : pathlib.Path
+        full path to matching file
+    """
+
+    path = Path(path).expanduser().resolve()
+    if not path.is_dir():
+        raise NotADirectoryError(path)
+
+    dlist = (x for x in path.iterdir() if x.is_dir())
+
+    for d in dlist:
+        if (d / fn).is_file():
+            yield d
+
+
+def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -> T.Iterator[Path]:
     """
     if directory is missing a file, copy the file to that directory
 
