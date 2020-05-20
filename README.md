@@ -1,6 +1,7 @@
 # GitMC -- concurrent asynchronous Git Utilities for operations on massive numbers of Git repos
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3339891.svg)](https://doi.org/10.5281/zenodo.3339891)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/scivision/gitMC.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/scivision/gitMC/context:python)
 ![Actions Status](https://github.com/scivision/gitmc/workflows/ci/badge.svg)
 [![pypi versions](https://img.shields.io/pypi/pyversions/gitutils.svg)](https://pypi.python.org/pypi/gitutils)
 [![PyPi Download stats](http://pepy.tech/badge/gitutils)](http://pepy.tech/project/gitutils)
