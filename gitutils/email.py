@@ -2,15 +2,17 @@
 operations for Git author attributions
 """
 from pathlib import Path
-from typing import Tuple, Iterator, List
+import typing as T
 import collections
 import logging
 import subprocess
 
 from .git import gitdirs, GITEXE, TIMEOUT
 
+R = Path(__file__).parent
 
-def gitemail(path: Path, exclude: str = None) -> Iterator[Tuple[Path, List[Tuple[str, int]]]]:
+
+def gitemail(path: Path, exclude: str = None) -> T.Iterator[T.Tuple[Path, T.List[T.Tuple[str, int]]]]:
     """
     returns email addresses of everyone who ever made a Git commit in this repo.
 
@@ -46,3 +48,14 @@ def gitemail(path: Path, exclude: str = None) -> Iterator[Tuple[Path, List[Tuple
         emails = collections.Counter(addrs).most_common()
 
         yield d, emails
+
+
+def amend(path: Path, emails: T.Sequence[str], user: str):
+    assert isinstance(user, str)
+
+    github = "@users.noreply.github.com"
+
+    for email in emails:
+        if email != user + github:
+            cmd = [str(R / "amender.sh"), email, user]
+            subprocess.check_call(cmd, cwd=path)

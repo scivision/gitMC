@@ -2,7 +2,6 @@
 from pathlib import Path
 import subprocess
 import pytest
-import sys
 
 from gitutils.runner import runner
 from gitutils.pull import coro_remote
@@ -10,9 +9,9 @@ from gitutils.pull import coro_remote
 R = Path(__file__).resolve().parents[2]
 
 
-@pytest.mark.parametrize("op", ["pull.py", "fetch.py", "check.py"])
+@pytest.mark.parametrize("op", ["gitpull", "gitfetch", "gitcheck"])
 def test_script(op):
-    subprocess.check_call([sys.executable, op, str(R)], cwd=R)
+    subprocess.check_call([op, str(R)], cwd=R)
 
 
 @pytest.mark.parametrize("mode", ["fetch", "pull"])

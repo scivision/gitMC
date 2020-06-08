@@ -3,16 +3,16 @@ import typing as T
 import shutil
 
 
-def find_matching_file(fn: str, path: Path) -> T.Iterator[Path]:
+def find_matching_file(path: Path, fn: str) -> T.Iterator[Path]:
     """
     if full path file is found, return that filename
 
     Parameters
     ----------
-    fn : str
-        filename to look for
     path : pathlib.Path
         top-level directory to check directories under
+    fn : str
+        filename to look for
 
     Yields
     -------
@@ -31,16 +31,16 @@ def find_matching_file(fn: str, path: Path) -> T.Iterator[Path]:
             yield d
 
 
-def find_dir_missing_file(fn: str, path: Path, copyfile: Path = None) -> T.Iterator[Path]:
+def find_dir_missing_file(path: Path, fn: str, copyfile: Path = None) -> T.Iterator[Path]:
     """
     if directory is missing a file, copy the file to that directory
 
     Parameters
     ----------
-    fn : str
-        filename to look for
     path : pathlib.Path
         top-level directory to check directories under
+    fn : str
+        filename to look for
     copyfile : pathlib.Path, optional
         if present, copy this file into the directory that doesn't have it
 

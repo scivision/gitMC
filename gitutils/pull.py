@@ -6,12 +6,12 @@ import subprocess
 import logging
 import sys
 from pathlib import Path
-import typing
+import typing as T
 
 from .git import GITEXE, gitdirs
 
 
-async def fetchpull(mode: typing.List[str], path: Path) -> Path:
+async def fetchpull(mode: T.List[str], path: Path) -> Path:
     """
     handles recursive "git pull" and "git fetch"
 
@@ -60,6 +60,6 @@ async def fetchpull(mode: typing.List[str], path: Path) -> Path:
     return None
 
 
-async def coro_remote(mode: typing.List[str], path: Path) -> typing.List[Path]:
+async def coro_remote(mode: T.List[str], path: Path) -> T.List[Path]:
     futures = [fetchpull(mode, d) for d in gitdirs(path)]
     return list(filter(None, await asyncio.gather(*futures)))

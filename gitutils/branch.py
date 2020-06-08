@@ -53,6 +53,6 @@ async def different_branch(mainbranch: str, path: Path) -> typing.Tuple[str, str
     return None
 
 
-async def coro_local(branch: str, path: Path) -> typing.List[Path]:
+async def coro_branch(branch: str, path: Path) -> typing.List[Path]:
     futures = [different_branch(branch, d) for d in gitdirs(path)]
     return list(filter(None, await asyncio.gather(*futures)))

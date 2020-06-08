@@ -12,7 +12,7 @@ C0 = ["rev-parse", "--abbrev-ref", "HEAD"]  # get branch name
 C1 = ["status", "--porcelain"]  # uncommitted or changed files
 
 
-async def git_modified(path: Path) -> typing.Tuple[str, str]:
+async def _git_modified(path: Path) -> typing.Tuple[str, str]:
     """
     Notes which Git repos have local changes that haven't been pushed to remote
 
@@ -54,6 +54,6 @@ async def git_modified(path: Path) -> typing.Tuple[str, str]:
     return None
 
 
-async def coro_local(path: Path) -> typing.List[Path]:
-    futures = [git_modified(d) for d in gitdirs(path)]
+async def coro_modified(path: Path) -> typing.List[Path]:
+    futures = [_git_modified(d) for d in gitdirs(path)]
     return list(filter(None, await asyncio.gather(*futures)))

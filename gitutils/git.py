@@ -14,6 +14,10 @@ TIMEOUT = 30.0  # arbitrary, seconds
 GITEXE = shutil.which("git")  # type: str
 if not GITEXE:
     raise ImportError("Could not find executable for Git")
+ret = subprocess.run([GITEXE, "-C", ".", "--help"], stdout=subprocess.DEVNULL)
+if ret.returncode != 0:
+    raise ImportError("Your Git version is too old to work with GitUtils.")
+
 
 """
 replaced by git status --porcelain:
