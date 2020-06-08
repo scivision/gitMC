@@ -5,7 +5,7 @@ on:
     paths:
       - "**.py"
       - ".github/workflows/ci.yml"
-  pull_request:
+
 
 jobs:
 
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
@@ -21,6 +21,7 @@ jobs:
 
     - run: flake8
     - run: mypy .
+
     - run: pytest
 
 
@@ -31,7 +32,7 @@ jobs:
         os: [windows-latest, macos-latest]
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 

@@ -7,7 +7,7 @@ from gitutils.branch import coro_branch
 from gitutils.runner import runner
 
 R = Path(__file__).parent
-T = Path(__file__).resolve().parents[2]
+T = Path(__file__).resolve().parents[3]
 
 
 def test_script():
