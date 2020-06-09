@@ -19,7 +19,6 @@ if ret.returncode != 0:
     raise ImportError("Your Git version is too old to work with GitUtils.")
 
 
-
 def gitdirs(path: Path) -> typing.Iterator[Path]:
     """
     Generator for Git directories

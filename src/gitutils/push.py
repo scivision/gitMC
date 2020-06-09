@@ -18,7 +18,7 @@ from .git import gitdirs, GITEXE
 C0 = ["rev-parse", "--abbrev-ref", "HEAD"]  # get branch name
 C1 = ["status", "--porcelain"]  # uncommitted or changed files
 
-__all__ = ["coro_local", "git_porcelain"]
+__all__ = ["coro_modified", "git_porcelain"]
 
 
 def git_porcelain(path: Path) -> bool:
