@@ -19,14 +19,6 @@ if ret.returncode != 0:
     raise ImportError("Your Git version is too old to work with GitUtils.")
 
 
-"""
-replaced by git status --porcelain:
-  git ls-files -o -d --exclude-standard: # check for uncommitted files
-  git --no-pager diff HEAD , # check for uncommitted work
-
-DOES NOT WORK git log --branches --not --remotes     # check for uncommitted branches
-"""
-
 
 def gitdirs(path: Path) -> typing.Iterator[Path]:
     """
