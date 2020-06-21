@@ -9,6 +9,11 @@ To check your Git commits locally for:
     git config --global core.hooksPath ~/.git/hooks
 2. put this script at ~/.git/hooks/pre-commit (no .py extension)
 
+To override this on per-repo basis, in that particular repo do:
+git config core.hooksPath .git/hooks
+so that you can put local hooks in that repo, no longer using this global pre-commit
+
+
 Works on Python 3.x
 
 * https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks
