@@ -57,7 +57,9 @@ def git_pull():
     _log(P.verbose)
 
     remotes = runner(coro_remote, "pull", P.path)
-    print("\n".join(map(str, remotes)))
+    txt = "\n".join(map(str, remotes))
+    if txt:
+        print(txt)
 
 
 def git_fetch():
@@ -66,7 +68,9 @@ def git_fetch():
     _log(P.verbose)
 
     remotes = runner(coro_remote, "fetch", P.path)
-    print("\n".join(map(str, remotes)))
+    txt = "\n".join(map(str, remotes))
+    if txt:
+        print(txt)
 
 
 def git_check():

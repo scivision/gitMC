@@ -53,7 +53,8 @@ async def fetchpull(mode: T.List[str], path: Path) -> Path:
     err = stderr.decode("utf8", errors="ignore").rstrip()
     if proc.returncode:
         if "Permission denied" in err:
-            print("SKIP: credentials needed:", path.name, file=sys.stderr)
+            logging.info(f"SKIP: credentials needed: {path.name}")
+            return None
         else:
             print(path.name, err, file=sys.stderr)
         return path
