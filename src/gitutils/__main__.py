@@ -9,7 +9,7 @@ from .pull import coro_remote
 from .runner import runner
 from .git import MAGENTA, BLACK, listchanged
 from .find import find_matching_file, find_dir_missing_file
-from .email import gitemail, amend
+from .email import gitemail
 
 p = ArgumentParser()
 p.add_argument("path", help="path to look under", nargs="?", default="~/code")
@@ -134,16 +134,11 @@ def find_missing():
 
 def git_email():
     p.add_argument("-e", "--exclude", help="user to ignore (keep)")
-    p.add_argument("-a", "--amend", help="change all non-exclused commits to username")
     P = p.parse_args()
 
     _log(P.verbose)
 
     for d, emails in gitemail(P.path, P.exclude):
-
-        if P.amend:
-            amend(d, emails, P.amend)
-
         print(MAGENTA + d.stem + BLACK)
         for email in emails:
             print(*email)
