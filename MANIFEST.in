@@ -1,4 +1,3 @@
-include gitutils/amender.sh
-include CITATION
-include pytest.ini
-recursive-include gitutils/tests *.py
+include src/gitutils/amender.sh
+include codemeta.json
+recursive-include src/gitutils/tests *.py
