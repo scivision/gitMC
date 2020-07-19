@@ -34,14 +34,14 @@ python -m pip install -e .
 ## Usage
 
 * `gitbranch` Tells of any non-master branches under directory ~/code
-* `gitemail` list all contributor email addresses. Optionally, amend email addresses for prior Git commits
-* find_missing_file: find directories missing exact fullpath to file
-* find_matching_file: find directories matching exact fullpath to file
+* `gitemail` list all contributor email addresses. To fix unwanted emails use [Git-filter-repo](https://www.scivision.dev/git-update-email-address/)
+* `find_missing_file`: find directories missing exact fullpath to file
+* `find_matching_file`: find directories matching exact fullpath to file
 
 ### Sync large number of git repos
 
 These assume numerous subdirectories under `~/code`.
-They work very quickly for large numbers (100+) repos.
+They work very quickly for large numbers (100+) of repos.
 
 * `gitmodified` check if any local repos have pending changes
 * `gitcheck` check if any remote repos are ahead of local
