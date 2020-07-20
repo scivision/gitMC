@@ -1,17 +1,15 @@
-#!/usr/bin/env python
-from pathlib import Path
 import subprocess
 import pytest
 
 import gitutils.find as pgf
 
-R = Path(__file__).parent
-T = Path(__file__).resolve().parents[2]
 
-
-def test_findfile():
-    missdir = pgf.find_dir_missing_file(R, "blahblah")
-    assert len(list(missdir)) > 0
+def test_findfile(tmp_path):
+    sub1 = tmp_path / "sub1"
+    sub1.mkdir()
+    missdir = list(pgf.find_dir_missing_file(tmp_path, "blahblah"))
+    assert len(missdir) == 1
+    assert missdir[0].samefile(sub1)
 
 
 def test_findfile_baddir():
@@ -20,18 +18,19 @@ def test_findfile_baddir():
 
 
 def test_missing(tmp_path):
-    assert len(list(pgf.find_dir_missing_file(tmp_path, "blahblah"))) == 0
+    sub1 = tmp_path / "sub1"
+    sub1.mkdir()
+    miss = list(pgf.find_dir_missing_file(tmp_path, "blahblah"))
+    assert len(miss) == 1
+    assert miss[0].samefile(sub1)
 
-    assert len(list(pgf.find_dir_missing_file(R, "test_find.py"))) == 1
-
-
-def test_findfile_script():
-    subprocess.check_call(["find_missing_file", str(T), "blahblah"])
-
-
-def test_actonchanged():
-    subprocess.check_call(["ActOnChanged", str(R)])
+    (sub1 / "foo").touch()
+    assert len(list(pgf.find_dir_missing_file(tmp_path, "foo"))) == 0
 
 
-if __name__ == "__main__":
-    pytest.main([__file__])
+def test_findfile_script(tmp_path):
+    subprocess.check_call(["find_missing_file", str(tmp_path), "blahblah"])
+
+
+def test_actonchanged(tmp_path):
+    subprocess.check_call(["ActOnChanged", str(tmp_path)])

@@ -1,25 +1,22 @@
-#!/usr/bin/env python
 import pytest
 import subprocess
-from pathlib import Path
 
 from gitutils.branch import coro_branch
 from gitutils.runner import runner
 
-R = Path(__file__).parent
-T = Path(__file__).resolve().parents[3]
+
+@pytest.mark.parametrize("name, N", [("master", False), ("fake", True)])
+def test_script_branch(name, N, git_init):
+    p = git_init
+    ret = subprocess.check_output(["gitbranch", str(p), name], universal_newlines=True)
+    if N:
+        assert ret
+    else:
+        assert not ret
 
 
-def test_script():
-    subprocess.check_call(["gitbranch", str(T)], cwd=T)
-
-
-@pytest.mark.parametrize("path, N", [(R, 0), (T, 1)])
-def test_branch(path, N):
-
-    branches = runner(coro_branch, "fake_branchname", path)
+@pytest.mark.parametrize("name,N", [("master", 0), ("fake", 1)])
+def test_branch(name, N, git_init):
+    p = git_init
+    branches = runner(coro_branch, name, p)
     assert len(branches) == N
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

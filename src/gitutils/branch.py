@@ -18,15 +18,15 @@ BRANCH_NAME = ["name-rev", "--name-only", "HEAD"]
 BRANCH_SIMPLE = ["branch", "--show-current"]  # Git >= 2.22
 
 
-async def different_branch(mainbranch: str, path: Path) -> typing.Tuple[str, str]:
+async def different_branch(main: str, path: Path) -> typing.Tuple[str, str]:
     """
-    does branch not match "mainbranch"
+    does branch not match "main"
 
     Parameters
     ----------
 
-    mainbranch : str
-        branch name that's "normal" e.g. master
+    main : str
+        desired default branch name
     path : pathlib.Path
         Git repo to check
 
@@ -40,16 +40,16 @@ async def different_branch(mainbranch: str, path: Path) -> typing.Tuple[str, str
     https://docs.python.org/3/library/asyncio-subprocess.html#subprocess-and-threads
     """
 
-    proc = await asyncio.create_subprocess_exec(*[GITEXE, "-C", str(path)] + BRANCH_REV, stdout=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_exec(*[GITEXE, "-C", str(path)] + BRANCH_SIMPLE, stdout=asyncio.subprocess.PIPE)
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
-        logging.error(f"{path.name} return code {proc.returncode}  {BRANCH_REV}")
+        logging.error(f"{path.name} return code {proc.returncode}  {BRANCH_SIMPLE}")
     logging.info(str(path))
 
-    branchname = stdout.decode("utf8").rstrip()
+    branch_name = stdout.decode("utf8").strip()
 
-    if mainbranch != branchname:
-        return path.name, branchname
+    if main != branch_name:
+        return path.name, branch_name
     return None
 
 
