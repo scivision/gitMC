@@ -99,4 +99,7 @@ def listchanged(path: Path) -> typing.List[str]:
     # .strip() avoids returning a blank last element
     ret = subprocess.check_output(cmd, text=True, errors="ignore").strip()
 
-    return ret.split("\n")
+    if ret:
+        return ret.split("\n")
+    else:
+        return []

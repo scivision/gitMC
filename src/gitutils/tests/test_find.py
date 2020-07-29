@@ -2,6 +2,7 @@ import subprocess
 import pytest
 
 import gitutils.find as pgf
+import gitutils.git as pg
 
 
 def test_findfile(tmp_path):
@@ -35,9 +36,16 @@ def test_findfile_script(tmp_path):
 
 def test_actonchanged(git_init):
     p = git_init
+    ch = pg.listchanged(p)
+    assert not ch
     ret = subprocess.check_output(["ActOnChanged", str(p)], text=True)
     assert not ret
 
-    (p / "foo.txt").touch()
+    fn = p / "foo.txt"
+    fn.touch()
+    subprocess.check_call(["git", "-C", str(p), "add", fn])
+    fn.write_text("hello")
+    ch = pg.listchanged(p)
+    assert ch
     ret = subprocess.check_output(["ActOnChanged", str(p)], text=True)
     assert ret
