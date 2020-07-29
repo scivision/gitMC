@@ -92,8 +92,11 @@ def listchanged(path: Path) -> typing.List[str]:
         filenames changed in this Git repo
     """
 
+    if not path.is_dir():
+        raise NotADirectoryError(path)
+
     cmd = [GITEXE, "-C", str(path), "ls-files", "--modified"]
     # .strip() avoids returning a blank last element
-    ret = subprocess.check_output(cmd, universal_newlines=True, errors="ignore").strip()
+    ret = subprocess.check_output(cmd, text=True, errors="ignore").strip()
 
     return ret.split("\n")

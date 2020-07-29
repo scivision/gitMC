@@ -1,12 +1,12 @@
 from argparse import ArgumentParser
 import logging
+import asyncio
 from pathlib import Path
 import webbrowser
 
 from .branch import coro_branch
 from .push import coro_modified
 from .pull import coro_remote
-from .runner import runner
 from .git import MAGENTA, BLACK, listchanged
 from .find import find_matching_file, find_dir_missing_file
 from .email import gitemail
@@ -31,17 +31,17 @@ def git_branch():
 
     _log(P.verbose)
 
-    branches = runner(coro_branch, P.mainbranch, P.path)
+    branches = asyncio.run(coro_branch(P.mainbranch, P.path))
     for b in branches:
         print(b[0], " => ", b[1])
 
 
-def git_modified():
+def git_stat():
     P = p.parse_args()
 
     _log(P.verbose)
 
-    changes = runner(coro_modified, P.path)
+    changes = asyncio.run(coro_modified(P.path))
 
     c = MAGENTA if P.verbose else ""
 
@@ -56,7 +56,7 @@ def git_pull():
 
     _log(P.verbose)
 
-    remotes = runner(coro_remote, "pull", P.path)
+    remotes = asyncio.run(coro_remote("pull", P.path))
     txt = "\n".join(map(str, remotes))
     if txt:
         print(txt)
@@ -67,7 +67,7 @@ def git_fetch():
 
     _log(P.verbose)
 
-    remotes = runner(coro_remote, "fetch", P.path)
+    remotes = asyncio.run(coro_remote("fetch", P.path))
     txt = "\n".join(map(str, remotes))
     if txt:
         print(txt)
@@ -78,7 +78,7 @@ def git_check():
 
     _log(P.verbose)
 
-    remotes = runner(coro_remote, ["fetch", "--dry-run"], P.path)
+    remotes = asyncio.run(coro_remote(["fetch", "--dry-run"], P.path))
     print("\n".join(map(str, remotes)))
 
 
@@ -93,9 +93,12 @@ def find_match():
 
 
 def ActOnChanged():
+    # needs to have its own argparser
+    p = ArgumentParser()
     p.add_argument("path", help="root path to search under", nargs="?", default=".")
     p.add_argument("-p", "--preview", help="web browser preview of localhost", action="store_true")
     p.add_argument("--port", help="port of localhost web server (Jekyll: 4000, Hugo: 1313)", type=int, default=1313)
+    p.add_argument("-v", "--verbose", action="store_true")
     P = p.parse_args()
 
     _log(P.verbose)
@@ -104,7 +107,7 @@ def ActOnChanged():
     flist = listchanged(path)
     # %%
     if P.preview:
-        prefix = "http://localhost:{}/".format(P.port)
+        prefix = f"http://localhost:{P.port}/"
 
         if path.name == "_posts":  # Jekyll with leading date in filename
             cut = 11

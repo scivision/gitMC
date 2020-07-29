@@ -39,7 +39,10 @@ def git_porcelain(path: Path) -> bool:
         true if local Git is clean
     """
 
-    ret = subprocess.run([GITEXE, "-C", str(path)] + C1, stdout=subprocess.PIPE, universal_newlines=True)
+    if not path.is_dir():
+        raise NotADirectoryError(path)
+
+    ret = subprocess.run([GITEXE, "-C", str(path)] + C1, stdout=subprocess.PIPE, text=True)
     if ret.returncode != 0:
         logging.error(f"{path.name} return code {ret.returncode}  {C1}")
         return False

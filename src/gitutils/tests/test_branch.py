@@ -1,14 +1,14 @@
 import pytest
 import subprocess
+import asyncio
 
 from gitutils.branch import coro_branch
-from gitutils.runner import runner
 
 
 @pytest.mark.parametrize("name, N", [("master", False), ("fake", True)])
 def test_script_branch(name, N, git_init):
     p = git_init
-    ret = subprocess.check_output(["gitbranch", str(p), name], universal_newlines=True)
+    ret = subprocess.check_output(["gitbranch", str(p), name], text=True)
     if N:
         assert ret
     else:
@@ -18,5 +18,5 @@ def test_script_branch(name, N, git_init):
 @pytest.mark.parametrize("name,N", [("master", 0), ("fake", 1)])
 def test_branch(name, N, git_init):
     p = git_init
-    branches = runner(coro_branch, name, p)
+    branches = asyncio.run(coro_branch(name, p))
     assert len(branches) == N

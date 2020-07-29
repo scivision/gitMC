@@ -29,8 +29,15 @@ def test_missing(tmp_path):
 
 
 def test_findfile_script(tmp_path):
-    subprocess.check_call(["find_missing_file", str(tmp_path), "blahblah"])
+    ret = subprocess.check_output(["find_missing_file", str(tmp_path), "blahblah"], text=True)
+    assert not ret
 
 
-def test_actonchanged(tmp_path):
-    subprocess.check_call(["ActOnChanged", str(tmp_path)])
+def test_actonchanged(git_init):
+    p = git_init
+    ret = subprocess.check_output(["ActOnChanged", str(p)], text=True)
+    assert not ret
+
+    (p / "foo.txt").touch()
+    ret = subprocess.check_output(["ActOnChanged", str(p)], text=True)
+    assert ret
