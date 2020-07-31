@@ -60,7 +60,10 @@ if pystaged:
 if yaml is not None:
     ymlstaged = (f for f in stdout.split("\n") if f.endswith((".yml", ".yaml")) and os.path.isfile(f))
     for f in ymlstaged:
-        yaml.safe_load(open(f).read())
+        try:
+            yaml.safe_load(open(f).read())
+        except Exception as e:
+            raise SystemExit(f"problem in YaML file {f}  {e}")
 
 # %% general checks
 if subprocess.call(["git", "diff-index", "--check", "--cached", "HEAD", "--"]):
