@@ -5,7 +5,6 @@ import webbrowser
 
 from . import _log
 from .branch import coro_branch
-from .pull import coro_remote
 from .git import MAGENTA, BLACK, listchanged
 from .find import find_matching_file, find_dir_missing_file
 from .email import gitemail
@@ -27,37 +26,6 @@ def git_branch():
     branches = asyncio.run(coro_branch(P.mainbranch, P.path))
     for b in branches:
         print(b[0], " => ", b[1])
-
-
-def git_pull():
-    P = p.parse_args()
-
-    _log(P.verbose)
-
-    remotes = asyncio.run(coro_remote("pull", P.path))
-    txt = "\n".join(map(str, remotes))
-    if txt:
-        print(txt)
-
-
-def git_fetch():
-    P = p.parse_args()
-
-    _log(P.verbose)
-
-    remotes = asyncio.run(coro_remote("fetch", P.path))
-    txt = "\n".join(map(str, remotes))
-    if txt:
-        print(txt)
-
-
-def git_check():
-    P = p.parse_args()
-
-    _log(P.verbose)
-
-    remotes = asyncio.run(coro_remote(["fetch", "--dry-run"], P.path))
-    print("\n".join(map(str, remotes)))
 
 
 def find_match():

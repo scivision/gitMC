@@ -1,24 +1,26 @@
 """
 Git fetch / pull functions
 """
+
+import argparse
 import asyncio
 import subprocess
 import logging
-import sys
 from pathlib import Path
 import typing as T
 
+from . import _log
 from .git import GITEXE, gitdirs
 
 
-async def fetchpull(mode: T.List[str], path: Path) -> Path:
+async def fetchpull(mode: str, path: Path) -> Path:
     """
     handles recursive "git pull" and "git fetch"
 
     Parameters
     ----------
 
-    mode : str, list of str
+    mode : str
         fetch or pull
     path : pathlib.Path
         Git repo path
@@ -26,7 +28,7 @@ async def fetchpull(mode: T.List[str], path: Path) -> Path:
     Returns
     -------
     failed : pathlib.Path
-        Git repos with failures
+        Git repo that failed to fetch/pull
 
 
     Reference:
@@ -39,30 +41,54 @@ async def fetchpull(mode: T.List[str], path: Path) -> Path:
     occured. Leave it as is with stdout=DEVNULL and no --quiet.
     """
 
-    if isinstance(mode, str):
-        mode = [mode]
-
-    cmd = [GITEXE, "-C", str(path)] + mode
+    cmd = [GITEXE, "-C", str(path), mode]
     proc = await asyncio.create_subprocess_exec(
         *cmd, stdout=subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE, stdin=asyncio.subprocess.DEVNULL
     )
     _, stderr = await proc.communicate()
-    if proc.returncode == 0:
-        logging.info(f"{mode} {path.name}")
-    else:
-        logging.info(f"{mode} {path.name} return code {proc.returncode}")
 
     err = stderr.decode("utf8", errors="ignore").rstrip()
     if proc.returncode:
         if "Permission denied" in err or "fatal: could not read Password" in err:
             logging.info(f"SKIP: credentials needed: {path.name}")
             return None
-        else:
-            print(path.name, err, file=sys.stderr)
+
+        logging.error(f"{path.name}  {err}")
         return path
+
+    logging.info(f"{mode} {path.name}")
     return None
 
 
-async def coro_remote(mode: T.List[str], path: Path) -> T.List[Path]:
-    futures = [fetchpull(mode, d) for d in gitdirs(path)]
-    return list(filter(None, await asyncio.gather(*futures)))
+async def git_pullfetch(mode: str, path: Path) -> T.List[Path]:
+
+    failed = []
+    for r in asyncio.as_completed([fetchpull(mode, d) for d in gitdirs(path)]):
+        fail = await r
+        if fail:
+            failed.append(fail)
+            print(fail.name)
+
+    return failed
+
+
+def git_fetch_cli():
+    p = argparse.ArgumentParser()
+    p.add_argument("path", help="path to look under", nargs="?", default="~/code")
+    p.add_argument("-v", "--verbose", action="store_true")
+    P = p.parse_args()
+
+    _log(P.verbose)
+
+    asyncio.run(git_pullfetch("fetch", P.path))
+
+
+def git_pull_cli():
+    p = argparse.ArgumentParser()
+    p.add_argument("path", help="path to look under", nargs="?", default="~/code")
+    p.add_argument("-v", "--verbose", action="store_true")
+    P = p.parse_args()
+
+    _log(P.verbose)
+
+    asyncio.run(git_pullfetch("pull", P.path))
