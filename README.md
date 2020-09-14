@@ -44,7 +44,6 @@ These assume numerous subdirectories under `~/code`.
 They work very quickly for large numbers (100+) of repos.
 
 * `gitstat` check if any local repos have pending changes
-* `gitcheck` check if any remote repos are ahead of local
 * `gitpull` Git pulls all repos
 * `gitfetch` Git fetches all repos
 

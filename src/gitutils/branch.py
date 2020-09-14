@@ -5,11 +5,13 @@ git branch get name methods:
 https://stackoverflow.com/a/45028375
 """
 
-import typing
+import argparse
+import typing as T
 from pathlib import Path
 import asyncio
 import logging
 
+from . import _log
 from .git import GITEXE, gitdirs
 
 BRANCH_REV = ["rev-parse", "--abbrev-ref", "HEAD"]
@@ -18,9 +20,9 @@ BRANCH_NAME = ["name-rev", "--name-only", "HEAD"]
 BRANCH_SIMPLE = ["branch", "--show-current"]  # Git >= 2.22
 
 
-async def different_branch(main: str, path: Path) -> typing.Tuple[str, str]:
+async def different_branch(main: str, path: Path) -> T.Tuple[str, str]:
     """
-    does branch not match "main"
+    does branch not match specified name
 
     Parameters
     ----------
@@ -35,9 +37,6 @@ async def different_branch(main: str, path: Path) -> typing.Tuple[str, str]:
 
     branch : tuple of pathlib.Path, str
         repo path and branch name
-
-    asyncio.get_child_watcher() must be instantiated by calling function:
-    https://docs.python.org/3/library/asyncio-subprocess.html#subprocess-and-threads
     """
 
     proc = await asyncio.create_subprocess_exec(*[GITEXE, "-C", str(path)] + BRANCH_SIMPLE, stdout=asyncio.subprocess.PIPE)
@@ -53,6 +52,29 @@ async def different_branch(main: str, path: Path) -> typing.Tuple[str, str]:
     return None
 
 
-async def coro_branch(branch: str, path: Path) -> typing.List[Path]:
-    futures = [different_branch(branch, d) for d in gitdirs(path)]
-    return list(filter(None, await asyncio.gather(*futures)))
+async def git_branch(branch: str, path: Path) -> T.List[T.Tuple[str, str]]:
+
+    different = []
+    for r in asyncio.as_completed([different_branch(branch, d) for d in gitdirs(path)]):
+        diff = await r
+        if diff:
+            different.append(diff)
+            print(diff)
+
+    return different
+
+
+def cli():
+    """
+    report on git repos not on the expected branch e.g. 'master'
+    """
+
+    p = argparse.ArgumentParser()
+    p.add_argument("path", help="path to look under", nargs="?", default="~/code")
+    p.add_argument("-v", "--verbose", action="store_true")
+    p.add_argument("mainbranch", nargs="?", default="master", help="name of your main branch")
+    P = p.parse_args()
+
+    _log(P.verbose)
+
+    asyncio.run(git_branch(P.mainbranch, P.path))

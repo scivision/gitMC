@@ -1,10 +1,8 @@
 import argparse
-import asyncio
 from pathlib import Path
 import webbrowser
 
 from . import _log
-from .branch import coro_branch
 from .git import MAGENTA, BLACK, listchanged
 from .find import find_matching_file, find_dir_missing_file
 from .email import gitemail
@@ -12,20 +10,6 @@ from .email import gitemail
 p = argparse.ArgumentParser()
 p.add_argument("path", help="path to look under", nargs="?", default="~/code")
 p.add_argument("-v", "--verbose", action="store_true")
-
-
-def git_branch():
-    """
-    report on git repos not on the expected branch e.g. 'master'
-    """
-    p.add_argument("mainbranch", nargs="?", default="master", help="name of your main branch")
-    P = p.parse_args()
-
-    _log(P.verbose)
-
-    branches = asyncio.run(coro_branch(P.mainbranch, P.path))
-    for b in branches:
-        print(b[0], " => ", b[1])
 
 
 def find_match():
