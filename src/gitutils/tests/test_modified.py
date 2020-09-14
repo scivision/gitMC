@@ -1,7 +1,7 @@
 import subprocess
 import asyncio
 
-from gitutils.status import coro_modified
+from gitutils.status import git_status
 
 
 def test_script_modified(git_init):
@@ -16,9 +16,9 @@ def test_script_modified(git_init):
 
 def test_modified(git_init):
     p = git_init
-    repos = asyncio.run(coro_modified(p))
+    repos = asyncio.run(git_status(p))
     assert len(repos) == 0
 
     (p / "foo.txt").touch()
-    repos = asyncio.run(coro_modified(p))
+    repos = asyncio.run(git_status(p))
     assert len(repos) == 1

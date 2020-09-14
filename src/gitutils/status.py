@@ -52,7 +52,7 @@ def git_porcelain(path: Path) -> bool:
     return not ret.stdout
 
 
-async def _git_modified(path: Path) -> T.Tuple[str, str]:
+async def _git_status(path: Path) -> T.Tuple[str, str]:
     """
     Notes which Git repos have local changes that haven't been pushed to remote
 
@@ -66,10 +66,12 @@ async def _git_modified(path: Path) -> T.Tuple[str, str]:
     changes : tuple of pathlib.Path, str
         Git repo local changes
     """
+
     proc = await asyncio.create_subprocess_exec(*[GITEXE, "-C", str(path)] + C1, stdout=asyncio.subprocess.PIPE)
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
         logging.error(f"{path.name} return code {proc.returncode}  {C1}")
+        return None
     out = stdout.decode("utf8", errors="ignore").rstrip()
     logging.info(path.name)
     # %% detect uncommitted changes
@@ -80,6 +82,7 @@ async def _git_modified(path: Path) -> T.Tuple[str, str]:
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
         logging.error(f"{path.name} return code {proc.returncode}  {C0}")
+        return None
     branch = stdout.decode("utf8", errors="ignore").rstrip()
 
     C2 = [GITEXE, "-C", str(path), "diff", "--stat", f"origin/{branch}.."]
@@ -87,16 +90,27 @@ async def _git_modified(path: Path) -> T.Tuple[str, str]:
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
         logging.error(f"{path.name} return code {proc.returncode}  {branch}")
+        return None
     out = stdout.decode("utf8", errors="ignore").rstrip()
-
     if out:
         return path.name, out
     return None
 
 
-async def coro_modified(path: Path) -> T.List[Path]:
-    futures = [_git_modified(d) for d in gitdirs(path)]
-    return list(filter(None, await asyncio.gather(*futures)))
+async def git_status(path: Path, verbose: bool = False) -> T.List[str]:
+
+    c = MAGENTA if verbose else ""
+
+    changed = []
+    for r in asyncio.as_completed([_git_status(d) for d in gitdirs(path)]):
+        changes = await r
+        if changes:
+            changed.append(changes[0])
+            print(c + changes[0])
+            if verbose:
+                print(BLACK + changes[1])
+
+    return changed
 
 
 def cli():
@@ -107,14 +121,7 @@ def cli():
 
     _log(P.verbose)
 
-    changes = asyncio.run(coro_modified(P.path))
-
-    c = MAGENTA if P.verbose else ""
-
-    for d, v in changes:
-        print(c + str(d))
-        if P.verbose:
-            print(BLACK + v)
+    asyncio.run(git_status(P.path))
 
 
 if __name__ == "__main__":
