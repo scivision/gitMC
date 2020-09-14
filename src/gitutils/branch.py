@@ -78,3 +78,7 @@ def cli():
     _log(P.verbose)
 
     asyncio.run(git_branch(P.mainbranch, P.path))
+
+
+if __name__ == "__main__":
+    cli()

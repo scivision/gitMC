@@ -92,3 +92,7 @@ def git_pull_cli():
     _log(P.verbose)
 
     asyncio.run(git_pullfetch("pull", P.path))
+
+
+if __name__ == "__main__":
+    git_pull_cli()
