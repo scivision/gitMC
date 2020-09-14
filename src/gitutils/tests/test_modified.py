@@ -1,7 +1,7 @@
 import subprocess
 import asyncio
 
-from gitutils.push import coro_modified
+from gitutils.status import coro_modified
 
 
 def test_script_modified(git_init):

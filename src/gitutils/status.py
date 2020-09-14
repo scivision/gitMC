@@ -7,18 +7,21 @@ replaced by git status --porcelain:
 
 DOES NOT WORK git log --branches --not --remotes     # check for uncommitted branches
 """
+
+import argparse
 import asyncio
 import subprocess
 import logging
 from pathlib import Path
 import typing as T
 
-from .git import gitdirs, GITEXE
+from . import _log
+from .git import gitdirs, GITEXE, MAGENTA, BLACK
 
 C0 = ["rev-parse", "--abbrev-ref", "HEAD"]  # get branch name
 C1 = ["status", "--porcelain"]  # uncommitted or changed files
 
-__all__ = ["coro_modified", "git_porcelain"]
+__all__ = ["git_porcelain"]
 
 
 def git_porcelain(path: Path) -> bool:
@@ -94,3 +97,25 @@ async def _git_modified(path: Path) -> T.Tuple[str, str]:
 async def coro_modified(path: Path) -> T.List[Path]:
     futures = [_git_modified(d) for d in gitdirs(path)]
     return list(filter(None, await asyncio.gather(*futures)))
+
+
+def cli():
+    p = argparse.ArgumentParser(description="get status of many Git repos")
+    p.add_argument("path", help="path to look under", nargs="?", default="~/code")
+    p.add_argument("-v", "--verbose", action="store_true")
+    P = p.parse_args()
+
+    _log(P.verbose)
+
+    changes = asyncio.run(coro_modified(P.path))
+
+    c = MAGENTA if P.verbose else ""
+
+    for d, v in changes:
+        print(c + str(d))
+        if P.verbose:
+            print(BLACK + v)
+
+
+if __name__ == "__main__":
+    cli()

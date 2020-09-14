@@ -1,25 +1,18 @@
-from argparse import ArgumentParser
-import logging
+import argparse
 import asyncio
 from pathlib import Path
 import webbrowser
 
+from . import _log
 from .branch import coro_branch
-from .push import coro_modified
 from .pull import coro_remote
 from .git import MAGENTA, BLACK, listchanged
 from .find import find_matching_file, find_dir_missing_file
 from .email import gitemail
 
-p = ArgumentParser()
+p = argparse.ArgumentParser()
 p.add_argument("path", help="path to look under", nargs="?", default="~/code")
 p.add_argument("-v", "--verbose", action="store_true")
-
-
-def _log(verbose: bool):
-
-    if verbose:
-        logging.basicConfig(level=logging.DEBUG)
 
 
 def git_branch():
@@ -34,21 +27,6 @@ def git_branch():
     branches = asyncio.run(coro_branch(P.mainbranch, P.path))
     for b in branches:
         print(b[0], " => ", b[1])
-
-
-def git_stat():
-    P = p.parse_args()
-
-    _log(P.verbose)
-
-    changes = asyncio.run(coro_modified(P.path))
-
-    c = MAGENTA if P.verbose else ""
-
-    for d, v in changes:
-        print(c + str(d))
-        if P.verbose:
-            print(BLACK + v)
 
 
 def git_pull():
@@ -94,7 +72,7 @@ def find_match():
 
 def ActOnChanged():
     # needs to have its own argparser
-    p = ArgumentParser()
+    p = argparse.ArgumentParser()
     p.add_argument("path", help="root path to search under", nargs="?", default=".")
     p.add_argument("-p", "--preview", help="web browser preview of localhost", action="store_true")
     p.add_argument("--port", help="port of localhost web server (Jekyll: 4000, Hugo: 1313)", type=int, default=1313)
