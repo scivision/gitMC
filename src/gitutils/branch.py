@@ -20,7 +20,7 @@ BRANCH_NAME = ["name-rev", "--name-only", "HEAD"]
 BRANCH_SIMPLE = ["branch", "--show-current"]  # Git >= 2.22
 
 
-async def different_branch(main: str, path: Path) -> T.Tuple[str, str]:
+async def different_branch(main: T.Sequence[str], path: Path) -> T.Tuple[str, str]:
     """
     does branch not match specified name
 
@@ -47,12 +47,16 @@ async def different_branch(main: str, path: Path) -> T.Tuple[str, str]:
 
     branch_name = stdout.decode("utf8").strip()
 
-    if main != branch_name:
+    if isinstance(main, str):
+        main = [main]
+
+    if branch_name not in main:
         return path.name, branch_name
+
     return None
 
 
-async def git_branch(branch: str, path: Path) -> T.List[T.Tuple[str, str]]:
+async def git_branch(branch: T.Sequence[str], path: Path) -> T.List[T.Tuple[str, str]]:
 
     different = []
     for r in asyncio.as_completed([different_branch(branch, d) for d in gitdirs(path)]):
@@ -72,12 +76,12 @@ def cli():
     p = argparse.ArgumentParser()
     p.add_argument("path", help="path to look under", nargs="?", default="~/code")
     p.add_argument("-v", "--verbose", action="store_true")
-    p.add_argument("mainbranch", nargs="?", default="master", help="name of your main branch")
+    p.add_argument("-main", nargs="+", default=["main", "master"], help="name of your main branch")
     P = p.parse_args()
 
     _log(P.verbose)
 
-    asyncio.run(git_branch(P.mainbranch, P.path))
+    asyncio.run(git_branch(P.main, P.path))
 
 
 if __name__ == "__main__":

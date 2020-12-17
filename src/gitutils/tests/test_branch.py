@@ -8,7 +8,8 @@ from gitutils.branch import git_branch
 @pytest.mark.parametrize("name, N", [("master", False), ("fake", True)])
 def test_script_branch(name, N, git_init):
     p = git_init
-    ret = subprocess.check_output(["gitbranch", str(p), name], text=True)
+
+    ret = subprocess.check_output(["gitbranch", str(p), "-main", name], text=True)
     if N:
         assert ret
     else:

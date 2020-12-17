@@ -15,8 +15,8 @@ GitMC uses command-line Git because PyGit also requires command-line Git install
 
 ---
 
-Also see PyGitHub
-[utilities](https://github.com/scivision/pygithub-utils)
+Also see
+[PyGit-bulk](https://github.com/scivision/pygit-bulk)
 for managing large (100+) numbers of users / teams.
 
 ## Install
