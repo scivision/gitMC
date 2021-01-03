@@ -44,10 +44,10 @@ These assume numerous subdirectories under `~/code`.
 They work very quickly for large numbers (100+) of repos.
 
 * `gitstat` check if any local repos have pending changes
-* `gitpull` Git pulls all repos
-* `gitfetch` Git fetches all repos
+* `gitpull` Git pulls all repos (suggest `gitfetch` instead)
+* `gitfetch` Git fetches all repos, printing a summary of files changed on remote
 
-You can place an empty file `.nogit` in a subdirectory to skip it.
+Place an empty file `.nogit` in a subdirectory to skip it.
 
 #### [optional] speedup with https pull
 
