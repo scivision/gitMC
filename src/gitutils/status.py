@@ -16,7 +16,7 @@ from pathlib import Path
 import typing as T
 
 from . import _log
-from .git import gitdirs, GITEXE, MAGENTA, BLACK
+from .git import gitdirs, GITEXE, MAGENTA, BLACK, TIMEOUT
 
 C0 = ["rev-parse", "--abbrev-ref", "HEAD"]  # get branch name
 C1 = ["status", "--porcelain"]  # uncommitted or changed files
@@ -45,7 +45,7 @@ def git_porcelain(path: Path) -> bool:
     if not path.is_dir():
         raise NotADirectoryError(path)
 
-    ret = subprocess.run([GITEXE, "-C", str(path)] + C1, stdout=subprocess.PIPE, text=True)
+    ret = subprocess.run([GITEXE, "-C", str(path)] + C1, stdout=subprocess.PIPE, text=True, timeout=TIMEOUT)
     if ret.returncode != 0:
         logging.error(f"{path.name} return code {ret.returncode}  {C1}")
         return False

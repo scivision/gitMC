@@ -14,7 +14,7 @@ TIMEOUT = 30.0  # arbitrary, seconds
 GITEXE = shutil.which("git")  # type: str
 if not GITEXE:
     raise ImportError("Could not find executable for Git")
-ret = subprocess.run([GITEXE, "-C", ".", "--version"], stdout=subprocess.DEVNULL)
+ret = subprocess.run([GITEXE, "-C", ".", "--version"], stdout=subprocess.DEVNULL, timeout=5)
 if ret.returncode != 0:
     raise ImportError("Your Git version is too old to work with GitUtils.")
 
@@ -97,7 +97,7 @@ def listchanged(path: Path) -> typing.List[str]:
 
     cmd = [GITEXE, "-C", str(path), "ls-files", "--modified"]
     # .strip() avoids returning a blank last element
-    ret = subprocess.check_output(cmd, text=True, errors="ignore").strip()
+    ret = subprocess.check_output(cmd, text=True, errors="ignore", timeout=TIMEOUT).strip()
 
     if ret:
         return ret.split("\n")
