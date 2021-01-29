@@ -43,7 +43,10 @@ async def fetchpull(mode: str, path: Path) -> Path:
 
     cmd = [GITEXE, "-C", str(path), mode]
     proc = await asyncio.create_subprocess_exec(
-        *cmd, stdout=subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE, stdin=asyncio.subprocess.DEVNULL
+        *cmd,
+        stdout=subprocess.DEVNULL,
+        stderr=asyncio.subprocess.PIPE,
+        stdin=asyncio.subprocess.DEVNULL,
     )
     _, stderr = await proc.communicate()
 

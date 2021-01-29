@@ -41,7 +41,9 @@ async def different_branch(main: T.Sequence[str], path: Path) -> T.Tuple[str, st
         repo path and branch name
     """
 
-    proc = await asyncio.create_subprocess_exec(*[GITEXE, "-C", str(path)] + BRANCH_SIMPLE, stdout=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_exec(
+        *[GITEXE, "-C", str(path)] + BRANCH_SIMPLE, stdout=asyncio.subprocess.PIPE
+    )
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
         logging.error(f"{path.name} return code {proc.returncode}  {BRANCH_SIMPLE}")
@@ -82,13 +84,20 @@ def branch_switch(path: Path, old_branch: str, new_branch: str):
             continue
 
         cmd = [GITEXE, "-C", str(d)] + BRANCH_SIMPLE
-        ret = subprocess.run([GITEXE, "-C", str(d)] + SWITCH + [new_branch], stderr=subprocess.PIPE, timeout=10, text=True)
+        ret = subprocess.run(
+            [GITEXE, "-C", str(d)] + SWITCH + [new_branch],
+            stderr=subprocess.PIPE,
+            timeout=10,
+            text=True,
+        )
         if ret.returncode != 0:
             stderr = ret.stderr.strip()
             if stderr == f"fatal: invalid reference: {new_branch}":
                 continue
             else:
-                raise ValueError(f"{d} could not switch to {new_branch} from {old_branch}: {stderr}")
+                raise ValueError(
+                    f"{d} could not switch to {new_branch} from {old_branch}: {stderr}"
+                )
 
         print(d.name, old_branch, "=>", new_branch)
 
@@ -98,7 +107,9 @@ def cli():
     report on git repos not on the expected branch e.g. 'master'
     """
 
-    p = argparse.ArgumentParser(description="check for non-default branches, and mass switch branches")
+    p = argparse.ArgumentParser(
+        description="check for non-default branches, and mass switch branches"
+    )
     p.add_argument("path", help="path to look under", nargs="?", default="~/code")
     p.add_argument("-v", "--verbose", action="store_true")
     p.add_argument("-main", nargs="+", default=["main", "master"], help="name of your main branch")

@@ -27,7 +27,12 @@ def ActOnChanged():
     p = argparse.ArgumentParser()
     p.add_argument("path", help="root path to search under", nargs="?", default=".")
     p.add_argument("-p", "--preview", help="web browser preview of localhost", action="store_true")
-    p.add_argument("--port", help="port of localhost web server (Jekyll: 4000, Hugo: 1313)", type=int, default=1313)
+    p.add_argument(
+        "--port",
+        help="port of localhost web server (Jekyll: 4000, Hugo: 1313)",
+        type=int,
+        default=1313,
+    )
     p.add_argument("-v", "--verbose", action="store_true")
     P = p.parse_args()
 

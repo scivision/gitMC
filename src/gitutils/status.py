@@ -45,7 +45,9 @@ def git_porcelain(path: Path) -> bool:
     if not path.is_dir():
         raise NotADirectoryError(path)
 
-    ret = subprocess.run([GITEXE, "-C", str(path)] + C1, stdout=subprocess.PIPE, text=True, timeout=TIMEOUT)
+    ret = subprocess.run(
+        [GITEXE, "-C", str(path)] + C1, stdout=subprocess.PIPE, text=True, timeout=TIMEOUT
+    )
     if ret.returncode != 0:
         logging.error(f"{path.name} return code {ret.returncode}  {C1}")
         return False
@@ -67,7 +69,9 @@ async def _git_status(path: Path) -> T.Tuple[str, str]:
         Git repo local changes
     """
 
-    proc = await asyncio.create_subprocess_exec(*[GITEXE, "-C", str(path)] + C1, stdout=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_exec(
+        *[GITEXE, "-C", str(path)] + C1, stdout=asyncio.subprocess.PIPE
+    )
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
         logging.error(f"{path.name} return code {proc.returncode}  {C1}")
@@ -78,7 +82,9 @@ async def _git_status(path: Path) -> T.Tuple[str, str]:
     if out:
         return path.name, out
     # %% detect committed, but not pushed
-    proc = await asyncio.create_subprocess_exec(*[GITEXE, "-C", str(path)] + C0, stdout=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_exec(
+        *[GITEXE, "-C", str(path)] + C0, stdout=asyncio.subprocess.PIPE
+    )
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
         logging.error(f"{path.name} return code {proc.returncode}  {C0}")
