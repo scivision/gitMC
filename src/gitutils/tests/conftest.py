@@ -4,7 +4,7 @@ import subprocess
 
 @pytest.fixture(scope="function")
 def git_init(tmp_path):
-    subprocess.check_call(["git", "-C", str(tmp_path), "init"])
+    subprocess.check_call(["git", "-C", str(tmp_path), "init", "-b", "main"])
     return tmp_path
 
 
