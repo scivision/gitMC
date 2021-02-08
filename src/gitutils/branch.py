@@ -5,8 +5,8 @@ git branch get name methods:
 https://stackoverflow.com/a/45028375
 """
 
+from __future__ import annotations
 import argparse
-import typing as T
 from pathlib import Path
 import asyncio
 import logging
@@ -24,7 +24,7 @@ BRANCH_SIMPLE = ["branch", "--show-current"]  # Git >= 2.22
 SWITCH = ["checkout"]  # Git < 2.23
 
 
-async def different_branch(main: T.Sequence[str], path: Path) -> T.Tuple[str, str]:
+async def different_branch(main: list[str], path: Path) -> tuple[str, str]:
     """
     does branch not match specified name
 
@@ -62,7 +62,7 @@ async def different_branch(main: T.Sequence[str], path: Path) -> T.Tuple[str, st
     return None
 
 
-async def git_branch(branch: T.Sequence[str], path: Path) -> T.List[T.Tuple[str, str]]:
+async def git_branch(branch: list[str], path: Path) -> list[tuple[str, str]]:
 
     different = []
     for r in asyncio.as_completed([different_branch(branch, d) for d in gitdirs(path)]):
@@ -96,8 +96,8 @@ def branch_switch(path: Path, old_branch: str, new_branch: str):
             stderr = ret.stderr.strip()
             if stderr in {
                 f"fatal: invalid reference: {new_branch}",  # switch
-                f"error: pathspec '{new_branch}' did not match any file(s) known to git",
-            }:  # checkout
+                f"error: pathspec '{new_branch}' did not match any file(s) known to git",  # checkout
+            }:
                 continue
             else:
                 raise ValueError(

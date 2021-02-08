@@ -2,12 +2,12 @@
 Git fetch / pull functions
 """
 
+from __future__ import annotations
 import argparse
 import asyncio
 import subprocess
 import logging
 from pathlib import Path
-import typing as T
 
 from . import _log
 from .git import GITEXE, gitdirs
@@ -63,7 +63,7 @@ async def fetchpull(mode: str, path: Path) -> Path:
     return None
 
 
-async def git_pullfetch(mode: str, path: Path) -> T.List[Path]:
+async def git_pullfetch(mode: str, path: Path) -> list[Path]:
 
     failed = []
     for r in asyncio.as_completed([fetchpull(mode, d) for d in gitdirs(path)]):

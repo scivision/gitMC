@@ -8,12 +8,12 @@ replaced by git status --porcelain:
 DOES NOT WORK git log --branches --not --remotes     # check for uncommitted branches
 """
 
+from __future__ import annotations
 import argparse
 import asyncio
 import subprocess
 import logging
 from pathlib import Path
-import typing as T
 
 from . import _log
 from .git import gitdirs, GITEXE, MAGENTA, BLACK, TIMEOUT
@@ -54,7 +54,7 @@ def git_porcelain(path: Path) -> bool:
     return not ret.stdout
 
 
-async def _git_status(path: Path) -> T.Tuple[str, str]:
+async def _git_status(path: Path) -> tuple[str, str]:
     """
     Notes which Git repos have local changes that haven't been pushed to remote
 
@@ -103,7 +103,7 @@ async def _git_status(path: Path) -> T.Tuple[str, str]:
     return None
 
 
-async def git_status(path: Path, verbose: bool = False) -> T.List[str]:
+async def git_status(path: Path, verbose: bool = False) -> list[str]:
 
     c = MAGENTA if verbose else ""
 

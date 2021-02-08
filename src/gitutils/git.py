@@ -1,6 +1,8 @@
 """
 Git utilities: focused on speed for very large numbers of Git repos
 """
+
+from __future__ import annotations
 from pathlib import Path
 import subprocess
 import typing
@@ -77,7 +79,7 @@ def baddir(path: Path) -> bool:
     return bad
 
 
-def listchanged(path: Path) -> typing.List[str]:
+def listchanged(path: Path) -> list[str]:
     """very quick check if any files were modified in this Git repo
 
     Parameters

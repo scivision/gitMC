@@ -1,6 +1,8 @@
 """
 operations for Git author attributions
 """
+
+from __future__ import annotations
 from pathlib import Path
 import typing as T
 import collections
@@ -10,9 +12,7 @@ import subprocess
 from .git import gitdirs, GITEXE, TIMEOUT
 
 
-def gitemail(
-    path: Path, exclude: str = None
-) -> T.Iterator[T.Tuple[Path, T.List[T.Tuple[str, int]]]]:
+def gitemail(path: Path, exclude: str = None) -> T.Iterator[tuple[Path, list[tuple[str, int]]]]:
     """
     returns email addresses of everyone who ever made a Git commit in this repo.
 
