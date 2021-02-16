@@ -13,15 +13,15 @@ import logging
 import subprocess
 
 from . import _log
-from .git import GITEXE, gitdirs
+from .git import GITEXE, GIT_VERSION, gitdirs
 
 BRANCH_REV = ["rev-parse", "--abbrev-ref", "HEAD"]
 BRANCH_SYM = ["symbolic-ref", "--short", "HEAD"]
 
-BRANCH_NAME = ["name-rev", "--name-only", "HEAD"]  # old Git
-BRANCH_SIMPLE = ["branch", "--show-current"]  # Git >= 2.22
+# BRANCH_NAME = ["name-rev", "--name-only", "HEAD"]  # don't use--shows tag when HEAD coincides instead of branch
+BRANCH_NAME = ["branch", "--show-current"]  # Git >= 2.22
 
-SWITCH = ["checkout"]  # Git < 2.23
+SWITCH = ["switch"]  # Git >= 2.23
 
 
 async def different_branch(main: list[str], path: Path) -> tuple[str, str]:
@@ -42,6 +42,13 @@ async def different_branch(main: list[str], path: Path) -> tuple[str, str]:
     branch : tuple of pathlib.Path, str
         repo path and branch name
     """
+
+    minver = 2.23
+
+    if GIT_VERSION < minver:
+        raise EnvironmentError(
+            f"Git >= {minver} needed to use branch operations. Your Git: {GIT_VERSION}"
+        )
 
     proc = await asyncio.create_subprocess_exec(
         *[GITEXE, "-C", str(path)] + BRANCH_NAME, stdout=asyncio.subprocess.PIPE
@@ -85,9 +92,9 @@ def branch_switch(path: Path, old_branch: str, new_branch: str):
             logging.info(f"not changing: {d.name}: {current} != {old_branch}")
             continue
 
-        cmd = [GITEXE, "-C", str(d)] + BRANCH_NAME
+        cmd = [GITEXE, "-C", str(d)] + SWITCH + [new_branch]
         ret = subprocess.run(
-            [GITEXE, "-C", str(d)] + SWITCH + [new_branch],
+            cmd,
             stderr=subprocess.PIPE,
             timeout=10,
             text=True,

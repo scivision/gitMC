@@ -16,9 +16,14 @@ TIMEOUT = 30.0  # arbitrary, seconds
 GITEXE = shutil.which("git")  # type: str
 if not GITEXE:
     raise ImportError("Could not find executable for Git")
-ret = subprocess.run([GITEXE, "-C", ".", "--version"], stdout=subprocess.DEVNULL, timeout=5)
+ret = subprocess.run([GITEXE, "-C", ".", "--version"], stdout=subprocess.PIPE, timeout=5, text=True)
 if ret.returncode != 0:
     raise ImportError("Your Git version is too old to work with GitUtils.")
+
+try:
+    GIT_VERSION = float(".".join(ret.stdout.split(" ")[2].split(".")[:2]))
+except (AttributeError, ValueError):
+    GIT_VERSION = 0
 
 
 def gitdirs(path: Path) -> typing.Iterator[Path]:
