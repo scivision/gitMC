@@ -42,8 +42,8 @@ def gitemail(path: Path, exclude: str = None) -> T.Iterator[tuple[Path, list[tup
             logging.error(f"{path}  {e}")
             continue
 
-        ret = ret.replace('"', "")
-        addrs = filter(None, ret.split("\n"))  # remove blanks
+        addrs: T.Iterable[str] = filter(None, ret.replace('"', "").split("\n"))
+        # remove blanks
         if exclude:
             addrs = (n for n in addrs if not n.startswith(exclude))
 

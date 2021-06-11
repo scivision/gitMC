@@ -45,20 +45,27 @@ async def fetchpull(mode: str, path: Path) -> Path:
 
     proc = await asyncio.create_subprocess_exec(
         *cmd,
-        stdout=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
         stdin=asyncio.subprocess.DEVNULL,
     )
-    _, stderr = await proc.communicate()
+    stdout, stderr = await proc.communicate()
+    out = stdout.decode("utf8", errors="ignore").rstrip()
+    if out and out != "Already up to date.":
+        print(path.name, out)
 
-    if mode == "fetch":
+    if mode == "fetch" and proc.returncode == 0:
         cmd = [GITEXE, "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"]
         proc = await asyncio.create_subprocess_exec(
-            *cmd, stdout=subprocess.PIPE, stderr=asyncio.subprocess.PIPE, stdin=asyncio.subprocess.DEVNULL
-            )
+            *cmd,
+            stdout=subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.DEVNULL,
+        )
         stdout, stderr = await proc.communicate()
         out = stdout.decode("utf8", errors="ignore").rstrip()
-        print(path.name, out)
+        if out:
+            print(path.name, out)
     err = stderr.decode("utf8", errors="ignore").rstrip()
     if proc.returncode:
         if "Permission denied" in err or "fatal: could not read Password" in err:
