@@ -9,7 +9,6 @@
 
 Platform-independent (Linux/Mac/Windows) Git utilities, useful for managing large (100+) numbers of Git repos.
 Speed is an emphasis throughout, with concurrency via Python `asyncio` and pipelining.
-In general, GitMC works with all GitHub repos, including organization private repos--assuming you have created a GitHub Oauth key with appropriate permissions ("repo" needed for private org/user repos").
 
 GitMC uses command-line Git because PyGit also requires command-line Git installed, and we don't need the advanced functionality.
 
