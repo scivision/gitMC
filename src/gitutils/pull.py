@@ -8,9 +8,28 @@ import asyncio
 import subprocess
 import logging
 from pathlib import Path
+import urllib.request
+import socket
 
 from . import _log
 from .git import GITEXE, gitdirs
+
+
+def check_internet() -> bool:
+    """
+    check that Internet connection is working
+    """
+
+    url = "https://connectivitycheck.gstatic.com/generate_204"
+
+    try:
+        with urllib.request.urlopen(url, timeout=3) as resp:
+            if resp.getcode() == 204:
+                return True
+    except (socket.gaierror, urllib.error.URLError):
+        raise ConnectionError(f"No internet connection to {url}")
+
+    return False
 
 
 async def fetchpull(mode: str, path: Path) -> Path:
@@ -109,6 +128,9 @@ def git_pull_cli():
     P = p.parse_args()
 
     _log(P.verbose)
+
+    if not check_internet():
+        raise ConnectionError("No internet connection")
 
     asyncio.run(git_pullfetch("pull", P.path))
 
