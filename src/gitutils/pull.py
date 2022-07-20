@@ -129,8 +129,8 @@ def git_pull_cli():
 
     _log(P.verbose)
 
-    if not check_internet():
-        raise ConnectionError("No internet connection")
+    # if not check_internet():
+    #     raise ConnectionError("No internet connection")
 
     asyncio.run(git_pullfetch("pull", P.path))
 
