@@ -9,7 +9,6 @@
   "dateModified": "2020-06-08",
   "issueTracker": "https://github.com/scivision/gitmc/issues",
   "name": "GitMC",
-  "version": "1.6.1",
   "identifier": "10.5281/zenodo.3885497",
   "description": "concurrent, pure Python asyncio + Git: manage large (100+) numbers of Git repos",
   "applicationCategory": "git",
