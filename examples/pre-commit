@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 """
 To check your Git commits locally for:
 * no trailing whitespace
@@ -13,17 +14,14 @@ To override this on per-repo basis, in that particular repo do:
 git config core.hooksPath .git/hooks
 so that you can put local hooks in that repo, no longer using this global pre-commit
 
-
-Works on Python 3.x
-
 * https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks
 * https://www.scivision.dev/git-commit-precheck-pep8/
 """
 
+from pathlib import Path
 import shutil
 import subprocess
 import sys
-import os
 
 try:
     import yaml
@@ -31,39 +29,51 @@ except ImportError:
     yaml = None
     print("yaml checks not available", file=sys.stderr)
 
-flake8 = shutil.which("flake8")
-if not flake8:
+if not (flake8 := shutil.which("flake8")):
     print("flake8 checks not available", file=sys.stderr)
-mypy = shutil.which("mypy")
-if not mypy:
+if not (mypy := shutil.which("mypy")):
     print("mypy checks not available", file=sys.stderr)
 
+
+def check_yaml(file: Path) -> None:
+    if yaml is None:
+        return
+    try:
+        yaml.safe_load(file.read_text())
+    except Exception as e:
+        raise SystemExit(f"problem in YaML file {file}  {e}")
+
+
 # %% Python checking
-stdout = subprocess.check_output(["git", "diff", "--staged", "--name-only"], universal_newlines=True)
+stdout = subprocess.check_output(["git", "diff", "--staged", "--name-only"], text=True)
 
-pystaged = [f for f in stdout.split("\n") if f.endswith(".py") and os.path.isfile(f)]
 
-for f in pystaged:
-    txt = open(f).read()
-    if "breakpoint(" in txt:
-        raise SystemExit("Remove breakpoint in {} before commit".format(f))
+def check_staged(stdout: str) -> list[str]:
+    plist = []
+    for file in stdout.split("\n"):
+        path = Path(file)
+        if not path.is_file():
+            continue
+        if path.suffix == ".py":
+            if "breakpoint(" in path.read_text():
+                raise SystemExit(f"Remove breakpoint in {path} before commit")
+            plist.append(str(path))
+        elif path.suffix in {".yml", ".yaml"}:
+            check_yaml(path)
 
-if pystaged:
+    return plist
+
+
+plist = check_staged(stdout)
+
+if plist:
     if flake8:
-        if subprocess.call([flake8] + pystaged):
+        if subprocess.call([flake8] + plist):
             raise SystemExit("fix PEP8 issues before commit")
 
     if mypy:
-        if subprocess.call([mypy] + pystaged):
+        if subprocess.call([mypy] + plist):
             raise SystemExit("fix type hinting issues before commit")
-
-if yaml is not None:
-    ymlstaged = (f for f in stdout.split("\n") if f.endswith((".yml", ".yaml")) and os.path.isfile(f))
-    for f in ymlstaged:
-        try:
-            yaml.safe_load(open(f).read())
-        except Exception as e:
-            raise SystemExit(f"problem in YaML file {f}  {e}")
 
 # %% general checks
 if subprocess.call(["git", "diff-index", "--check", "--cached", "HEAD", "--"]):
