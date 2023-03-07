@@ -1,6 +1,7 @@
 import subprocess
 import pytest
 
+from gitutils.git import git_exe
 import gitutils.find as pgf
 import gitutils.git as pg
 
@@ -43,7 +44,7 @@ def test_actonchanged(git_init):
 
     fn = p / "foo.txt"
     fn.touch()
-    subprocess.check_call(["git", "-C", str(p), "add", fn])
+    subprocess.check_call([git_exe(), "-C", str(p), "add", fn])
     fn.write_text("hello")
     ch = pg.listchanged(p)
     assert ch

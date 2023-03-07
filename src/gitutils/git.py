@@ -7,23 +7,34 @@ from pathlib import Path
 import subprocess
 import typing
 import shutil
+import functools
 
 # from colorama.
 MAGENTA = "\x1b[45m"
 BLACK = "\x1b[40m"
 
 TIMEOUT = 30.0  # arbitrary, seconds
-GITEXE = shutil.which("git")  # type: str
-if not GITEXE:
-    raise ImportError("Could not find executable for Git")
-ret = subprocess.run([GITEXE, "-C", ".", "--version"], stdout=subprocess.PIPE, timeout=5, text=True)
-if ret.returncode != 0:
-    raise ImportError("Your Git version is too old to work with GitUtils.")
 
-try:
-    GIT_VERSION = float(".".join(ret.stdout.split(" ")[2].split(".")[:2]))
-except (AttributeError, ValueError):
-    GIT_VERSION = 0
+
+@functools.cache
+def git_exe() -> str:
+    """
+    find Git executable
+
+    Returns
+    -------
+    exe : str
+        path to Git executable
+    """
+
+    if not (exe := shutil.which("git")):
+        raise EnvironmentError("Git not found")
+
+    ret = subprocess.run([exe, "-C", ".", "--version"], timeout=5)
+    if ret.returncode != 0:
+        raise EnvironmentError("Git version is too old.")
+
+    return exe
 
 
 def gitdirs(path: Path) -> typing.Iterator[Path]:
@@ -41,7 +52,7 @@ def gitdirs(path: Path) -> typing.Iterator[Path]:
         generator for Git repo paths
     """
 
-    path = Path(path).expanduser().resolve()
+    path = Path(path).expanduser().resolve(strict=True)
 
     if baddir(path):  # assume top-level dir under which Git repos live
         for x in path.iterdir():
@@ -55,6 +66,7 @@ def baddir(path: Path) -> bool:
     """
     tells if a directory is not a Git repo or excluded.
     A directory with top-level file ".nogit" is excluded.
+    Treats PermissionError as bad -- happens on Windows.
 
     Parameters
     ----------
@@ -68,6 +80,7 @@ def baddir(path: Path) -> bool:
     bad : bool
         True if an excluded Git repo or not a Git repo
     """
+
     path = path.expanduser()
 
     try:
@@ -78,7 +91,7 @@ def baddir(path: Path) -> bool:
 
     try:
         bad = (path / ".nogit").is_file() or not (path / ".git" / "HEAD").is_file()
-    except PermissionError:  # Windows
+    except PermissionError:
         bad = True
 
     return bad
@@ -102,7 +115,7 @@ def listchanged(path: Path) -> list[str]:
     if not path.is_dir():
         raise NotADirectoryError(path)
 
-    cmd = [GITEXE, "-C", str(path), "ls-files", "--modified"]
+    cmd = [git_exe(), "-C", str(path), "ls-files", "--modified"]
     # .strip() avoids returning a blank last element
     ret = subprocess.check_output(cmd, text=True, errors="ignore", timeout=TIMEOUT).strip()
 

@@ -16,7 +16,7 @@ import logging
 from pathlib import Path
 
 from . import _log
-from .git import gitdirs, GITEXE, MAGENTA, BLACK, TIMEOUT
+from .git import gitdirs, git_exe, MAGENTA, BLACK, TIMEOUT
 
 C0 = ["rev-parse", "--abbrev-ref", "HEAD"]  # get branch name
 C1 = ["status", "--porcelain"]  # uncommitted or changed files
@@ -46,7 +46,7 @@ def git_porcelain(path: Path) -> bool:
         raise NotADirectoryError(path)
 
     ret = subprocess.run(
-        [GITEXE, "-C", str(path)] + C1, stdout=subprocess.PIPE, text=True, timeout=TIMEOUT
+        [git_exe(), "-C", str(path)] + C1, stdout=subprocess.PIPE, text=True, timeout=TIMEOUT
     )
     if ret.returncode != 0:
         logging.error(f"{path.name} return code {ret.returncode}  {C1}")
@@ -54,7 +54,7 @@ def git_porcelain(path: Path) -> bool:
     return not ret.stdout
 
 
-async def _git_status(path: Path) -> tuple[str, str]:
+async def _git_status(path: Path) -> tuple[str, str] | None:
     """
     Notes which Git repos have local changes that haven't been pushed to remote
 
@@ -70,20 +70,22 @@ async def _git_status(path: Path) -> tuple[str, str]:
     """
 
     proc = await asyncio.create_subprocess_exec(
-        *[GITEXE, "-C", str(path)] + C1, stdout=asyncio.subprocess.PIPE
+        *[git_exe(), "-C", str(path)] + C1, stdout=asyncio.subprocess.PIPE
     )
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
         logging.error(f"{path.name} return code {proc.returncode}  {C1}")
         return None
-    out = stdout.decode("utf8", errors="ignore").rstrip()
+
     logging.info(path.name)
-    # %% detect uncommitted changes
-    if out:
+
+    if out := stdout.decode("utf8", errors="ignore").rstrip():
+        # uncommitted changes
         return path.name, out
+
     # %% detect committed, but not pushed
     proc = await asyncio.create_subprocess_exec(
-        *[GITEXE, "-C", str(path)] + C0, stdout=asyncio.subprocess.PIPE
+        *[git_exe(), "-C", str(path)] + C0, stdout=asyncio.subprocess.PIPE
     )
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
@@ -91,15 +93,15 @@ async def _git_status(path: Path) -> tuple[str, str]:
         return None
     branch = stdout.decode("utf8", errors="ignore").rstrip()
 
-    C2 = [GITEXE, "-C", str(path), "diff", "--stat", f"origin/{branch}.."]
+    C2 = [git_exe(), "-C", str(path), "diff", "--stat", f"origin/{branch}.."]
     proc = await asyncio.create_subprocess_exec(*C2, stdout=asyncio.subprocess.PIPE)
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
         logging.error(f"{path.name} return code {proc.returncode}  {branch}")
         return None
-    out = stdout.decode("utf8", errors="ignore").rstrip()
-    if out:
+    if out := stdout.decode("utf8", errors="ignore").rstrip():
         return path.name, out
+
     return None
 
 
@@ -108,9 +110,9 @@ async def git_status(path: Path, verbose: bool = False) -> list[str]:
     c = MAGENTA if verbose else ""
 
     changed = []
-    for r in asyncio.as_completed([_git_status(d) for d in gitdirs(path)]):
-        changes = await r
-        if changes:
+    futures = [_git_status(d) for d in gitdirs(path)]
+    for r in asyncio.as_completed(futures):
+        if changes := await r:
             changed.append(changes[0])
             print(c + changes[0])
             if verbose:

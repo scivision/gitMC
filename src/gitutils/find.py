@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pathlib import Path
 import typing as T
 import shutil
@@ -24,14 +25,12 @@ def find_matching_file(path: Path, fn: str) -> T.Iterator[Path]:
     if not path.is_dir():
         raise NotADirectoryError(path)
 
-    dlist = (x for x in path.iterdir() if x.is_dir())
-
-    for d in dlist:
+    for d in (x for x in path.iterdir() if x.is_dir()):
         if (d / fn).is_file():
             yield d
 
 
-def find_dir_missing_file(path: Path, fn: str, copyfile: Path = None) -> T.Iterator[Path]:
+def find_dir_missing_file(path: Path, fn: str, copyfile: Path | None = None) -> T.Iterator[Path]:
     """
     if directory is missing a file, copy the file to that directory
 
@@ -53,14 +52,10 @@ def find_dir_missing_file(path: Path, fn: str, copyfile: Path = None) -> T.Itera
     path = Path(path).expanduser().resolve()
     if not path.is_dir():
         raise NotADirectoryError(path)
-    if copyfile and not isinstance(copyfile, Path):
-        raise TypeError("copyfile must be Path or None")
 
-    dlist = (x for x in path.iterdir() if x.is_dir())
-
-    for d in dlist:
+    for d in (x for x in path.iterdir() if x.is_dir()):
         if not (d / fn).is_file():
-            if isinstance(copyfile, Path):
+            if copyfile:
                 shutil.copy2(copyfile, d)
                 print(f"copied {copyfile} to {d}")
 

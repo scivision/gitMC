@@ -9,10 +9,12 @@ import collections
 import logging
 import subprocess
 
-from .git import gitdirs, GITEXE, TIMEOUT
+from .git import gitdirs, git_exe, TIMEOUT
 
 
-def gitemail(path: Path, exclude: str = None) -> T.Iterator[tuple[Path, list[tuple[str, int]]]]:
+def gitemail(
+    path: Path, exclude: str | None = None
+) -> T.Iterator[tuple[Path, list[tuple[str, int]]]]:
     """
     returns email addresses of everyone who ever made a Git commit in this repo.
 
@@ -36,7 +38,7 @@ def gitemail(path: Path, exclude: str = None) -> T.Iterator[tuple[Path, list[tup
 
         try:
             ret = subprocess.check_output(
-                [GITEXE, "-C", str(d), "log", '--pretty="%ce"'], text=True, timeout=TIMEOUT
+                [git_exe(), "-C", str(d), "log", '--pretty="%ce"'], text=True, timeout=TIMEOUT
             )
         except subprocess.CalledProcessError as e:
             logging.error(f"{path}  {e}")

@@ -13,20 +13,24 @@ import logging
 import subprocess
 
 from . import _log
-from .git import GITEXE, GIT_VERSION, gitdirs
+from .git import git_exe, gitdirs
 
 BRANCH_REV = ["rev-parse", "--abbrev-ref", "HEAD"]
 BRANCH_SYM = ["symbolic-ref", "--short", "HEAD"]
 
-# BRANCH_NAME = ["name-rev", "--name-only", "HEAD"]  # don't use--shows tag when HEAD coincides instead of branch
+# BRANCH_NAME = ["name-rev", "--name-only", "HEAD"]
+# don't use--shows tag when HEAD coincides instead of branch
+
 BRANCH_NAME = ["branch", "--show-current"]  # Git >= 2.22
 
 SWITCH = ["switch"]  # Git >= 2.23
 
 
-async def different_branch(main: list[str], path: Path) -> tuple[str, str]:
+async def different_branch(main: list[str], path: Path) -> tuple[str, str] | None:
     """
     does branch not match specified name
+
+    Requires Git >= 2.23
 
     Parameters
     ----------
@@ -43,15 +47,8 @@ async def different_branch(main: list[str], path: Path) -> tuple[str, str]:
         repo path and branch name
     """
 
-    minver = 2.23
-
-    if GIT_VERSION < minver:
-        raise EnvironmentError(
-            f"Git >= {minver} needed to use branch operations. Your Git: {GIT_VERSION}"
-        )
-
     proc = await asyncio.create_subprocess_exec(
-        *[GITEXE, "-C", str(path)] + BRANCH_NAME, stdout=asyncio.subprocess.PIPE
+        *[git_exe(), "-C", str(path)] + BRANCH_NAME, stdout=asyncio.subprocess.PIPE
     )
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
@@ -72,9 +69,9 @@ async def different_branch(main: list[str], path: Path) -> tuple[str, str]:
 async def git_branch(branch: list[str], path: Path) -> list[tuple[str, str]]:
 
     different = []
-    for r in asyncio.as_completed([different_branch(branch, d) for d in gitdirs(path)]):
-        diff = await r
-        if diff:
+    futures = [different_branch(branch, d) for d in gitdirs(path)]
+    for r in asyncio.as_completed(futures):
+        if diff := await r:
             different.append(diff)
             print(diff)
 
@@ -83,8 +80,13 @@ async def git_branch(branch: list[str], path: Path) -> list[tuple[str, str]]:
 
 def branch_switch(path: Path, old_branch: str, new_branch: str):
 
+    not_a_branch = {
+        f"fatal: invalid reference: {new_branch}",  # switch
+        f"error: pathspec '{new_branch}' did not match any file(s) known to git",  # checkout
+    }
+
     for d in gitdirs(path):
-        cmd = [GITEXE, "-C", str(d)] + BRANCH_NAME
+        cmd = [git_exe(), "-C", str(d)] + BRANCH_NAME
         current = subprocess.check_output(cmd, text=True, timeout=5).strip()
         if current == new_branch:
             continue
@@ -92,7 +94,7 @@ def branch_switch(path: Path, old_branch: str, new_branch: str):
             logging.info(f"not changing: {d.name}: {current} != {old_branch}")
             continue
 
-        cmd = [GITEXE, "-C", str(d)] + SWITCH + [new_branch]
+        cmd = [git_exe(), "-C", str(d)] + SWITCH + [new_branch]
         ret = subprocess.run(
             cmd,
             stderr=subprocess.PIPE,
@@ -100,11 +102,7 @@ def branch_switch(path: Path, old_branch: str, new_branch: str):
             text=True,
         )
         if ret.returncode != 0:
-            stderr = ret.stderr.strip()
-            if stderr in {
-                f"fatal: invalid reference: {new_branch}",  # switch
-                f"error: pathspec '{new_branch}' did not match any file(s) known to git",  # checkout
-            }:
+            if stderr := ret.stderr.strip() in not_a_branch:
                 continue
             else:
                 raise ValueError(

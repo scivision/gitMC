@@ -12,7 +12,7 @@ import urllib.request
 import socket
 
 from . import _log
-from .git import GITEXE, gitdirs
+from .git import git_exe, gitdirs
 
 
 def check_internet() -> bool:
@@ -32,7 +32,7 @@ def check_internet() -> bool:
     return False
 
 
-async def fetchpull(mode: str, path: Path) -> Path:
+async def fetchpull(mode: str, path: Path) -> Path | None:
     """
     handles recursive "git pull" and "git fetch"
 
@@ -60,7 +60,7 @@ async def fetchpull(mode: str, path: Path) -> Path:
     occured. Leave it as is with stdout=DEVNULL and no --quiet.
     """
 
-    cmd = [GITEXE, "-C", str(path), mode]
+    cmd = [git_exe(), "-C", str(path), mode]
 
     proc = await asyncio.create_subprocess_exec(
         *cmd,
@@ -74,7 +74,7 @@ async def fetchpull(mode: str, path: Path) -> Path:
         print(path.name, out)
 
     if mode == "fetch" and proc.returncode == 0:
-        cmd = [GITEXE, "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"]
+        cmd = [git_exe(), "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"]
         proc = await asyncio.create_subprocess_exec(
             *cmd,
             stdout=subprocess.PIPE,
@@ -82,9 +82,9 @@ async def fetchpull(mode: str, path: Path) -> Path:
             stdin=asyncio.subprocess.DEVNULL,
         )
         stdout, stderr = await proc.communicate()
-        out = stdout.decode("utf8", errors="ignore").rstrip()
-        if out:
+        if out := stdout.decode("utf8", errors="ignore").rstrip():
             print(path.name, out)
+
     err = stderr.decode("utf8", errors="ignore").rstrip()
     if proc.returncode:
         if "Permission denied" in err or "fatal: could not read Password" in err:
@@ -101,9 +101,9 @@ async def fetchpull(mode: str, path: Path) -> Path:
 async def git_pullfetch(mode: str, path: Path) -> list[Path]:
 
     failed = []
-    for r in asyncio.as_completed([fetchpull(mode, d) for d in gitdirs(path)]):
-        fail = await r
-        if fail:
+    futures = [fetchpull(mode, d) for d in gitdirs(path)]
+    for r in asyncio.as_completed(futures):
+        if fail := await r:
             failed.append(fail)
             print(fail.name)
 
