@@ -30,7 +30,8 @@ def git_exe() -> str:
     if not (exe := shutil.which("git")):
         raise EnvironmentError("Git not found")
 
-    ret = subprocess.run([exe, "-C", ".", "--version"], timeout=5)
+    ret = subprocess.run([exe, "-C", ".", "--version"], stdout=subprocess.PIPE, timeout=5)
+    # need stdout to avoid leaking version into pipe
     if ret.returncode != 0:
         raise EnvironmentError("Git version is too old.")
 
