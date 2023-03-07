@@ -16,14 +16,11 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Update pip
-      run: pip install -U pip
-
     - name: Install builder
       run: pip install build
 
     - name: Build package
-      run: pyproject-build --outdir dist/ .
+      run: python -m build
 
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1

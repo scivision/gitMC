@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gitutils"
-version = "1.11.0"
 description = "concurrent, pipelined, platform-agnostic Git utilities for managing a large number of Git repositories"
 keywords = ["concurrent", "asynchronous", "asyncio", "git", "GitHub", "ssh"]
 classifiers = [
@@ -17,7 +16,7 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3"
 ]
-dynamic = ["readme"]
+dynamic = ["version", "readme"]
 requires-python = ">=3.9"
 
 [project.optional-dependencies]
@@ -36,7 +35,7 @@ gitemail = "gitutils.__main__:git_email"
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"], content-type = "text/markdown"}
-
+version = {attr = "gitutils.__version__"}
 
 [tool.black]
 line-length = 100
