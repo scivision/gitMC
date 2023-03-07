@@ -17,5 +17,5 @@ def test_script_pull(op):
 @pytest.mark.parametrize("mode", ["fetch", "pull"])
 def test_nonGit_dir_pull(tmp_path, mode):
 
-    dirs = asyncio.run(git_pullfetch(mode, tmp_path))
+    dirs = asyncio.run(git_pullfetch(mode, tmp_path, prompt=False))
     assert len(dirs) == 0
