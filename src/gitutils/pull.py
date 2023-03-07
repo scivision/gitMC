@@ -5,7 +5,6 @@ Git fetch / pull functions
 from __future__ import annotations
 import argparse
 import asyncio
-import subprocess
 import logging
 from pathlib import Path
 import urllib.request
@@ -64,7 +63,7 @@ async def fetchpull(mode: str, path: Path) -> Path | None:
 
     proc = await asyncio.create_subprocess_exec(
         *cmd,
-        stdout=subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
         stdin=asyncio.subprocess.DEVNULL,
     )
@@ -77,7 +76,7 @@ async def fetchpull(mode: str, path: Path) -> Path | None:
         cmd = [git_exe(), "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"]
         proc = await asyncio.create_subprocess_exec(
             *cmd,
-            stdout=subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             stdin=asyncio.subprocess.DEVNULL,
         )
