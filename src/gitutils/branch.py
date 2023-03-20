@@ -67,7 +67,6 @@ async def different_branch(main: list[str], path: Path) -> tuple[str, str] | Non
 
 
 async def git_branch(branch: list[str], path: Path) -> list[tuple[str, str]]:
-
     different = []
     futures = [different_branch(branch, d) for d in gitdirs(path)]
     for r in asyncio.as_completed(futures):
@@ -79,7 +78,6 @@ async def git_branch(branch: list[str], path: Path) -> list[tuple[str, str]]:
 
 
 def branch_switch(path: Path, old_branch: str, new_branch: str):
-
     not_a_branch = {
         f"fatal: invalid reference: {new_branch}",  # switch
         f"error: pathspec '{new_branch}' did not match any file(s) known to git",  # checkout
@@ -104,10 +102,8 @@ def branch_switch(path: Path, old_branch: str, new_branch: str):
         if ret.returncode != 0:
             if stderr := ret.stderr.strip() in not_a_branch:
                 continue
-            else:
-                raise ValueError(
-                    f"{d} could not switch to {new_branch} from {old_branch}: {stderr}"
-                )
+
+            raise ValueError(f"{d} could not switch to {new_branch} from {old_branch}: {stderr}")
 
         print(d.name, old_branch, "=>", new_branch)
 

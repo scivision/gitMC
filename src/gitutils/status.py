@@ -106,7 +106,6 @@ async def _git_status(path: Path) -> tuple[str, str] | None:
 
 
 async def git_status(path: Path, verbose: bool = False) -> list[str]:
-
     c = MAGENTA if verbose else ""
 
     changed = []

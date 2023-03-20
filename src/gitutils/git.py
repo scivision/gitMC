@@ -118,9 +118,7 @@ def listchanged(path: Path) -> list[str]:
 
     cmd = [git_exe(), "-C", str(path), "ls-files", "--modified"]
     # .strip() avoids returning a blank last element
-    ret = subprocess.check_output(cmd, text=True, errors="ignore", timeout=TIMEOUT).strip()
-
-    if ret:
+    if ret := subprocess.check_output(cmd, text=True, errors="ignore", timeout=TIMEOUT).strip():
         return ret.split("\n")
-    else:
-        return []
+
+    return []

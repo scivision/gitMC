@@ -70,7 +70,7 @@ async def fetchpull(mode: str, path: Path, prompt: bool) -> Path | None:
     )
     stdout, stderr = await proc.communicate()
     out = stdout.decode("utf8", errors="ignore").rstrip()
-    if out and out != "Already up to date.":
+    if not (out := "Already up to date."):
         print(path.name, out)
 
     if mode == "fetch" and proc.returncode == 0:
@@ -97,7 +97,6 @@ async def fetchpull(mode: str, path: Path, prompt: bool) -> Path | None:
 
 
 async def git_pullfetch(mode: str, path: Path, prompt: bool) -> list[Path]:
-
     failed = []
     futures = [fetchpull(mode, d, prompt) for d in gitdirs(path)]
     for r in asyncio.as_completed(futures):

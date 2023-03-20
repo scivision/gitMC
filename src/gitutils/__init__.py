@@ -10,6 +10,5 @@ __version__ = "1.11.0"
 
 
 def _log(verbose: bool):
-
     if verbose:
         logging.basicConfig(level=logging.DEBUG)

@@ -44,10 +44,9 @@ def ActOnChanged():
     if P.preview:
         prefix = f"http://localhost:{P.port}/"
 
-        if path.name == "_posts":  # Jekyll with leading date in filename
-            cut = 11
-        else:
-            cut = 0
+        cut = 11 if path.name == "_posts" else 0
+        # Jekyll with leading date in filename
+
         flist = (prefix + fn.split("/")[-1][cut:].split(".")[0] for fn in flist)
 
         for f in flist:
