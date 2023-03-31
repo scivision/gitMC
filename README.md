@@ -34,10 +34,17 @@ python -m pip install -e .
 
 ## Usage
 
-* `gitbranch` Tells of any non-master branches under directory ~/code
-* `gitemail` list all contributor email addresses. To fix unwanted emails use [Git-filter-repo](https://www.scivision.dev/git-update-email-address/)
-* `find_missing_file`: find directories missing exact fullpath to file
-* `find_matching_file`: find directories matching exact fullpath to file
+`gitbranch`
+: Tells of any non-master branches under directory ~/code
+
+`python -m gitutils.email`
+: list all contributor email addresses. To fix unwanted emails use [Git-filter-repo](https://www.scivision.dev/git-update-email-address/)
+
+`find_missing_file`
+: find directories missing exact fullpath to file
+
+`find_matching_file`
+: find directories matching exact fullpath to file
 
 ### Sync large number of git repos
 

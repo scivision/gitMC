@@ -31,7 +31,6 @@ gitfetch = "gitutils.pull:git_fetch_cli"
 find_matching_file = "gitutils.__main__:find_match"
 find_missing_file = "gitutils.__main__:find_missing"
 ActOnChanged = "gitutils.__main__:ActOnChanged"
-gitemail = "gitutils.__main__:git_email"
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"], content-type = "text/markdown"}

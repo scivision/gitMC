@@ -104,7 +104,7 @@ def baddir(path: Path) -> bool:
     return bad
 
 
-def list_changed(path: Path) -> list[str]:
+def list_changed(path: Path, timeout: float = TIMEOUT["local"]) -> list[str]:
     """very quick check if any files were modified in this Git repo
 
     Parameters
@@ -124,9 +124,7 @@ def list_changed(path: Path) -> list[str]:
 
     cmd = [git_exe(), "-C", str(path), "ls-files", "--modified"]
     # .strip() avoids returning a blank last element
-    if ret := subprocess.check_output(
-        cmd, text=True, errors="ignore", timeout=TIMEOUT["local"]
-    ).strip():
+    if ret := subprocess.check_output(cmd, text=True, errors="ignore", timeout=timeout).strip():
         return ret.split("\n")
 
     return []

@@ -3,9 +3,9 @@ from pathlib import Path
 import webbrowser
 
 from . import _log
-from .git import MAGENTA, BLACK, list_changed
+from .git import list_changed
 from .find import find_matching_file, find_dir_missing_file
-from .email import gitemail
+
 
 p = argparse.ArgumentParser()
 p.add_argument("path", help="path to look under", nargs="?", default="~/code")
@@ -67,15 +67,3 @@ def find_missing():
 
     for f in find_dir_missing_file(P.path, P.fn, filedest):
         print(f)
-
-
-def git_email():
-    p.add_argument("-e", "--exclude", help="user to ignore (keep)")
-    P = p.parse_args()
-
-    _log(P.verbose)
-
-    for d, emails in gitemail(P.path, P.exclude):
-        print(MAGENTA + d.stem + BLACK)
-        for email in emails:
-            print(*email)

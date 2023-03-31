@@ -24,7 +24,7 @@ C1 = ["status", "--porcelain"]  # uncommitted or changed files
 __all__ = ["git_porcelain"]
 
 
-def git_porcelain(path: Path) -> bool:
+def git_porcelain(path: Path, timeout: float = TIMEOUT["local"]) -> bool:
     """
     detects if single Git repo is porcelain i.e. clean.
     May not have been pushed or fetched.
@@ -49,7 +49,7 @@ def git_porcelain(path: Path) -> bool:
         [git_exe(), "-C", str(path)] + C1,
         stdout=subprocess.PIPE,
         text=True,
-        timeout=TIMEOUT["local"],
+        timeout=timeout,
     )
     if ret.returncode != 0:
         logging.error(f"{path.name} return code {ret.returncode}  {C1}")
@@ -108,12 +108,51 @@ async def _git_status(path: Path) -> tuple[str, str] | None:
     return None
 
 
-async def git_status(path: Path, verbose: bool = False) -> list[str]:
+def git_status_serial(path: Path, timeout: float = TIMEOUT["local"]) -> tuple[str, str] | None:
+    """
+
+    Notes which Git repos have local changes that haven't been pushed to remote
+
+    Parameters
+    ----------
+    path : pathlib.Path
+        Git repo directory
+
+    Returns
+    -------
+    changes : tuple of pathlib.Path, str
+        Git repo local changes
+    """
+
+    stdout = subprocess.check_output([git_exe(), "-C", str(path)] + C1)
+
+    logging.info(path.name)
+
+    if out := stdout.decode("utf8", errors="ignore").rstrip():
+        # uncommitted changes
+        return path.name, out
+
+    # %% detect committed, but not pushed
+    stdout = subprocess.check_output([git_exe(), "-C", str(path)] + C0)
+
+    branch = stdout.decode("utf8", errors="ignore").rstrip()
+
+    C2 = [git_exe(), "-C", str(path), "diff", "--stat", f"origin/{branch}.."]
+    stdout = subprocess.check_output(C2)
+    if out := stdout.decode("utf8", errors="ignore").rstrip():
+        return path.name, out
+
+    return None
+
+
+async def git_status(
+    path: Path, verbose: bool = False, timeout: float = TIMEOUT["local"]
+) -> list[str]:
     c = MAGENTA if verbose else ""
 
     changed = []
     futures = [_git_status(d) for d in gitdirs(path)]
-    for r in asyncio.as_completed(futures, timeout=TIMEOUT["local"]):
+    for r in asyncio.as_completed(futures, timeout=timeout):
         if changes := await r:
             changed.append(changes[0])
             print(c + changes[0])
@@ -127,11 +166,12 @@ def cli():
     p = argparse.ArgumentParser(description="get status of many Git repos")
     p.add_argument("path", help="path to look under", nargs="?", default="~/code")
     p.add_argument("-v", "--verbose", action="store_true")
+    p.add_argument("-t", "--timeout", type=float, default=TIMEOUT["local"])
     P = p.parse_args()
 
     _log(P.verbose)
 
-    asyncio.run(git_status(P.path))
+    asyncio.run(git_status(P.path, P.verbose, P.timeout))
 
 
 if __name__ == "__main__":

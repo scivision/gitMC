@@ -96,10 +96,12 @@ async def fetchpull(mode: str, path: Path, prompt: bool) -> Path | None:
     return None
 
 
-async def git_pullfetch(mode: str, path: Path, prompt: bool) -> list[Path]:
+async def git_pullfetch(
+    mode: str, path: Path, prompt: bool, timeout: float = TIMEOUT["remote"]
+) -> list[Path]:
     failed = []
     futures = [fetchpull(mode, d, prompt) for d in gitdirs(path)]
-    for r in asyncio.as_completed(futures, timeout=TIMEOUT["remote"]):
+    for r in asyncio.as_completed(futures, timeout=timeout):
         if fail := await r:
             failed.append(fail)
             print(fail.name)
@@ -117,11 +119,12 @@ def git_fetch_cli():
         action="store_true",
     )
     p.add_argument("-v", "--verbose", action="store_true")
+    p.add_argument("-t", "--timeout", type=float, default=TIMEOUT["remote"])
     P = p.parse_args()
 
     _log(P.verbose)
 
-    asyncio.run(git_pullfetch("fetch", P.path, P.prompt))
+    asyncio.run(git_pullfetch("fetch", P.path, P.prompt, timeout=TIMEOUT["remote"]))
 
 
 def git_pull_cli():

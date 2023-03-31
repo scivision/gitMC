@@ -67,10 +67,12 @@ async def different_branch(main: list[str], path: Path) -> tuple[str, str] | Non
     return None
 
 
-async def git_branch(branch: list[str], path: Path) -> list[tuple[str, str]]:
+async def git_branch(
+    branch: list[str], path: Path, timeout: float = TIMEOUT["local"]
+) -> list[tuple[str, str]]:
     different = []
     futures = [different_branch(branch, d) for d in gitdirs(path)]
-    for r in asyncio.as_completed(futures):
+    for r in asyncio.as_completed(futures, timeout=timeout):
         if diff := await r:
             different.append(diff)
             print(diff)
@@ -78,7 +80,7 @@ async def git_branch(branch: list[str], path: Path) -> list[tuple[str, str]]:
     return different
 
 
-def branch_switch(path: Path, old_branch: str, new_branch: str):
+def branch_switch(path: Path, old_branch: str, new_branch: str, timeout: float = TIMEOUT["local"]):
     not_a_branch = {
         f"fatal: invalid reference: {new_branch}",  # switch
         f"error: pathspec '{new_branch}' did not match any file(s) known to git",  # checkout
@@ -86,7 +88,7 @@ def branch_switch(path: Path, old_branch: str, new_branch: str):
 
     for d in gitdirs(path):
         cmd = [git_exe(), "-C", str(d)] + BRANCH_NAME
-        current = subprocess.check_output(cmd, text=True, timeout=TIMEOUT["local"]).strip()
+        current = subprocess.check_output(cmd, text=True, timeout=timeout).strip()
         if current == new_branch:
             continue
         if current != old_branch:
@@ -97,7 +99,7 @@ def branch_switch(path: Path, old_branch: str, new_branch: str):
         ret = subprocess.run(
             cmd,
             stderr=subprocess.PIPE,
-            timeout=TIMEOUT["local"],
+            timeout=timeout,
             text=True,
         )
         if ret.returncode != 0:
@@ -121,14 +123,17 @@ def cli():
     p.add_argument("-v", "--verbose", action="store_true")
     p.add_argument("-main", nargs="+", default=["main", "master"], help="name of your main branch")
     p.add_argument("-switch", nargs=2, help="switch branch from OLD to NEW, if NEW is available")
+    p.add_argument(
+        "-t", "--timeout", type=float, default=TIMEOUT["local"], help="timeout for git commands"
+    )
     P = p.parse_args()
 
     _log(P.verbose)
 
     if P.switch is None:
-        asyncio.run(git_branch(P.main, P.path))
+        asyncio.run(git_branch(P.main, P.path, timeout=P.timeout))
     else:
-        branch_switch(P.path, *P.switch)
+        branch_switch(P.path, *P.switch, timeout=P.timeout)
 
 
 if __name__ == "__main__":
