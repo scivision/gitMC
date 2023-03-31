@@ -13,7 +13,10 @@ import functools
 MAGENTA = "\x1b[45m"
 BLACK = "\x1b[40m"
 
-TIMEOUT = 30.0  # arbitrary, seconds
+TIMEOUT = {
+    "remote": 30.0,  # [seconds] arbitrary delay for network operations
+    "local": 5.0,  # [seconds] local operations should be fast
+}
 
 
 @functools.cache
@@ -30,9 +33,12 @@ def git_exe() -> str:
     if not (exe := shutil.which("git")):
         raise EnvironmentError("Git not found")
 
-    ret = subprocess.run([exe, "-C", ".", "--version"], stdout=subprocess.PIPE, timeout=5)
-    # need stdout to avoid leaking version into pipe
-    if ret.returncode != 0:
+    try:
+        subprocess.check_call(
+            [exe, "-C", ".", "--version"], stdout=subprocess.DEVNULL, timeout=TIMEOUT["local"]
+        )
+        # stdout>NULL to avoid leaking version into pipe
+    except subprocess.CalledProcessError:
         raise EnvironmentError("Git version is too old.")
 
     return exe
@@ -98,7 +104,7 @@ def baddir(path: Path) -> bool:
     return bad
 
 
-def listchanged(path: Path) -> list[str]:
+def list_changed(path: Path) -> list[str]:
     """very quick check if any files were modified in this Git repo
 
     Parameters
@@ -118,7 +124,9 @@ def listchanged(path: Path) -> list[str]:
 
     cmd = [git_exe(), "-C", str(path), "ls-files", "--modified"]
     # .strip() avoids returning a blank last element
-    if ret := subprocess.check_output(cmd, text=True, errors="ignore", timeout=TIMEOUT).strip():
+    if ret := subprocess.check_output(
+        cmd, text=True, errors="ignore", timeout=TIMEOUT["local"]
+    ).strip():
         return ret.split("\n")
 
     return []

@@ -37,7 +37,7 @@ def test_findfile_script(tmp_path):
 
 def test_actonchanged(git_init):
     p = git_init
-    ch = pg.listchanged(p)
+    ch = pg.list_changed(p)
     assert not ch
     ret = subprocess.check_output(["ActOnChanged", str(p)], text=True)
     assert not ret
@@ -46,7 +46,7 @@ def test_actonchanged(git_init):
     fn.touch()
     subprocess.check_call([git_exe(), "-C", str(p), "add", fn])
     fn.write_text("hello")
-    ch = pg.listchanged(p)
+    ch = pg.list_changed(p)
     assert ch
     ret = subprocess.check_output(["ActOnChanged", str(p)], text=True)
     assert ret

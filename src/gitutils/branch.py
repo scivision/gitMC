@@ -13,7 +13,7 @@ import logging
 import subprocess
 
 from . import _log
-from .git import git_exe, gitdirs
+from .git import git_exe, gitdirs, TIMEOUT
 
 BRANCH_REV = ["rev-parse", "--abbrev-ref", "HEAD"]
 BRANCH_SYM = ["symbolic-ref", "--short", "HEAD"]
@@ -48,7 +48,8 @@ async def different_branch(main: list[str], path: Path) -> tuple[str, str] | Non
     """
 
     proc = await asyncio.create_subprocess_exec(
-        *[git_exe(), "-C", str(path)] + BRANCH_NAME, stdout=asyncio.subprocess.PIPE
+        *[git_exe(), "-C", str(path)] + BRANCH_NAME,
+        stdout=asyncio.subprocess.PIPE,
     )
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:
@@ -85,7 +86,7 @@ def branch_switch(path: Path, old_branch: str, new_branch: str):
 
     for d in gitdirs(path):
         cmd = [git_exe(), "-C", str(d)] + BRANCH_NAME
-        current = subprocess.check_output(cmd, text=True, timeout=5).strip()
+        current = subprocess.check_output(cmd, text=True, timeout=TIMEOUT["local"]).strip()
         if current == new_branch:
             continue
         if current != old_branch:
@@ -96,7 +97,7 @@ def branch_switch(path: Path, old_branch: str, new_branch: str):
         ret = subprocess.run(
             cmd,
             stderr=subprocess.PIPE,
-            timeout=10,
+            timeout=TIMEOUT["local"],
             text=True,
         )
         if ret.returncode != 0:

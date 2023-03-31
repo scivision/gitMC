@@ -46,7 +46,10 @@ def git_porcelain(path: Path) -> bool:
         raise NotADirectoryError(path)
 
     ret = subprocess.run(
-        [git_exe(), "-C", str(path)] + C1, stdout=subprocess.PIPE, text=True, timeout=TIMEOUT
+        [git_exe(), "-C", str(path)] + C1,
+        stdout=subprocess.PIPE,
+        text=True,
+        timeout=TIMEOUT["local"],
     )
     if ret.returncode != 0:
         logging.error(f"{path.name} return code {ret.returncode}  {C1}")
@@ -110,7 +113,7 @@ async def git_status(path: Path, verbose: bool = False) -> list[str]:
 
     changed = []
     futures = [_git_status(d) for d in gitdirs(path)]
-    for r in asyncio.as_completed(futures):
+    for r in asyncio.as_completed(futures, timeout=TIMEOUT["local"]):
         if changes := await r:
             changed.append(changes[0])
             print(c + changes[0])

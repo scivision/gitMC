@@ -12,7 +12,7 @@ import socket
 import os
 
 from . import _log
-from .git import git_exe, gitdirs
+from .git import git_exe, gitdirs, TIMEOUT
 
 
 def check_internet() -> bool:
@@ -99,7 +99,7 @@ async def fetchpull(mode: str, path: Path, prompt: bool) -> Path | None:
 async def git_pullfetch(mode: str, path: Path, prompt: bool) -> list[Path]:
     failed = []
     futures = [fetchpull(mode, d, prompt) for d in gitdirs(path)]
-    for r in asyncio.as_completed(futures):
+    for r in asyncio.as_completed(futures, timeout=TIMEOUT["remote"]):
         if fail := await r:
             failed.append(fail)
             print(fail.name)

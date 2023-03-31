@@ -3,7 +3,7 @@ from pathlib import Path
 import webbrowser
 
 from . import _log
-from .git import MAGENTA, BLACK, listchanged
+from .git import MAGENTA, BLACK, list_changed
 from .find import find_matching_file, find_dir_missing_file
 from .email import gitemail
 
@@ -39,7 +39,7 @@ def ActOnChanged():
     _log(P.verbose)
 
     path = Path(P.path).expanduser().resolve()
-    flist = listchanged(path)
+    flist = list_changed(path)
     # %%
     if P.preview:
         prefix = f"http://localhost:{P.port}/"
