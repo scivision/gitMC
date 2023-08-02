@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+
+"""
+To check your Git commits locally for:
+* no trailing whitespace
+* PEP8 (python only)
+* mypy type hint (python only)
+
+Also strips Jupyter notebook output before commit.
+
+1. set Git to look for pre-commit hook by in Terminal:
+    git config --global core.hooksPath ~/.git/hooks
+2. put this script at ~/.git/hooks/pre-commit (no .py extension)
+
+To override this on per-repo basis, in that particular repo do:
+git config core.hooksPath .git/hooks
+so that you can put local hooks in that repo, no longer using this global pre-commit
+
+* https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks
+* https://www.scivision.dev/git-commit-precheck-pep8/
+"""
+
+from pathlib import Path
+import shutil
+import subprocess
+import logging
+
+
+if not (flake8 := shutil.which("flake8")):
+    logging.warning("flake8 checks not available")
+if not (mypy := shutil.which("mypy")):
+    logging.warning("mypy checks not available")
+
+
+# %% YaML check
+def check_yaml(file: Path) -> bool:
+
+    try:
+        import yaml
+        yaml.safe_load(file.read_text())
+    except ImportError:
+        logging.warning("yaml checks not available")
+    except Exception as e:
+        logging.error(f"problem in YaML file {file}\n{e}")
+        return True
+
+    return False
+
+
+# %% Python check
+files_changed = subprocess.check_output(
+    ["git", "diff", "--staged", "--name-only"], text=True
+).split("\n")
+
+
+def check_staged(files: list[str]) -> list[str]:
+    """
+    language-specific file checks
+    """
+
+    plist = []
+    bad = False
+    for file in files:
+        path = Path(file)
+        logging.info(f"checking {path}")
+        if not path.is_file():
+            continue
+        match path.suffix:
+            case ".py":
+                if "breakpoint(" in path.read_text():
+                    logging.error(f"Remove breakpoint in {path} before commit")
+                    bad = True
+                plist.append(str(path))
+            case ".ipynb":
+                jupyter_strip_output(path)
+            case ".yml" | ".yaml":
+                if check_yaml(path):
+                    bad = True
+
+    if bad:
+        raise SystemExit("Fix errors above before git commit")
+
+    return plist
+
+
+def jupyter_strip_output(file: Path) -> None:
+    subprocess.check_call(["jupyter", "nbconvert", "--clear-output", "--inplace", file])
+
+
+py_files = check_staged(files_changed)
+# check all Python files at once to get a sense of how many changes are needed
+if py_files:
+    if flake8:
+        ret = subprocess.run([flake8] + py_files)
+        if ret.returncode:
+            raise SystemExit("fix PEP8 issues before commit")
+
+    if mypy:
+        ret = subprocess.run([mypy] + py_files)
+        if ret.returncode:
+            raise SystemExit("fix type hinting issues before commit")
+
+# %% general check
+
+# handle first commit in empty repo
+ref = "HEAD"
+ret = subprocess.run(["git", "rev-parse", "--verify", ref], stderr=subprocess.DEVNULL)
+if ret.returncode:
+    ref = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"  # empty object hash
+
+ret = subprocess.run(["git", "diff-index", "--check", "--cached", ref, "--"])
+if ret.returncode:
+    print(ret.returncode, " ".join(ret.args))
+    raise SystemExit("Fix whitespace issues before commit")

@@ -15,8 +15,8 @@ Also see
 [PyGit-bulk](https://github.com/scivision/pygit-bulk)
 for managing large (100+) numbers of users / teams.
 
-This repo contains an
-[example Git pre-commit script](./examples/pre-commit)
+This repo contains a
+[Git pre-commit script](./scripts/pre-commit)
 with
 [explanation](https://www.scivision.dev/git-commit-precheck-pep8/).
 
