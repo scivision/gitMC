@@ -134,7 +134,6 @@ def list_changed(path: Path, timeout: float = TIMEOUT["local"]) -> list[str]:
 
 @functools.cache
 def set_env(prompt: bool) -> dict:
-
     env = os.environ.copy()
     if not prompt:
         env["GIT_TERMINAL_PROMPT"] = "0"

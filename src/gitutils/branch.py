@@ -13,7 +13,7 @@ import logging
 import subprocess
 
 from . import _log
-from .git import git_exe, gitdirs, TIMEOUT
+from .git import git_exe, execute_local, gitdirs, TIMEOUT
 
 BRANCH_REV = ["rev-parse", "--abbrev-ref", "HEAD"]
 BRANCH_SYM = ["symbolic-ref", "--short", "HEAD"]
@@ -26,7 +26,7 @@ BRANCH_NAME = ["branch", "--show-current"]  # Git >= 2.22
 SWITCH = ["switch"]  # Git >= 2.23
 
 
-async def different_branch(main: list[str], path: Path) -> tuple[str, str] | None:
+async def different_branch(main: list[str], path: Path, timeout: float) -> tuple[str, str] | None:
     """
     does branch not match specified name
 
@@ -47,16 +47,13 @@ async def different_branch(main: list[str], path: Path) -> tuple[str, str] | Non
         repo path and branch name
     """
 
-    proc = await asyncio.create_subprocess_exec(
-        *[git_exe(), "-C", str(path)] + BRANCH_NAME,
-        stdout=asyncio.subprocess.PIPE,
+    code, branch_name, err = await execute_local(
+        [git_exe(), "-C", str(path)] + BRANCH_NAME, timeout
     )
-    stdout, _ = await proc.communicate()
-    if proc.returncode != 0:
-        logging.error(f"{path.name} return code {proc.returncode}  {BRANCH_NAME}")
-    logging.info(str(path))
+    if code != 0:
+        logging.error(f"{path.name} return code {code}  {BRANCH_NAME}  {err}")
 
-    branch_name = stdout.decode("utf8").strip()
+    logging.info(f"{path.name} {branch_name}")
 
     if isinstance(main, str):
         main = [main]
@@ -67,12 +64,10 @@ async def different_branch(main: list[str], path: Path) -> tuple[str, str] | Non
     return None
 
 
-async def git_branch(
-    branch: list[str], path: Path, timeout: float = TIMEOUT["local"]
-) -> list[tuple[str, str]]:
+async def git_branch(branch: list[str], path: Path, timeout: float) -> list[tuple[str, str]]:
     different = []
-    futures = [different_branch(branch, d) for d in gitdirs(path)]
-    for r in asyncio.as_completed(futures, timeout=timeout):
+    futures = [different_branch(branch, d, timeout) for d in gitdirs(path)]
+    for r in asyncio.as_completed(futures):
         if diff := await r:
             different.append(diff)
             print(diff)
