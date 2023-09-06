@@ -10,6 +10,7 @@ from pathlib import Path
 import urllib.request
 import socket
 import os
+import functools
 
 from . import _log
 from .git import git_exe, gitdirs, TIMEOUT
@@ -32,21 +33,31 @@ def check_internet() -> bool:
     return False
 
 
-async def execute_process(cmd: list[str], prompt: bool = False) -> tuple[int, str, str]:
-    """
-    GIT_TERMINAL_PROMPT=0 disallows spurious Git https password prompts
-    https://github.blog/2015-02-06-git-2-3-has-been-released/#the-credential-subsystem-is-now-friendlier-to-scripting
-    GIT_SSH_COMMAND handles the Git SSH calls
-    """
-
+@functools.cache
+def set_env(prompt: bool) -> dict:
     env = None
     if not prompt:
         env = os.environ.copy()
         env["GIT_TERMINAL_PROMPT"] = "0"
         env["GIT_SSH_COMMAND"] = "ssh -o BatchMode=yes"
 
-    proc = await asyncio.create_subprocess_exec(
-        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env
+
+async def execute_process(
+    cmd: list[str], prompt: bool = False, timeout: float = TIMEOUT["remote"]
+) -> tuple[int, str, str]:
+    """
+    GIT_TERMINAL_PROMPT=0 disallows spurious Git https password prompts
+    https://github.blog/2015-02-06-git-2-3-has-been-released/#the-credential-subsystem-is-now-friendlier-to-scripting
+    GIT_SSH_COMMAND handles the Git SSH calls
+    """
+
+    env = set_env(prompt)
+
+    proc = await asyncio.wait_for(
+        asyncio.create_subprocess_exec(
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env
+        ),
+        timeout=timeout,
     )
     stdout, stderr = await proc.communicate()
     code = proc.returncode
@@ -60,7 +71,7 @@ async def execute_process(cmd: list[str], prompt: bool = False) -> tuple[int, st
     )
 
 
-async def fetchpull(mode: str, path: Path, prompt: bool) -> Path | None:
+async def fetchpull(mode: str, path: Path, prompt: bool, timeout: float) -> Path | None:
     """
     handles recursive "git pull" and "git fetch"
 
@@ -85,7 +96,12 @@ async def fetchpull(mode: str, path: Path, prompt: bool) -> Path | None:
     """
 
     # %% pull or fetch
-    code, out, err = await execute_process([git_exe(), "-C", str(path), mode], prompt)
+    try:
+        code, out, err = await execute_process([git_exe(), "-C", str(path), mode], prompt, timeout)
+    except TimeoutError:
+        logging.error(f"Timeout: {path.name}")
+        return path
+
     if code != 0:
         # fetch or pull failed
         if "Permission denied" in err or "fatal: could not read Password" in err:
@@ -97,7 +113,8 @@ async def fetchpull(mode: str, path: Path, prompt: bool) -> Path | None:
     # %% let user know they have unmerged changes
     if mode == "fetch":
         code, out, err = await execute_process(
-            [git_exe(), "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"]
+            [git_exe(), "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"],
+            timeout=timeout,
         )
         if out:
             print(path.name, out)
@@ -110,12 +127,10 @@ async def fetchpull(mode: str, path: Path, prompt: bool) -> Path | None:
     return None
 
 
-async def git_pullfetch(
-    mode: str, path: Path, prompt: bool, timeout: float = TIMEOUT["remote"]
-) -> list[Path]:
+async def git_pullfetch(mode: str, path: Path, prompt: bool, timeout: float) -> list[Path]:
     failed = []
-    futures = [fetchpull(mode, d, prompt) for d in gitdirs(path)]
-    for r in asyncio.as_completed(futures, timeout=timeout):
+    futures = [fetchpull(mode, d, prompt, timeout) for d in gitdirs(path)]
+    for r in asyncio.as_completed(futures):
         if fail := await r:
             failed.append(fail)
             print(fail.name)
@@ -138,7 +153,7 @@ def git_fetch_cli():
 
     _log(P.verbose)
 
-    asyncio.run(git_pullfetch("fetch", P.path, P.prompt, timeout=TIMEOUT["remote"]))
+    asyncio.run(git_pullfetch("fetch", P.path, P.prompt, timeout=P.timeout))
 
 
 def git_pull_cli():
@@ -151,6 +166,7 @@ def git_pull_cli():
         action="store_true",
     )
     p.add_argument("-v", "--verbose", action="store_true")
+    p.add_argument("-t", "--timeout", type=float, default=TIMEOUT["remote"])
     P = p.parse_args()
 
     _log(P.verbose)
@@ -158,7 +174,7 @@ def git_pull_cli():
     # if not check_internet():
     #     raise ConnectionError("No internet connection")
 
-    asyncio.run(git_pullfetch("pull", P.path, P.prompt))
+    asyncio.run(git_pullfetch("pull", P.path, P.prompt, timeout=P.timeout))
 
 
 if __name__ == "__main__":
