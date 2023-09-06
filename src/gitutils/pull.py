@@ -32,6 +32,34 @@ def check_internet() -> bool:
     return False
 
 
+async def execute_process(cmd: list[str], prompt: bool = False) -> tuple[int, str, str]:
+    """
+    GIT_TERMINAL_PROMPT=0 disallows spurious Git https password prompts
+    https://github.blog/2015-02-06-git-2-3-has-been-released/#the-credential-subsystem-is-now-friendlier-to-scripting
+    GIT_SSH_COMMAND handles the Git SSH calls
+    """
+
+    env = None
+    if not prompt:
+        env = os.environ.copy()
+        env["GIT_TERMINAL_PROMPT"] = "0"
+        env["GIT_SSH_COMMAND"] = "ssh -o BatchMode=yes"
+
+    proc = await asyncio.create_subprocess_exec(
+        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env
+    )
+    stdout, stderr = await proc.communicate()
+    code = proc.returncode
+    if code is None:
+        code = 1
+
+    return (
+        code,
+        stdout.decode("utf8", errors="ignore").rstrip(),
+        stderr.decode("utf8", errors="ignore").rstrip(),
+    )
+
+
 async def fetchpull(mode: str, path: Path, prompt: bool) -> Path | None:
     """
     handles recursive "git pull" and "git fetch"
@@ -52,44 +80,30 @@ async def fetchpull(mode: str, path: Path, prompt: bool) -> Path | None:
         Git repo that failed to fetch/pull
     """
 
-    # Don't use "git pull --quiet" since no output at all if remote change occured.
+    """
+    Don't use "git pull --quiet" since no output at all if remote change occured.
+    """
 
-    # GIT_TERMINAL_PROMPT=0 disallows spurious Git https password prompts
-    # https://github.blog/2015-02-06-git-2-3-has-been-released/#the-credential-subsystem-is-now-friendlier-to-scripting
-    # GIT_SSH_COMMAND handles the Git SSH calls
-
-    env = os.environ.copy()
-    if not prompt:
-        env["GIT_TERMINAL_PROMPT"] = "0"
-        env["GIT_SSH_COMMAND"] = "ssh -o BatchMode=yes"
-
-    cmd = [git_exe(), "-C", str(path), mode]
-
-    proc = await asyncio.create_subprocess_exec(
-        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env
-    )
-    stdout, stderr = await proc.communicate()
-    out = stdout.decode("utf8", errors="ignore").rstrip()
-    if not (out := "Already up to date."):
-        print(path.name, out)
-
-    if mode == "fetch" and proc.returncode == 0:
-        cmd = [git_exe(), "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"]
-        proc = await asyncio.create_subprocess_exec(
-            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env
-        )
-        stdout, stderr = await proc.communicate()
-        if out := stdout.decode("utf8", errors="ignore").rstrip():
-            print(path.name, out)
-
-    if proc.returncode:
-        err = stderr.decode("utf8", errors="ignore").rstrip()
+    # %% pull or fetch
+    code, out, err = await execute_process([git_exe(), "-C", str(path), mode], prompt)
+    if code != 0:
+        # fetch or pull failed
         if "Permission denied" in err or "fatal: could not read Password" in err:
             print(f"SKIP: credentials needed: {path.name}")
             return None
 
-        logging.error(f"{path.name}  {err}")
+        logging.error(f"{path.name} {code} {err}")
         return path
+    # %% let user know they have unmerged changes
+    if mode == "fetch":
+        code, out, err = await execute_process(
+            [git_exe(), "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"]
+        )
+        if out:
+            print(path.name, out)
+    else:
+        if out != "Already up to date.":
+            print(path.name, out)
 
     logging.info(f"{mode} {path.name}")
 
