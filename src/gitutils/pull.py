@@ -9,11 +9,9 @@ import logging
 from pathlib import Path
 import urllib.request
 import socket
-import os
-import functools
 
 from . import _log
-from .git import git_exe, gitdirs, TIMEOUT
+from .git import git_exe, gitdirs, execute_local, execute_remote, TIMEOUT
 
 
 def check_internet() -> bool:
@@ -31,44 +29,6 @@ def check_internet() -> bool:
         raise ConnectionError(f"No internet connection to {url}")
 
     return False
-
-
-@functools.cache
-def set_env(prompt: bool) -> dict:
-    env = None
-    if not prompt:
-        env = os.environ.copy()
-        env["GIT_TERMINAL_PROMPT"] = "0"
-        env["GIT_SSH_COMMAND"] = "ssh -o BatchMode=yes"
-
-
-async def execute_process(
-    cmd: list[str], prompt: bool = False, timeout: float = TIMEOUT["remote"]
-) -> tuple[int, str, str]:
-    """
-    GIT_TERMINAL_PROMPT=0 disallows spurious Git https password prompts
-    https://github.blog/2015-02-06-git-2-3-has-been-released/#the-credential-subsystem-is-now-friendlier-to-scripting
-    GIT_SSH_COMMAND handles the Git SSH calls
-    """
-
-    env = set_env(prompt)
-
-    proc = await asyncio.wait_for(
-        asyncio.create_subprocess_exec(
-            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env
-        ),
-        timeout=timeout,
-    )
-    stdout, stderr = await proc.communicate()
-    code = proc.returncode
-    if code is None:
-        code = 1
-
-    return (
-        code,
-        stdout.decode("utf8", errors="ignore").rstrip(),
-        stderr.decode("utf8", errors="ignore").rstrip(),
-    )
 
 
 async def fetchpull(mode: str, path: Path, prompt: bool, timeout: float) -> Path | None:
@@ -97,7 +57,7 @@ async def fetchpull(mode: str, path: Path, prompt: bool, timeout: float) -> Path
 
     # %% pull or fetch
     try:
-        code, out, err = await execute_process([git_exe(), "-C", str(path), mode], prompt, timeout)
+        code, out, err = await execute_remote([git_exe(), "-C", str(path), mode], prompt, timeout)
     except TimeoutError:
         logging.error(f"Timeout: {path.name}")
         return path
@@ -112,9 +72,9 @@ async def fetchpull(mode: str, path: Path, prompt: bool, timeout: float) -> Path
         return path
     # %% let user know they have unmerged changes
     if mode == "fetch":
-        code, out, err = await execute_process(
+        code, out, err = await execute_local(
             [git_exe(), "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"],
-            timeout=timeout,
+            timeout,
         )
         if out:
             print(path.name, out)
