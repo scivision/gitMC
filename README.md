@@ -2,10 +2,17 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3339891.svg)](https://doi.org/10.5281/zenodo.3339891)
 ![Actions Status](https://github.com/scivision/gitmc/workflows/ci/badge.svg)
-[![PyPi Download stats](http://pepy.tech/badge/gitutils)](http://pepy.tech/project/gitutils)
+[![PyPI Download stats](http://pepy.tech/badge/gitutils)](http://pepy.tech/project/gitutils)
 
 Platform-independent (Linux/Mac/Windows) Git utilities, useful for managing large (100+) numbers of Git repos.
-Speed is an emphasis throughout, with concurrency via Python `asyncio` and pipelining.
+Speed is an emphasis throughout, with concurrency via Python stdlib
+[asyncio](https://docs.python.org/3/library/asyncio.html)
+via
+[asyncio.create_subprocess_exec](https://docs.python.org/3/library/asyncio-subprocess.html#asyncio.create_subprocess_exec)
+and pipelining makes operations in effect 100x faster overall as the coroutines simultaneously wait for Git operations (particularly remote operations like "fetch" and "pull").
+We have implemented individual concurrent subprocess timeout using
+[asyncio.wait_for](https://docs.python.org/3/library/asyncio-task.html#asyncio.wait_for)
+so that one Git operation hanging doesn't cause other Git operations to fail--this is good for when a Git login popup may go unnoticed by the human.
 
 GitMC uses command-line Git because PyGit also requires command-line Git installed, and we don't need the advanced functionality.
 
