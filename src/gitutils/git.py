@@ -134,6 +134,12 @@ def list_changed(path: Path, timeout: float = TIMEOUT["local"]) -> list[str]:
 
 @functools.cache
 def set_env(prompt: bool) -> dict:
+    """
+    GIT_TERMINAL_PROMPT=0 disallows spurious Git https password prompts
+    https://github.blog/2015-02-06-git-2-3-has-been-released/#the-credential-subsystem-is-now-friendlier-to-scripting
+    GIT_SSH_COMMAND handles the Git SSH calls
+    """
+
     env = os.environ.copy()
     if not prompt:
         env["GIT_TERMINAL_PROMPT"] = "0"
@@ -142,46 +148,14 @@ def set_env(prompt: bool) -> dict:
     return env
 
 
-async def execute_remote(
+async def subprocess_asyncio(
     cmd: list[str], prompt: bool = False, timeout: float = TIMEOUT["remote"]
 ) -> tuple[int, str, str]:
-    """
-    GIT_TERMINAL_PROMPT=0 disallows spurious Git https password prompts
-    https://github.blog/2015-02-06-git-2-3-has-been-released/#the-credential-subsystem-is-now-friendlier-to-scripting
-    GIT_SSH_COMMAND handles the Git SSH calls
-    """
-
     env = set_env(prompt)
 
     proc = await asyncio.wait_for(
         asyncio.create_subprocess_exec(
             *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env
-        ),
-        timeout=timeout,
-    )
-
-    stdout, stderr = await proc.communicate()
-
-    if (code := proc.returncode) is None:
-        code = 1
-
-    return (
-        code,
-        stdout.decode("utf8", errors="ignore").rstrip(),
-        stderr.decode("utf8", errors="ignore").rstrip(),
-    )
-
-
-async def execute_local(cmd: list[str], timeout: float = TIMEOUT["local"]) -> tuple[int, str, str]:
-    """
-    asyncio subprocess that should run quickly on local machine or networked storage\
-
-    No environment variable modifications.
-    """
-
-    proc = await asyncio.wait_for(
-        asyncio.create_subprocess_exec(
-            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         ),
         timeout=timeout,
     )

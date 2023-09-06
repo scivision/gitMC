@@ -11,7 +11,7 @@ import urllib.request
 import socket
 
 from . import _log
-from .git import git_exe, gitdirs, execute_local, execute_remote, TIMEOUT
+from .git import git_exe, gitdirs, subprocess_asyncio, TIMEOUT
 
 
 def check_internet() -> bool:
@@ -57,7 +57,9 @@ async def fetchpull(mode: str, path: Path, prompt: bool, timeout: float) -> Path
 
     # %% pull or fetch
     try:
-        code, out, err = await execute_remote([git_exe(), "-C", str(path), mode], prompt, timeout)
+        code, out, err = await subprocess_asyncio(
+            [git_exe(), "-C", str(path), mode], prompt, timeout
+        )
     except TimeoutError:
         logging.error(f"Timeout: {path.name}")
         return path
@@ -72,9 +74,9 @@ async def fetchpull(mode: str, path: Path, prompt: bool, timeout: float) -> Path
         return path
     # %% let user know they have unmerged changes
     if mode == "fetch":
-        code, out, err = await execute_local(
+        code, out, err = await subprocess_asyncio(
             [git_exe(), "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"],
-            timeout,
+            timeout=timeout,
         )
         if out:
             print(path.name, out)

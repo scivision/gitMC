@@ -13,7 +13,7 @@ import logging
 import subprocess
 
 from . import _log
-from .git import git_exe, execute_local, gitdirs, TIMEOUT
+from .git import git_exe, subprocess_asyncio, gitdirs, TIMEOUT
 
 BRANCH_REV = ["rev-parse", "--abbrev-ref", "HEAD"]
 BRANCH_SYM = ["symbolic-ref", "--short", "HEAD"]
@@ -47,8 +47,8 @@ async def different_branch(main: list[str], path: Path, timeout: float) -> tuple
         repo path and branch name
     """
 
-    code, branch_name, err = await execute_local(
-        [git_exe(), "-C", str(path)] + BRANCH_NAME, timeout
+    code, branch_name, err = await subprocess_asyncio(
+        [git_exe(), "-C", str(path)] + BRANCH_NAME, timeout=timeout
     )
     if code != 0:
         logging.error(f"{path.name} return code {code}  {BRANCH_NAME}  {err}")
