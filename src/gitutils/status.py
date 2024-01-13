@@ -90,9 +90,9 @@ async def _git_status(path: Path, timeout: float) -> tuple[str, str] | None:
         return None
 
     C2 = [git_exe(), "-C", str(path), "diff", "--stat", f"origin/{branch}.."]
-    code, branch, err = await subprocess_asyncio(C2, timeout=timeout)
+    code, out, err = await subprocess_asyncio(C2, timeout=timeout)
     if code != 0:
-        logging.error(f"{path.name} return code {code}  {branch}  {err}")
+        logging.error(f"{path.name} return code {code}  {branch} {out}  {err}")
         return None
 
     if out:
@@ -161,11 +161,20 @@ def cli():
     p.add_argument("path", help="path to look under", nargs="?", default="~/code")
     p.add_argument("-v", "--verbose", action="store_true")
     p.add_argument("-t", "--timeout", type=float, default=TIMEOUT["local"])
+    p.add_argument("--serial", help="don't use asyncio parallel execution", action="store_true")
     P = p.parse_args()
 
     _log(P.verbose)
 
-    asyncio.run(git_status(P.path, P.verbose, P.timeout))
+    if P.serial:
+        c = MAGENTA if P.verbose else ""
+        for d in gitdirs(P.path):
+            if changes := git_status_serial(d, P.timeout):
+                print(c + changes[0])
+                if P.verbose:
+                    print(BLACK + changes[1])
+    else:
+        asyncio.run(git_status(P.path, P.verbose, P.timeout))
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ for fastest operation on large numbers of repos.
 
 import logging
 
-__version__ = "1.12.0"
+__version__ = "1.12.1"
 
 
 def _log(verbose: bool):
