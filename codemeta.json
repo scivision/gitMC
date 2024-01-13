@@ -5,8 +5,6 @@
   "codeRepository": "https://github.com/scivision/gitmc",
   "contIntegration": "https://github.com/scivision/gitmc/actions",
   "dateCreated": "2016-07-21",
-  "datePublished": "2016-07-21",
-  "dateModified": "2020-06-08",
   "issueTracker": "https://github.com/scivision/gitmc/issues",
   "name": "GitMC",
   "identifier": "10.5281/zenodo.3885497",

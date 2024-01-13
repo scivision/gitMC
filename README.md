@@ -1,7 +1,7 @@
 # GitMC -- concurrent asynchronous Git Utilities for operations on massive numbers of Git repos
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3339891.svg)](https://doi.org/10.5281/zenodo.3339891)
-![Actions Status](https://github.com/scivision/gitmc/workflows/ci/badge.svg)
+[![ci](https://github.com/scivision/gitMC/actions/workflows/ci.yml/badge.svg)](https://github.com/scivision/gitMC/actions/workflows/ci.yml)
 [![PyPI Download stats](http://pepy.tech/badge/gitutils)](http://pepy.tech/project/gitutils)
 
 Platform-independent (Linux/Mac/Windows) Git utilities, useful for managing large (100+) numbers of Git repos.
