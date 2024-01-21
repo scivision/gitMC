@@ -160,7 +160,7 @@ def cli():
     p = argparse.ArgumentParser(description="get status of many Git repos")
     p.add_argument("path", help="path to look under", nargs="?", default="~/code")
     p.add_argument("-v", "--verbose", action="store_true")
-    p.add_argument("-t", "--timeout", type=float, default=TIMEOUT["local"])
+    p.add_argument("-t", "--timeout", type=float)
     p.add_argument("--serial", help="don't use asyncio parallel execution", action="store_true")
     P = p.parse_args()
 

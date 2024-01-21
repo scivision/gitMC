@@ -149,16 +149,21 @@ def set_env(prompt: bool) -> dict:
 
 
 async def subprocess_asyncio(
-    cmd: list[str], prompt: bool = False, timeout: float = TIMEOUT["remote"]
+    cmd: list[str], prompt: bool = False, timeout: float | None = None
 ) -> tuple[int, str, str]:
     env = set_env(prompt)
 
-    proc = await asyncio.wait_for(
-        asyncio.create_subprocess_exec(
+    if timeout is None:
+        proc = await asyncio.create_subprocess_exec(
             *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env
-        ),
-        timeout=timeout,
-    )
+        )
+    else:
+        proc = await asyncio.wait_for(
+            asyncio.create_subprocess_exec(
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env
+            ),
+            timeout=timeout,
+        )
 
     stdout, stderr = await proc.communicate()
 
