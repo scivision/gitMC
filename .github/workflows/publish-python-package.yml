@@ -1,3 +1,5 @@
+# https://docs.pypi.org/trusted-publishers/using-a-publisher/
+
 name: publish
 
 on:
@@ -6,9 +8,15 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
-    steps:
 
+    runs-on: ubuntu-latest
+
+    environment: release
+
+    permissions:
+      id-token: write
+
+    steps:
     - uses: actions/checkout@v4
 
     - name: Set up Python
@@ -24,6 +32,3 @@ jobs:
 
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
