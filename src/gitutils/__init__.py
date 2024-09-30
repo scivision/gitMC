@@ -1,12 +1,14 @@
 """
-These Git utilities use nothing beyond pure Python and command-line Git.
+These Git utilities use pygit2 where possible for much more efficient operations
+than using subprocesses even with asyncio.
+
 Speed is emphasized throughout, with pipelining and concurrent `asyncio` routines throughout
 for fastest operation on large numbers of repos.
 """
 
 import logging
 
-__version__ = "1.12.1"
+__version__ = "2.0.0"
 
 
 def _log(verbose: bool):

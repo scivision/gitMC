@@ -18,6 +18,7 @@ classifiers = [
 ]
 dynamic = ["version", "readme"]
 requires-python = ">=3.9"
+dependencies = ["pygit2"]
 
 [project.optional-dependencies]
 tests = ["pytest"]
@@ -41,3 +42,4 @@ line-length = 100
 
 [tool.mypy]
 files = ["src"]
+ignore_missing_imports = true

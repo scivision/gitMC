@@ -69,8 +69,8 @@ def cli():
 
     for d, emails in gitemail(P.path, P.exclude, timeout=P.timeout):
         print(MAGENTA + d.stem + BLACK)
-        for email in emails:
-            print(*email)
+        for e in emails:
+            print(*e)
 
 
 if __name__ == "__main__":

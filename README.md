@@ -44,7 +44,7 @@ python -m pip install -e .
 `gitbranch`
 : Tells of any non-master branches under directory ~/code
 
-`python -m gitutils.email`
+`python -m gitutils.git_email`
 : list all contributor email addresses. To fix unwanted emails use [Git-filter-repo](https://www.scivision.dev/git-update-email-address/)
 
 `find_missing_file`
