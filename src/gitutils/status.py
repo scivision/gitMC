@@ -16,12 +16,12 @@ from .git import gitdirs
 from .status_cmd import git_status_serial, git_status_async
 
 
-def git_status(path: Path, verbose: bool) -> typing.Iterator[dict]:
+def git_status(path: Path, verbose: bool) -> typing.Iterator[tuple[Path, dict]]:
 
     for d in gitdirs(path):
         repo = pygit2.Repository(d)
         if status := repo.status():
-            yield status
+            yield d, status
 
 
 def cli():
@@ -39,7 +39,8 @@ def cli():
     _log(P.verbose)
 
     if P.method == "pygit2":
-        for s in git_status(P.path, P.verbose):
+        for d, s in git_status(P.path, P.verbose):
+            print(str(d))
             pprint(s)
     elif P.method == "serial":
         for d in gitdirs(P.path):
