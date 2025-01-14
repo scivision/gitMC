@@ -5,7 +5,6 @@ git branch get name methods:
 https://stackoverflow.com/a/45028375
 """
 
-from __future__ import annotations
 import argparse
 from pathlib import Path
 import asyncio

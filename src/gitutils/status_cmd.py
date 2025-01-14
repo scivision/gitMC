@@ -10,7 +10,6 @@ replaced by git status --porcelain:
 DOES NOT WORK git log --branches --not --remotes     # check for uncommitted branches
 """
 
-from __future__ import annotations
 import subprocess
 import logging
 from pathlib import Path

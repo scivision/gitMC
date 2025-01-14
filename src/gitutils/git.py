@@ -2,7 +2,6 @@
 Git utilities: focused on speed for very large numbers of Git repos
 """
 
-from __future__ import annotations
 from pathlib import Path
 import subprocess
 import typing

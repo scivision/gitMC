@@ -2,7 +2,6 @@
 detect Git local repo modifications
 """
 
-from __future__ import annotations
 import argparse
 import typing
 from pathlib import Path
@@ -32,7 +31,8 @@ def cli():
     p.add_argument(
         "-method",
         help="use Git command line serial execution",
-        choices=["pygit2", "serial", "async"], default="pygit2",
+        choices=["pygit2", "serial", "async"],
+        default="pygit2",
     )
     P = p.parse_args()
 
