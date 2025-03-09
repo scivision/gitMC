@@ -4,7 +4,7 @@ Git utilities: focused on speed for very large numbers of Git repos
 
 from pathlib import Path
 import subprocess
-import typing
+from collections.abc import Iterator
 import shutil
 import functools
 import os
@@ -45,7 +45,7 @@ def git_exe() -> str:
     return exe
 
 
-def gitdirs(path: Path) -> typing.Iterator[Path]:
+def gitdirs(path: Path) -> Iterator[Path]:
     """
     Generator for Git directories
 

@@ -3,7 +3,7 @@ detect Git local repo modifications
 """
 
 import argparse
-import typing
+from collections.abc import Iterator
 from pathlib import Path
 import asyncio
 from pprint import pprint
@@ -15,7 +15,7 @@ from .git import gitdirs
 from .status_cmd import git_status_serial, git_status_async
 
 
-def git_status(path: Path, verbose: bool) -> typing.Iterator[tuple[Path, dict]]:
+def git_status(path: Path, verbose: bool) -> Iterator[tuple[Path, dict]]:
 
     for d in gitdirs(path):
         repo = pygit2.Repository(d)

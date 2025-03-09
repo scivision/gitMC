@@ -3,7 +3,7 @@ operations for Git author attributions
 """
 
 from pathlib import Path
-import typing as T
+from collections.abc import Iterator, Iterable
 import collections
 import logging
 import subprocess
@@ -15,7 +15,7 @@ from . import _log
 
 def gitemail(
     path: Path, exclude: str | None = None, timeout=TIMEOUT["local"]
-) -> T.Iterator[tuple[Path, list[tuple[str, int]]]]:
+) -> Iterator[tuple[Path, list[tuple[str, int]]]]:
     """
     returns email addresses of everyone who ever made a Git commit in this repo.
 
@@ -46,7 +46,7 @@ def gitemail(
             logging.error(f"{path}  {e}")
             continue
 
-        addrs: T.Iterable[str] = filter(None, ret.replace('"', "").split("\n"))
+        addrs: Iterable[str] = filter(None, ret.replace('"', "").split("\n"))
         # remove blanks
         if exclude:
             addrs = (n for n in addrs if not n.startswith(exclude))

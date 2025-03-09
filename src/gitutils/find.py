@@ -1,9 +1,9 @@
 from pathlib import Path
-import typing as T
+from collections.abc import Iterator
 import shutil
 
 
-def find_matching_file(path: Path, fn: str) -> T.Iterator[Path]:
+def find_matching_file(path: Path, fn: str) -> Iterator[Path]:
     """
     if full path file is found, return that filename
 
@@ -29,7 +29,7 @@ def find_matching_file(path: Path, fn: str) -> T.Iterator[Path]:
             yield d
 
 
-def find_dir_missing_file(path: Path, fn: str, copyfile: Path | None = None) -> T.Iterator[Path]:
+def find_dir_missing_file(path: Path, fn: str, copyfile: Path | None = None) -> Iterator[Path]:
     """
     if directory is missing a file, copy the file to that directory
 
