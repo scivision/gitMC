@@ -19,6 +19,8 @@ TIMEOUT = {
     "local": 5.0,  # [seconds] local operations should be fast
 }
 
+MAX_CONCURRENT = 32  # limit concurrent subprocess operations
+
 
 @functools.cache
 def git_exe() -> str:

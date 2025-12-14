@@ -3,7 +3,7 @@ import subprocess
 import asyncio
 
 from gitutils.branch import git_branch
-from gitutils.git import TIMEOUT
+from gitutils.git import TIMEOUT, MAX_CONCURRENT
 
 
 @pytest.mark.parametrize("name, N", [("main", False), ("fake", True)])
@@ -21,5 +21,7 @@ def test_script_branch(name, N, git_commit):
 @pytest.mark.parametrize("name,N", [("main", 0), ("fake", 1)])
 def test_branch(name, N, git_commit):
     p = git_commit
-    branches = asyncio.run(git_branch(name, p, timeout=TIMEOUT["local"]))
+    branches = asyncio.run(
+        git_branch(name, p, timeout=TIMEOUT["local"], max_concurrent=MAX_CONCURRENT)
+    )
     assert len(branches) == N, f"{branches}"

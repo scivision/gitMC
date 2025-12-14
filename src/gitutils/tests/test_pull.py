@@ -4,7 +4,7 @@ import pytest
 import asyncio
 
 from gitutils.pull import git_pullfetch
-from gitutils.git import TIMEOUT
+from gitutils.git import TIMEOUT, MAX_CONCURRENT
 
 
 @pytest.mark.skipif(__file__ is None, reason="can't find own directory")
@@ -17,5 +17,9 @@ def test_script_pull(op):
 
 @pytest.mark.parametrize("mode", ["fetch", "pull"])
 def test_nonGit_dir_pull(tmp_path, mode):
-    dirs = asyncio.run(git_pullfetch(mode, tmp_path, prompt=False, timeout=TIMEOUT["remote"]))
+    dirs = asyncio.run(
+        git_pullfetch(
+            mode, tmp_path, prompt=False, timeout=TIMEOUT["remote"], max_concurrent=MAX_CONCURRENT
+        )
+    )
     assert len(dirs) == 0

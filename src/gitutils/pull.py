@@ -10,7 +10,7 @@ import urllib.request
 import socket
 
 from . import _log
-from .git import git_exe, gitdirs, subprocess_asyncio, TIMEOUT
+from .git import git_exe, gitdirs, subprocess_asyncio, TIMEOUT, MAX_CONCURRENT
 
 
 def check_internet() -> bool:
@@ -30,7 +30,9 @@ def check_internet() -> bool:
     return False
 
 
-async def fetchpull(mode: str, path: Path, prompt: bool, timeout: float) -> Path | None:
+async def fetchpull(
+    mode: str, path: Path, prompt: bool, timeout: float, semaphore: asyncio.Semaphore
+) -> Path | None:
     """
     handles recursive "git pull" and "git fetch"
 
@@ -43,6 +45,8 @@ async def fetchpull(mode: str, path: Path, prompt: bool, timeout: float) -> Path
         Git repo path
     prompt : bool
         if True, skip directories that require credentials
+    semaphore : asyncio.Semaphore
+        limit concurrent subprocess operations
 
     Returns
     -------
@@ -56,9 +60,10 @@ async def fetchpull(mode: str, path: Path, prompt: bool, timeout: float) -> Path
 
     # %% pull or fetch
     try:
-        code, out, err = await subprocess_asyncio(
-            [git_exe(), "-C", str(path), mode], prompt, timeout
-        )
+        async with semaphore:
+            code, out, err = await subprocess_asyncio(
+                [git_exe(), "-C", str(path), mode], prompt, timeout
+            )
     except TimeoutError:
         logging.error(f"Timeout: {path.name}")
         return path
@@ -73,10 +78,11 @@ async def fetchpull(mode: str, path: Path, prompt: bool, timeout: float) -> Path
         return path
     # %% let user know they have unmerged changes
     if mode == "fetch":
-        code, out, err = await subprocess_asyncio(
-            [git_exe(), "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"],
-            timeout=timeout,
-        )
+        async with semaphore:
+            code, out, err = await subprocess_asyncio(
+                [git_exe(), "-C", str(path), "diff", "--stat", "HEAD..FETCH_HEAD"],
+                timeout=timeout,
+            )
         if out:
             print(path.name, out)
     else:
@@ -88,9 +94,12 @@ async def fetchpull(mode: str, path: Path, prompt: bool, timeout: float) -> Path
     return None
 
 
-async def git_pullfetch(mode: str, path: Path, prompt: bool, timeout: float) -> list[Path]:
+async def git_pullfetch(
+    mode: str, path: Path, prompt: bool, *, timeout: float, max_concurrent: int
+) -> list[Path]:
     failed = []
-    futures = [fetchpull(mode, d, prompt, timeout) for d in gitdirs(path)]
+    semaphore = asyncio.Semaphore(max_concurrent)  # limit concurrent subprocess operations
+    futures = [fetchpull(mode, d, prompt, timeout, semaphore) for d in gitdirs(path)]
     for r in asyncio.as_completed(futures):
         if fail := await r:
             failed.append(fail)
@@ -110,11 +119,18 @@ def git_fetch_cli():
     )
     p.add_argument("-v", "--verbose", action="store_true")
     p.add_argument("-t", "--timeout", type=float, default=TIMEOUT["remote"])
+    p.add_argument(
+        "-m",
+        "--max-concurrent",
+        type=int,
+        default=MAX_CONCURRENT,
+        help="maximum concurrent Git commands",
+    )
     P = p.parse_args()
 
     _log(P.verbose)
 
-    asyncio.run(git_pullfetch("fetch", P.path, P.prompt, timeout=P.timeout))
+    asyncio.run(git_pullfetch("fetch", P.path, P.prompt, timeout=P.timeout, max_concurrent=P.max_concurrent))
 
 
 def git_pull_cli():
@@ -128,6 +144,13 @@ def git_pull_cli():
     )
     p.add_argument("-v", "--verbose", action="store_true")
     p.add_argument("-t", "--timeout", type=float, default=TIMEOUT["remote"])
+    p.add_argument(
+        "-m",
+        "--max-concurrent",
+        type=int,
+        default=MAX_CONCURRENT,
+        help="maximum concurrent Git commands",
+    )
     P = p.parse_args()
 
     _log(P.verbose)
@@ -135,7 +158,9 @@ def git_pull_cli():
     # if not check_internet():
     #     raise ConnectionError("No internet connection")
 
-    asyncio.run(git_pullfetch("pull", P.path, P.prompt, timeout=P.timeout))
+    asyncio.run(
+        git_pullfetch("pull", P.path, P.prompt, timeout=P.timeout, max_concurrent=P.max_concurrent)
+    )
 
 
 if __name__ == "__main__":

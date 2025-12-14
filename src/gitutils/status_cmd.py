@@ -56,7 +56,9 @@ def git_porcelain(path: Path, timeout: float = TIMEOUT["local"]) -> bool:
     return not ret.stdout
 
 
-async def _git_status(path: Path, timeout: float) -> tuple[str, str] | None:
+async def _git_status(
+    path: Path, timeout: float, semaphore: asyncio.Semaphore
+) -> tuple[str, str] | None:
     """
     Notes which Git repos have local changes that haven't been pushed to remote
 
@@ -64,6 +66,8 @@ async def _git_status(path: Path, timeout: float) -> tuple[str, str] | None:
     ----------
     path : pathlib.Path
         Git repo directory
+    semaphore : asyncio.Semaphore
+        limit concurrent subprocess operations
 
     Returns
     -------
@@ -71,7 +75,10 @@ async def _git_status(path: Path, timeout: float) -> tuple[str, str] | None:
         Git repo local changes
     """
 
-    code, out, err = await subprocess_asyncio([git_exe(), "-C", str(path)] + C1, timeout=timeout)
+    async with semaphore:
+        code, out, err = await subprocess_asyncio(
+            [git_exe(), "-C", str(path)] + C1, timeout=timeout
+        )
     if code != 0:
         logging.error(f"{path.name} return code {code}  {C1}  {err}")
         return None
@@ -83,13 +90,17 @@ async def _git_status(path: Path, timeout: float) -> tuple[str, str] | None:
         return path.name, out
 
     # %% detect committed, but not pushed
-    code, branch, err = await subprocess_asyncio([git_exe(), "-C", str(path)] + C0, timeout=timeout)
+    async with semaphore:
+        code, branch, err = await subprocess_asyncio(
+            [git_exe(), "-C", str(path)] + C0, timeout=timeout
+        )
     if code != 0:
         logging.error(f"{path.name} return code {code}  {C0}  {err}")
         return None
 
     C2 = [git_exe(), "-C", str(path), "diff", "--stat", f"origin/{branch}.."]
-    code, out, err = await subprocess_asyncio(C2, timeout=timeout)
+    async with semaphore:
+        code, out, err = await subprocess_asyncio(C2, timeout=timeout)
     if code != 0:
         logging.error(f"{path.name} return code {code}  {branch} {out}  {err}")
         return None
@@ -140,11 +151,14 @@ def git_status_serial(path: Path, timeout: float = TIMEOUT["local"]) -> tuple[st
     return None
 
 
-async def git_status_async(path: Path, verbose: bool, timeout: float) -> list[str]:
+async def git_status_async(
+    path: Path, verbose: bool, *, timeout: float, max_concurrent: int
+) -> list[str]:
     c = MAGENTA if verbose else ""
 
     changed = []
-    futures = [_git_status(d, timeout) for d in gitdirs(path)]
+    semaphore = asyncio.Semaphore(max_concurrent)  # limit concurrent subprocess operations
+    futures = [_git_status(d, timeout, semaphore) for d in gitdirs(path)]
     for r in asyncio.as_completed(futures, timeout=timeout):
         if changes := await r:
             changed.append(changes[0])

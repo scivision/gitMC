@@ -12,7 +12,7 @@ import logging
 import subprocess
 
 from . import _log
-from .git import git_exe, subprocess_asyncio, gitdirs, TIMEOUT
+from .git import git_exe, subprocess_asyncio, gitdirs, TIMEOUT, MAX_CONCURRENT
 
 BRANCH_REV = ["rev-parse", "--abbrev-ref", "HEAD"]
 BRANCH_SYM = ["symbolic-ref", "--short", "HEAD"]
@@ -25,7 +25,9 @@ BRANCH_NAME = ["branch", "--show-current"]  # Git >= 2.22
 SWITCH = ["switch"]  # Git >= 2.23
 
 
-async def different_branch(main: list[str], path: Path, timeout: float) -> tuple[str, str] | None:
+async def different_branch(
+    main: list[str], path: Path, timeout: float, semaphore: asyncio.Semaphore
+) -> tuple[str, str] | None:
     """
     does branch not match specified name
 
@@ -38,6 +40,8 @@ async def different_branch(main: list[str], path: Path, timeout: float) -> tuple
         desired default branch name
     path : pathlib.Path
         Git repo to check
+    semaphore : asyncio.Semaphore
+        limit concurrent subprocess operations
 
     Returns
     -------
@@ -46,9 +50,10 @@ async def different_branch(main: list[str], path: Path, timeout: float) -> tuple
         repo path and branch name
     """
 
-    code, branch_name, err = await subprocess_asyncio(
-        [git_exe(), "-C", str(path)] + BRANCH_NAME, timeout=timeout
-    )
+    async with semaphore:
+        code, branch_name, err = await subprocess_asyncio(
+            [git_exe(), "-C", str(path)] + BRANCH_NAME, timeout=timeout
+        )
     if code != 0:
         logging.error(f"{path.name} return code {code}  {BRANCH_NAME}  {err}")
 
@@ -63,9 +68,12 @@ async def different_branch(main: list[str], path: Path, timeout: float) -> tuple
     return None
 
 
-async def git_branch(branch: list[str], path: Path, timeout: float) -> list[tuple[str, str]]:
+async def git_branch(
+    branch: list[str], path: Path, *, timeout: float, max_concurrent: int
+) -> list[tuple[str, str]]:
     different = []
-    futures = [different_branch(branch, d, timeout) for d in gitdirs(path)]
+    semaphore = asyncio.Semaphore(max_concurrent)  # limit concurrent subprocess operations
+    futures = [different_branch(branch, d, timeout, semaphore) for d in gitdirs(path)]
     for r in asyncio.as_completed(futures):
         if diff := await r:
             different.append(diff)
@@ -120,12 +128,19 @@ def cli():
     p.add_argument(
         "-t", "--timeout", type=float, default=TIMEOUT["local"], help="timeout for git commands"
     )
+    p.add_argument(
+        "-m",
+        "--max-concurrent",
+        type=int,
+        default=MAX_CONCURRENT,
+        help="maximum concurrent Git commands",
+    )
     P = p.parse_args()
 
     _log(P.verbose)
 
     if P.switch is None:
-        asyncio.run(git_branch(P.main, P.path, timeout=P.timeout))
+        asyncio.run(git_branch(P.main, P.path, timeout=P.timeout, max_concurrent=P.max_concurrent))
     else:
         branch_switch(P.path, *P.switch, timeout=P.timeout)
 

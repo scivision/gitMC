@@ -11,7 +11,7 @@ from pprint import pprint
 import pygit2
 
 from . import _log
-from .git import gitdirs
+from .git import gitdirs, MAX_CONCURRENT
 from .status_cmd import git_status_serial, git_status_async
 
 
@@ -34,6 +34,13 @@ def cli():
         choices=["pygit2", "serial", "async"],
         default="pygit2",
     )
+    p.add_argument(
+        "-m",
+        "--max-concurrent",
+        type=int,
+        default=MAX_CONCURRENT,
+        help="maximum concurrent Git commands",
+    )
     P = p.parse_args()
 
     _log(P.verbose)
@@ -49,7 +56,9 @@ def cli():
                 if P.verbose:
                     print(changes[1])
     elif P.method == "async":
-        asyncio.run(git_status_async(P.path, P.verbose, P.timeout))
+        asyncio.run(
+            git_status_async(P.path, P.verbose, timeout=P.timeout, max_concurrent=P.max_concurrent)
+        )
 
 
 if __name__ == "__main__":
