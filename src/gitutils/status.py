@@ -15,7 +15,7 @@ from .git import gitdirs, MAX_CONCURRENT
 from .status_cmd import git_status_serial, git_status_async
 
 
-def git_status(path: Path, verbose: bool) -> Iterator[tuple[Path, dict]]:
+def git_status(path: Path) -> Iterator[tuple[Path, dict]]:
 
     for d in gitdirs(path):
         repo = pygit2.Repository(d)
@@ -46,7 +46,7 @@ def cli():
     _log(P.verbose)
 
     if P.method == "pygit2":
-        for d, s in git_status(P.path, P.verbose):
+        for d, s in git_status(P.path):
             print(str(d))
             pprint(s)
     elif P.method == "serial":
