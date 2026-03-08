@@ -31,7 +31,9 @@ def test_missing(tmp_path):
 
 
 def test_findfile_script(tmp_path):
-    ret = subprocess.check_output(["find_missing_file", str(tmp_path), "blahblah"], text=True)
+    ret = subprocess.check_output(
+        ["find_missing_file", str(tmp_path), "blahblah"], text=True
+    )
     assert not ret
 
 

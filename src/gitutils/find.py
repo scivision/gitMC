@@ -29,7 +29,9 @@ def find_matching_file(path: Path, fn: str) -> Iterator[Path]:
             yield d
 
 
-def find_dir_missing_file(path: Path, fn: str, copyfile: Path | None = None) -> Iterator[Path]:
+def find_dir_missing_file(
+    path: Path, fn: str, copyfile: Path | None = None
+) -> Iterator[Path]:
     """
     if directory is missing a file, copy the file to that directory
 

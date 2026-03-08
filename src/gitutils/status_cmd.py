@@ -111,7 +111,9 @@ async def _git_status(
     return None
 
 
-def git_status_serial(path: Path, timeout: float = TIMEOUT["local"]) -> tuple[str, str] | None:
+def git_status_serial(
+    path: Path, timeout: float = TIMEOUT["local"]
+) -> tuple[str, str] | None:
     """
 
     Notes which Git repos have local changes that haven't been pushed to remote
@@ -157,7 +159,9 @@ async def git_status_async(
     c = MAGENTA if verbose else ""
 
     changed = []
-    semaphore = asyncio.Semaphore(max_concurrent)  # limit concurrent subprocess operations
+    semaphore = asyncio.Semaphore(
+        max_concurrent
+    )  # limit concurrent subprocess operations
     futures = [_git_status(d, timeout, semaphore) for d in gitdirs(path)]
     for r in asyncio.as_completed(futures, timeout=timeout):
         if changes := await r:

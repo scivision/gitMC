@@ -23,10 +23,11 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - run: pip install .[tests,lint]
-
-    - run: flake8
+    - run: pip install .[tests]
 
     - run: mypy --install-types --non-interactive
 
     - run: pytest
+
+    - uses: pre-commit-ci/lite-action@v1.1.0
+      if: always()

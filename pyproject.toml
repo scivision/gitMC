@@ -21,8 +21,7 @@ requires-python = ">=3.10"
 dependencies = ["pygit2"]
 
 [project.optional-dependencies]
-tests = ["pytest"]
-lint = ["flake8", "flake8-bugbear", "flake8-builtins", "flake8-blind-except", "mypy"]
+tests = ["pytest", "mypy"]
 
 [project.scripts]
 gitbranch = "gitutils.branch:cli"
@@ -41,5 +40,7 @@ version = {attr = "gitutils.__version__"}
 line-length = 100
 
 [tool.mypy]
-files = ["src"]
+files = ["."]
 ignore_missing_imports = true
+install_types = true
+exclude = ["^build([/\\\\]|$)"]

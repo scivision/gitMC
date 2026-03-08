@@ -38,7 +38,9 @@ def git_exe() -> str:
 
     try:
         subprocess.check_call(
-            [exe, "-C", ".", "--version"], stdout=subprocess.DEVNULL, timeout=TIMEOUT["local"]
+            [exe, "-C", ".", "--version"],
+            stdout=subprocess.DEVNULL,
+            timeout=TIMEOUT["local"],
         )
         # stdout>NULL to avoid leaking version into pipe
     except subprocess.CalledProcessError:
@@ -127,7 +129,9 @@ def list_changed(path: Path, timeout: float = TIMEOUT["local"]) -> list[str]:
 
     cmd = [git_exe(), "-C", str(path), "ls-files", "--modified"]
     # .strip() avoids returning a blank last element
-    if ret := subprocess.check_output(cmd, text=True, errors="ignore", timeout=timeout).strip():
+    if ret := subprocess.check_output(
+        cmd, text=True, errors="ignore", timeout=timeout
+    ).strip():
         return ret.split("\n")
 
     return []
@@ -156,12 +160,18 @@ async def subprocess_asyncio(
 
     if timeout is None:
         proc = await asyncio.create_subprocess_exec(
-            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            env=env,
         )
     else:
         proc = await asyncio.wait_for(
             asyncio.create_subprocess_exec(
-                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env,
             ),
             timeout=timeout,
         )

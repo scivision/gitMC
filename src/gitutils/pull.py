@@ -98,7 +98,9 @@ async def git_pullfetch(
     mode: str, path: Path, prompt: bool, *, timeout: float, max_concurrent: int
 ) -> list[Path]:
     failed = []
-    semaphore = asyncio.Semaphore(max_concurrent)  # limit concurrent subprocess operations
+    semaphore = asyncio.Semaphore(
+        max_concurrent
+    )  # limit concurrent subprocess operations
     futures = [fetchpull(mode, d, prompt, timeout, semaphore) for d in gitdirs(path)]
     for r in asyncio.as_completed(futures):
         if fail := await r:
@@ -130,7 +132,15 @@ def git_fetch_cli():
 
     _log(P.verbose)
 
-    asyncio.run(git_pullfetch("fetch", P.path, P.prompt, timeout=P.timeout, max_concurrent=P.max_concurrent))
+    asyncio.run(
+        git_pullfetch(
+            "fetch",
+            P.path,
+            P.prompt,
+            timeout=P.timeout,
+            max_concurrent=P.max_concurrent,
+        )
+    )
 
 
 def git_pull_cli():
@@ -159,7 +169,9 @@ def git_pull_cli():
     #     raise ConnectionError("No internet connection")
 
     asyncio.run(
-        git_pullfetch("pull", P.path, P.prompt, timeout=P.timeout, max_concurrent=P.max_concurrent)
+        git_pullfetch(
+            "pull", P.path, P.prompt, timeout=P.timeout, max_concurrent=P.max_concurrent
+        )
     )
 
 

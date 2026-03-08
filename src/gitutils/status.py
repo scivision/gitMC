@@ -57,7 +57,9 @@ def cli():
                     print(changes[1])
     elif P.method == "async":
         asyncio.run(
-            git_status_async(P.path, P.verbose, timeout=P.timeout, max_concurrent=P.max_concurrent)
+            git_status_async(
+                P.path, P.verbose, timeout=P.timeout, max_concurrent=P.max_concurrent
+            )
         )
 
 

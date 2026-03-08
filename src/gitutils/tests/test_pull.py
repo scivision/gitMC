@@ -19,7 +19,11 @@ def test_script_pull(op):
 def test_nonGit_dir_pull(tmp_path, mode):
     dirs = asyncio.run(
         git_pullfetch(
-            mode, tmp_path, prompt=False, timeout=TIMEOUT["remote"], max_concurrent=MAX_CONCURRENT
+            mode,
+            tmp_path,
+            prompt=False,
+            timeout=TIMEOUT["remote"],
+            max_concurrent=MAX_CONCURRENT,
         )
     )
     assert len(dirs) == 0
