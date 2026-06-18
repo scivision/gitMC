@@ -159,9 +159,7 @@ async def git_status_async(
     c = MAGENTA if verbose else ""
 
     changed = []
-    semaphore = asyncio.Semaphore(
-        max_concurrent
-    )  # limit concurrent subprocess operations
+    semaphore = asyncio.Semaphore(max_concurrent)
     futures = [_git_status(d, timeout, semaphore) for d in gitdirs(path)]
     for r in asyncio.as_completed(futures, timeout=timeout):
         if changes := await r:

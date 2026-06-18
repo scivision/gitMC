@@ -48,7 +48,8 @@ def cli():
     if P.method == "pygit2":
         for d, s in git_status(P.path):
             print(str(d))
-            pprint(s)
+            if P.verbose:
+                pprint(s)
     elif P.method == "serial":
         for d in gitdirs(P.path):
             if changes := git_status_serial(d, P.timeout):
